@@ -4,4 +4,4 @@ ruff
 mypy
 pytest
 pytest-cov
-httpx
+httpx2
