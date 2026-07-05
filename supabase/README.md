@@ -49,3 +49,12 @@ supabase db reset               # re-apply all migrations to the local DB
 ```
 
 Migrations are applied to the remote project via `supabase db push` (requires the project to be linked: `supabase link --project-ref <ref>`).
+
+## Seed data
+
+`supabase/seed.sql` populates the local database with a test user and sample data. It runs automatically on `supabase db reset` and on a fresh `supabase start`.
+
+- **Local login:** `user@foodable.com` / `password`
+- `supabase db reset` will wipe all local data and re-apply the migrations +
+  seed, so it's the command to reach for after changing a migration or the seed.
+- **Local only** — the seed never runs in production.
