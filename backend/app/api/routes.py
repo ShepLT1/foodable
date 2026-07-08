@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 
 from app.core.auth import get_current_user
-from app.schemas import AuthUser
+from app.schemas import AuthUser, UserPublic
 
 router = APIRouter()
 
@@ -12,5 +12,5 @@ def health():
 
 
 @router.get("/me")
-def me(user: AuthUser = Depends(get_current_user)) -> AuthUser:
-    return user
+def me(user: AuthUser = Depends(get_current_user)) -> UserPublic:
+    return UserPublic(id=user.id, email=user.email)
