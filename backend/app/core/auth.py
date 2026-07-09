@@ -31,7 +31,7 @@ def get_current_user(
         )
     except jwt.PyJWTError:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "invalid or expired token")
-    
+
     email = claims.get("email")
 
     if email is None:
