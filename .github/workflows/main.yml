@@ -26,7 +26,7 @@ jobs:
 
     env:
       SUPABASE_URL: https://example.supabase.co
-      DATABASE_URL: postgresql://test:test@localhost/test
+      DATABASE_URL: postgresql+asyncpg://test:test@localhost/test
       FRONTEND_URL: http://localhost:5173
 
     defaults:
