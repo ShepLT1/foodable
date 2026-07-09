@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+from uuid import UUID
 
 from app.core.auth import get_current_user
 from app.db.dependencies import get_db
@@ -14,7 +15,7 @@ async def me(
     user: AuthUser = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> UserPublic:
-    profile = await profile_service.get_by_id(db, user.id)
+    profile = await profile_service.get_by_id(db, UUID(user.id))
 
     return UserPublic(
         id=user.id,
