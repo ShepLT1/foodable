@@ -24,6 +24,11 @@ jobs:
     name: Backend (FastAPI)
     runs-on: ubuntu-latest
 
+    env:
+      SUPABASE_URL: https://example.supabase.co
+      DATABASE_URL: postgresql://test:test@localhost/test
+      FRONTEND_URL: http://localhost:5173
+
     defaults:
       run:
         working-directory: backend
