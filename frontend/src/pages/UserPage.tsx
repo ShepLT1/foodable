@@ -26,6 +26,10 @@ export function UserPage() {
       <p>
         <strong>Email:</strong> {user.email}
       </p>
+
+      <p>
+        <strong>Display Name:</strong> {user.display_name}
+      </p>
     </section>
   );
 }
