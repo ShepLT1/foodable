@@ -24,6 +24,11 @@ jobs:
     name: Backend (FastAPI)
     runs-on: ubuntu-latest
 
+    env:
+      SUPABASE_URL: https://example.supabase.co
+      DATABASE_URL: postgresql+asyncpg://test:test@localhost/test
+      FRONTEND_URL: http://localhost:5173
+
     defaults:
       run:
         working-directory: backend
@@ -55,8 +60,6 @@ jobs:
 
       - name: Run tests
         run: pytest --cov=app
-        env:
-          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
 
   frontend:
     name: Frontend (React)

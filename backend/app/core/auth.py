@@ -32,4 +32,9 @@ def get_current_user(
     except jwt.PyJWTError:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "invalid or expired token")
 
-    return AuthUser(id=claims["sub"], email=claims.get("email"))
+    email = claims.get("email")
+
+    if email is None:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Missing email from token")
+
+    return AuthUser(id=claims["sub"], email=email)
