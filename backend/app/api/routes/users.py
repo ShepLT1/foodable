@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 
@@ -16,6 +16,12 @@ async def me(
     db: AsyncSession = Depends(get_db),
 ) -> UserPublic:
     profile = await profile_service.get_by_id(db, UUID(user.id))
+
+    if profile is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Profile not found",
+        )
 
     return UserPublic(
         id=user.id,
