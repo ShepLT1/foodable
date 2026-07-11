@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-# partial update — only provided fields are changed
+# patch update — only provided fields will be changed
 class ProfileUpdate(BaseModel):
     display_name: str | None = None
     dietary_restrictions: list[str] | None = None
