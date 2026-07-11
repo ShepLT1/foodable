@@ -60,10 +60,15 @@ async def get_user(
     user_id: UUID,
     _: CurrentUser = Depends(get_current_user),  # any authenticated user may view
     db: AsyncSession = Depends(get_db),
-) -> Profile:
+) -> UserPublic:
     profile = await profile_service.get_by_id(db, user_id)
+    auth_user = await profile_service.get_auth_user(db, user_id)
 
-    if profile is None:
+    if profile is None or auth_user is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "User not found")
 
-    return profile
+    return UserPublic(
+        id=profile.id,
+        display_name=profile.display_name,
+        created_at=auth_user.created_at,
+    )

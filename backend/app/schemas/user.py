@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 
 
 # token identity from the JWT — no DB
@@ -12,16 +12,14 @@ class CurrentUser(BaseModel):
 
 # public view of a user — non-personal fields only
 class UserPublic(BaseModel):
-    model_config = ConfigDict(from_attributes=True)  # build from the ORM Profile
-
     id: UUID
     display_name: str
+    created_at: datetime  # signup time, from auth.users
 
 
 # the owner's own view — adds email (from the JWT) and personal fields
 class UserMe(UserPublic):
     email: str
-    created_at: datetime  # signup time, from auth.users
     dietary_restrictions: list[str]
     allergies: list[str]
     preferences: list[str]
