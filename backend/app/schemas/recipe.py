@@ -9,9 +9,10 @@ description strings tied to specific behavioral fixes).
 Sanity check schema changes against the live API, run:
     python3 -m app.schemas.recipe_schema_check
 
-See PR #<number> for the empirical findings that shaped these field
-descriptions (unit ambiguity, nutrition completeness,max_tokens truncation,
-US-kitchen unit conventions).
+See PR #31 for details on the testing that led to
+these specific field descriptions (fixing ambiguous units,
+missing nutrition data, truncated responses, and unrealistic
+metric units for US kitchens).
 """
 
 from pydantic import BaseModel, ConfigDict, Field

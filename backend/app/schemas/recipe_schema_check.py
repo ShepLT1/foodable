@@ -1,6 +1,6 @@
 """
 Manual check for the Recipe schema against the live
-Claude API. 
+Claude API.
 
 (Not part of the automated test suite) Run this
 directly when modifying recipe.py or prompts_recipe_gen.py
