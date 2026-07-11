@@ -1,0 +1,21 @@
+-- auto-create a public.profiles row whenever a new auth user is created.
+-- reference: https://supabase.com/docs/guides/auth/managing-user-data#accessing-user-data-via-api
+
+-- inserts a row into public.profiles
+create function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer set search_path = ''
+as $$
+begin
+  insert into public.profiles (id, display_name)
+  values (new.id, split_part(new.email, '@', 1));
+  return new;
+end;
+$$;
+
+-- trigger the function every time a user is created
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute procedure public.handle_new_user();
