@@ -16,7 +16,7 @@ import json
 import os
 
 from anthropic import Anthropic
-from anthropic.types import Message
+from anthropic.types import Message, ToolUseBlock
 from dotenv import load_dotenv
 from pydantic import ValidationError
 
@@ -51,7 +51,7 @@ def generate_recipe(prompt: str) -> Message:
     return client.messages.create(
         model=CLAUDE_MODEL,
         max_tokens=2500,
-        tools=[RECIPE_TOOL],
+        tools=[RECIPE_TOOL],  # type: ignore[call-overload]
         tool_choice={"type": "tool", "name": "create_recipe"},
         messages=[{"role": "user", "content": prompt}],
     )
@@ -87,7 +87,12 @@ def check_prompt(prompt: str) -> None:
     response = generate_recipe(prompt)
     print(f"stop_reason: {response.stop_reason}")
 
-    raw_input = response.content[0].input
+    block = response.content[0]
+    if not isinstance(block, ToolUseBlock):
+        print(f"Unexpected block type: {type(block)}")
+        return
+
+    raw_input = block.input
 
     try:
         recipe = Recipe.model_validate(raw_input)

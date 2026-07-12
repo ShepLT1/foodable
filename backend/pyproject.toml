@@ -1,3 +1,8 @@
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
+
+[tool.mypy]
+[[tool.mypy.overrides]]
+module = "anthropic.*"
+ignore_missing_imports = true
