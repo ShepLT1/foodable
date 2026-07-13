@@ -28,6 +28,7 @@ client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
 # Haiku model - Lightweight, fast + cheap for right now to test schema changes
 CLAUDE_MODEL = "claude-haiku-4-5-20251001"
+MAX_TOKENS = 2500
 
 RECIPE_TOOL = {
     "name": "create_recipe",
@@ -43,6 +44,7 @@ TEST_PROMPTS = [
     "Give me a recipe with fresh herbs like thyme, rosemary, "
     "and basil in small amounts.",
     "Give me a recipe using a pinch of salt and a small amount of cinnamon.",
+    "Give me a complex breakfast recipe with at least 10 ingredients.",
 ]
 
 
@@ -50,7 +52,10 @@ def generate_recipe(prompt: str) -> Message:
     """Call Claude with the recipe tool for a single prompt."""
     return client.messages.create(
         model=CLAUDE_MODEL,
-        max_tokens=2500,
+        max_tokens=MAX_TOKENS,
+        # RECIPE_TOOL is a plain dict; mypy can't match it against the
+        # SDK's typed tool overloads, but it's a valid tool definition
+        # at runtime.
         tools=[RECIPE_TOOL],  # type: ignore[call-overload]
         tool_choice={"type": "tool", "name": "create_recipe"},
         messages=[{"role": "user", "content": prompt}],
@@ -71,11 +76,18 @@ def print_recipe(recipe: Recipe) -> None:
     print("Ingredients:")
     for ing in recipe.ingredients:
         unit = f" {ing.unit}" if ing.unit else ""
-        print(f"  - {ing.amount}{unit} {ing.name}")
+        print(f"  - {ing.quantity}{unit} {ing.name}")
     print(f"Tools needed: {', '.join(recipe.tools_needed)}")
     print("Steps:")
     for i, step in enumerate(recipe.steps, 1):
-        print(f"  {i}. {step.instruction}")
+        duration = (
+            f" ({step.estimated_duration_minutes} min)"
+            if step.estimated_duration_minutes
+            else ""
+        )
+        print(f"  {i}. {step.instruction}{duration}")
+        if step.ingredients:
+            print(f"     Ingredients: {', '.join(step.ingredients)}")
 
 
 def check_prompt(prompt: str) -> None:
@@ -86,6 +98,9 @@ def check_prompt(prompt: str) -> None:
 
     response = generate_recipe(prompt)
     print(f"stop_reason: {response.stop_reason}")
+    print(
+        f"tokens: {response.usage.input_tokens} in, {response.usage.output_tokens} out"
+    )
 
     block = response.content[0]
     if not isinstance(block, ToolUseBlock):

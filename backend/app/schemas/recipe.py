@@ -19,10 +19,12 @@ from pydantic import BaseModel, ConfigDict, Field
 from typing import Literal, Optional
 
 from app.schemas.prompts_recipe_gen import (
-    UNIT_DESCRIPTION,
+    CARBS_DESCRIPTION,
+    STEP_DURATION_DESCRIPTION,
+    STEP_INGREDIENTS_DESCRIPTION,
     STEP_INSTRUCTION_DESCRIPTION,
     TOOLS_NEEDED_DESCRIPTION,
-    CARBS_DESCRIPTION,
+    UNIT_DESCRIPTION,
 )
 
 
@@ -32,7 +34,7 @@ class StrictBaseModel(BaseModel):
 
 class Ingredient(StrictBaseModel):
     name: str
-    amount: float = Field(description="The quantity of the ingredient.")
+    quantity: float = Field(description="The quantity of the ingredient.")
     unit: Optional[str] = Field(
         default=None,
         description=UNIT_DESCRIPTION,
@@ -41,6 +43,10 @@ class Ingredient(StrictBaseModel):
 
 class Step(StrictBaseModel):
     instruction: str = Field(description=STEP_INSTRUCTION_DESCRIPTION)
+    ingredients: list[str] = Field(description=STEP_INGREDIENTS_DESCRIPTION)
+    estimated_duration_minutes: Optional[int] = Field(
+        default=None, description=STEP_DURATION_DESCRIPTION
+    )
 
 
 class NutritionInfo(StrictBaseModel):

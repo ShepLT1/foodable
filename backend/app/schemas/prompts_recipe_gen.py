@@ -35,3 +35,16 @@ TOOLS_NEEDED_DESCRIPTION = (
     "recipe, such as 'oven', 'large skillet', 'mixing bowl', "
     "or 'blender'."
 )
+
+STEP_INGREDIENTS_DESCRIPTION = (
+    "Names of ingredients used in this specific step. Should "
+    "match ingredient names from the recipe's main ingredients "
+    "list."
+)
+
+STEP_DURATION_DESCRIPTION = (
+    "Estimated time in minutes to complete this step, if the "
+    "step involves active or passive waiting time (e.g. "
+    "baking, simmering, resting). Omit for quick steps with "
+    "no meaningful duration."
+)
