@@ -6,10 +6,10 @@ insert into auth.users (instance_id, id, aud, role, email, encrypted_password, e
 values
   ('00000000-0000-0000-0000-000000000000', '11111111-1111-1111-1111-111111111111', 'authenticated', 'authenticated', 'user@foodable.com', crypt('password', gen_salt('bf')), now(), now(), now(), '{"provider":"email","providers":["email"]}', '{}', '', '', '', '');
 
--- Profile
-insert into public.profiles (id, display_name, dietary_restrictions, allergies, preferences)
-values
-  ('11111111-1111-1111-1111-111111111111', 'Foodable', '{}', '{}', '{}');
+-- Profile (row auto-created by the on_auth_user_created trigger; override the derived display_name)
+update public.profiles
+set display_name = 'Foodable'
+where id = '11111111-1111-1111-1111-111111111111';
 
 -- Recipes
 insert into public.recipes (id, user_id, title, description, ingredients_json, steps_json, nutrition_json, cuisine_type, meal_type, is_public)

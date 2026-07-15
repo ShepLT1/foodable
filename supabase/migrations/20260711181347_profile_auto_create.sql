@@ -2,14 +2,15 @@
 -- reference: https://supabase.com/docs/guides/auth/managing-user-data#accessing-user-data-via-api
 
 -- inserts a row into public.profiles
-create function public.handle_new_user()
+create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
 security definer set search_path = ''
 as $$
 begin
   insert into public.profiles (id, display_name)
-  values (new.id, split_part(new.email, '@', 1));
+  values (new.id, split_part(new.email, '@', 1))
+   on conflict (id) do nothing;
   return new;
 end;
 $$;
