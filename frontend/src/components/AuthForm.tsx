@@ -33,7 +33,7 @@ export function AuthForm() {
 
     if (!validationResult.success) {
       // Catch the first Zod rule violation and flag it on screen
-      const firstErrorMessage = validationResult.error.errors[0].message
+      const firstErrorMessage = validationResult.error.issues[0].message
       setError(firstErrorMessage)
       return // 👈 Halts submission early before calling out to any API network layers
     }
