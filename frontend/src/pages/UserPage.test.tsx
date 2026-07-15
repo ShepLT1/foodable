@@ -54,8 +54,8 @@ describe('UserPage Component', () => {
     // Force the hook to return a mock database user profile row object
     const mockUser = {
       id: 'usr_8971120',
-      email: 'tobi@oregonstate.edu',
-      display_name: 'Tobi Fanibi',
+      email: 'johnnysmith@oregonstate.edu',
+      display_name: 'Johnny Smith',
     }
 
     vi.mocked(useCurrentUser).mockReturnValue({
@@ -69,7 +69,7 @@ describe('UserPage Component', () => {
     // Assertions: Verify headings and explicit user card details exist in DOM text nodes
     expect(screen.getByRole('heading', { name: 'Current User' })).toBeInTheDocument()
     expect(screen.getByText('usr_8971120')).toBeInTheDocument()
-    expect(screen.getByText('tobi@oregonstate.edu')).toBeInTheDocument()
-    expect(screen.getByText('Tobi Fanibi')).toBeInTheDocument()
+    expect(screen.getByText('johnnysmith@oregonstate.edu')).toBeInTheDocument()
+    expect(screen.getByText('Johnny Smith')).toBeInTheDocument()
   })
 })
