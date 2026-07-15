@@ -51,8 +51,8 @@ describe('UserPage Component', () => {
   it('renders user details successfully when data populates', () => {
     const mockUser = {
       id: 'usr_8971120',
-      email: 'tobi@oregonstate.edu',
-      display_name: 'Tobi Fanibi',
+      email: 'johnnysmith@oregonstate.edu',
+      display_name: 'Johnny Smith',
     }
 
     vi.mocked(useCurrentUser).mockReturnValue({
@@ -65,7 +65,7 @@ describe('UserPage Component', () => {
 
     expect(screen.getByRole('heading', { name: 'Current User' })).toBeInTheDocument()
     expect(screen.getByText('usr_8971120')).toBeInTheDocument()
-    expect(screen.getByText('tobi@oregonstate.edu')).toBeInTheDocument()
-    expect(screen.getByText('Tobi Fanibi')).toBeInTheDocument()
+    expect(screen.getByText('johnnysmith@oregonstate.edu')).toBeInTheDocument()
+    expect(screen.getByText('Johnny Smith')).toBeInTheDocument()
   })
 })
