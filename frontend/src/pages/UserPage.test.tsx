@@ -15,43 +15,40 @@ describe('UserPage Component', () => {
   })
 
   it('renders the loading state correctly', () => {
-    // Force the hook to return loading states
+    // Force the hook to return loading states safely without using 'any'
     vi.mocked(useCurrentUser).mockReturnValue({
       data: undefined,
       isPending: true,
       error: null,
-    } as any)
+    } as unknown as ReturnType<typeof useCurrentUser>)
 
     render(<UserPage />)
     expect(screen.getByText('Loading...')).toBeInTheDocument()
   })
 
   it('renders the error state cleanly if user fetch breaks', () => {
-    // Force the hook to return a connection error
     vi.mocked(useCurrentUser).mockReturnValue({
       data: undefined,
       isPending: false,
       error: new Error('Failed to fetch user profiles'),
-    } as any)
+    } as unknown as ReturnType<typeof useCurrentUser>)
 
     render(<UserPage />)
     expect(screen.getByText('Error: Failed to fetch user profiles')).toBeInTheDocument()
   })
 
   it('renders a fallback message when no user object is found', () => {
-    // Force the hook to return no data
     vi.mocked(useCurrentUser).mockReturnValue({
       data: null,
       isPending: false,
       error: null,
-    } as any)
+    } as unknown as ReturnType<typeof useCurrentUser>)
 
     render(<UserPage />)
     expect(screen.getByText('No user found.')).toBeInTheDocument()
   })
 
   it('renders user details successfully when data populates', () => {
-    // Force the hook to return a mock database user profile row object
     const mockUser = {
       id: 'usr_8971120',
       email: 'tobi@oregonstate.edu',
@@ -62,11 +59,10 @@ describe('UserPage Component', () => {
       data: mockUser,
       isPending: false,
       error: null,
-    } as any)
+    } as unknown as ReturnType<typeof useCurrentUser>)
 
     render(<UserPage />)
 
-    // Assertions: Verify headings and explicit user card details exist in DOM text nodes
     expect(screen.getByRole('heading', { name: 'Current User' })).toBeInTheDocument()
     expect(screen.getByText('usr_8971120')).toBeInTheDocument()
     expect(screen.getByText('tobi@oregonstate.edu')).toBeInTheDocument()
