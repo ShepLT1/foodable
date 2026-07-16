@@ -182,8 +182,7 @@ class ListsRepository:
             return None
 
         result = await db.execute(
-            select(GroceryListItem)
-            .where(
+            select(GroceryListItem).where(
                 GroceryListItem.id == item_id,
                 GroceryListItem.list_id == list_id,
             )
