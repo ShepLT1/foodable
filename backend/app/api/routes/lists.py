@@ -16,15 +16,18 @@ from app.services.list import list_service
 
 router = APIRouter(prefix="/lists", tags=["lists"])
 
+
 @router.get("", response_model=list[GroceryListResponse])
 async def get_grocery_lists(
     user: CurrentUser = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> list[GroceryListResponse]:
-    return await list_service.get_all(
+    lists = await list_service.get_all(
         db=db,
         user_id=UUID(user.id),
     )
+    return [GroceryListResponse.model_validate(x) for x in lists]
+
 
 @router.get("/{list_id}", response_model=GroceryListResponse)
 async def get_grocery_list(
@@ -44,7 +47,8 @@ async def get_grocery_list(
             "Grocery list not found",
         )
 
-    return grocery_list
+    return GroceryListResponse.model_validate(grocery_list)
+
 
 @router.post("", response_model=GroceryListResponse)
 async def create_grocery_list(
@@ -52,11 +56,14 @@ async def create_grocery_list(
     user: CurrentUser = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> GroceryListResponse:
-    return await list_service.create(
+    grocery_list = await list_service.create(
         db=db,
         user_id=UUID(user.id),
         data=payload,
     )
+
+    return GroceryListResponse.model_validate(grocery_list)
+
 
 @router.patch("/{list_id}", response_model=GroceryListResponse)
 async def update_grocery_list(
@@ -78,7 +85,8 @@ async def update_grocery_list(
             "Grocery list not found",
         )
 
-    return grocery_list
+    return GroceryListResponse.model_validate(grocery_list)
+
 
 @router.delete("/{list_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_grocery_list(
@@ -97,7 +105,8 @@ async def delete_grocery_list(
             status.HTTP_404_NOT_FOUND,
             "Grocery list not found",
         )
-    
+
+
 @router.post(
     "/{list_id}/items",
     response_model=GroceryListResponse,
@@ -121,7 +130,8 @@ async def add_item(
             "Grocery list not found",
         )
 
-    return grocery_list
+    return GroceryListResponse.model_validate(grocery_list)
+
 
 @router.patch(
     "/{list_id}/items/{item_id}",
@@ -148,7 +158,8 @@ async def update_item(
             "Grocery list or item not found",
         )
 
-    return grocery_list
+    return GroceryListResponse.model_validate(grocery_list)
+
 
 @router.delete(
     "/{list_id}/items/{item_id}",
@@ -173,4 +184,4 @@ async def delete_item(
             "Grocery list or item not found",
         )
 
-    return grocery_list
+    return GroceryListResponse.model_validate(grocery_list)

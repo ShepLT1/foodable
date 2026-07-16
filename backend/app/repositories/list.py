@@ -3,6 +3,7 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.models.list import GroceryList
 from app.models.list_item import GroceryListItem
@@ -26,15 +27,15 @@ class ListsRepository:
 
         db.add(grocery_list)
 
-        await db.commit()
+        try:
+            await db.commit()
+            await db.refresh(grocery_list)
+        except SQLAlchemyError:
+            await db.rollback()
+            raise
 
-        return await self.get_by_id(
-            db,
-            grocery_list.id,
-            user_id,
-        )
-    
-    
+        return grocery_list
+
     async def get_all(
         self,
         db: AsyncSession,
@@ -48,7 +49,6 @@ class ListsRepository:
         )
 
         return list(result.scalars().all())
-
 
     async def get_by_id(
         self,
@@ -67,7 +67,6 @@ class ListsRepository:
         )
 
         return result.scalar_one_or_none()
-    
 
     async def update(
         self,
@@ -88,14 +87,17 @@ class ListsRepository:
         for key, value in changes.items():
             setattr(grocery_list, key, value)
 
-        await db.commit()
+        try:
+            await db.commit()
+        except SQLAlchemyError:
+            await db.rollback()
+            raise
 
         return await self.get_by_id(
             db,
             grocery_list.id,
             user_id,
         )
-    
 
     async def delete(
         self,
@@ -113,10 +115,14 @@ class ListsRepository:
             return False
 
         await db.delete(grocery_list)
-        await db.commit()
+
+        try:
+            await db.commit()
+        except SQLAlchemyError:
+            await db.rollback()
+            raise
 
         return True
-    
 
     async def add_item(
         self,
@@ -144,14 +150,17 @@ class ListsRepository:
 
         db.add(item)
 
-        await db.commit()
+        try:
+            await db.commit()
+        except SQLAlchemyError:
+            await db.rollback()
+            raise
 
         return await self.get_by_id(
             db,
             list_id,
             user_id,
         )
-    
 
     async def update_item(
         self,
@@ -179,14 +188,17 @@ class ListsRepository:
         for key, value in changes.items():
             setattr(item, key, value)
 
-        await db.commit()
+        try:
+            await db.commit()
+        except SQLAlchemyError:
+            await db.rollback()
+            raise
 
         return await self.get_by_id(
             db,
             list_id,
             user_id,
         )
-    
 
     async def delete_item(
         self,
@@ -212,12 +224,17 @@ class ListsRepository:
 
         await db.delete(item)
 
-        await db.commit()
+        try:
+            await db.commit()
+        except SQLAlchemyError:
+            await db.rollback()
+            raise
 
         return await self.get_by_id(
             db,
             list_id,
             user_id,
         )
-    
+
+
 lists_repository = ListsRepository()
