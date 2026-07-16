@@ -11,6 +11,7 @@ from app.schemas.list import (
     GroceryListResponse,
     GroceryListItemCreate,
     GroceryListItemUpdate,
+    DeleteGroceryListResponse,
 )
 from app.services.list import list_service
 
@@ -88,12 +89,15 @@ async def update_grocery_list(
     return GroceryListResponse.model_validate(grocery_list)
 
 
-@router.delete("/{list_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{list_id}",
+    response_model=DeleteGroceryListResponse,
+)
 async def delete_grocery_list(
     list_id: UUID,
     user: CurrentUser = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-) -> None:
+) -> DeleteGroceryListResponse:
     deleted = await list_service.delete(
         db=db,
         list_id=list_id,
@@ -105,6 +109,8 @@ async def delete_grocery_list(
             status.HTTP_404_NOT_FOUND,
             "Grocery list not found",
         )
+
+    return DeleteGroceryListResponse(id=list_id)
 
 
 @router.post(

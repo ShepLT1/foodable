@@ -45,3 +45,7 @@ class GroceryListResponse(BaseModel):
     items: list[GroceryListItem]
     created_at: datetime
     updated_at: datetime
+
+
+class DeleteGroceryListResponse(BaseModel):
+    id: UUID
