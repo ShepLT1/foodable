@@ -10,14 +10,14 @@ class GroceryListItem(BaseModel):
 
     id: UUID
     name: str
-    quantity: Decimal | None
+    quantity: Decimal
     unit: str | None
     checked: bool
 
 
 class GroceryListItemCreate(BaseModel):
     name: str = Field(min_length=1, max_length=200)
-    quantity: Decimal | None = None
+    quantity: Decimal
     unit: str | None = Field(default=None, max_length=50)
 
 
