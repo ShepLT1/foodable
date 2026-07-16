@@ -34,9 +34,9 @@ class GroceryListItem(Base):
         nullable=False,
     )
 
-    quantity: Mapped[Decimal | None] = mapped_column(
+    quantity: Mapped[Decimal] = mapped_column(
         Numeric(10, 3),
-        nullable=True,
+        nullable=False,
     )
 
     unit: Mapped[str | None] = mapped_column(
