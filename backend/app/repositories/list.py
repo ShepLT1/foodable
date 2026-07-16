@@ -4,6 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import SQLAlchemyError
+from datetime import datetime, timezone
 
 from app.models.list import GroceryList
 from app.models.list_item import GroceryListItem
@@ -149,6 +150,7 @@ class ListsRepository:
         )
 
         db.add(item)
+        grocery_list.updated_at = datetime.now(timezone.utc)
 
         try:
             await db.commit()
@@ -170,13 +172,20 @@ class ListsRepository:
         user_id: UUID,
         changes: dict,
     ) -> GroceryList | None:
+        grocery_list = await self.get_by_id(
+            db,
+            list_id,
+            user_id,
+        )
+
+        if grocery_list is None:
+            return None
+
         result = await db.execute(
             select(GroceryListItem)
-            .join(GroceryList)
             .where(
                 GroceryListItem.id == item_id,
-                GroceryList.id == list_id,
-                GroceryList.user_id == user_id,
+                GroceryListItem.list_id == list_id,
             )
         )
 
@@ -187,6 +196,8 @@ class ListsRepository:
 
         for key, value in changes.items():
             setattr(item, key, value)
+
+        grocery_list.updated_at = datetime.now(timezone.utc)
 
         try:
             await db.commit()
@@ -207,13 +218,19 @@ class ListsRepository:
         item_id: UUID,
         user_id: UUID,
     ) -> GroceryList | None:
+        grocery_list = await self.get_by_id(
+            db,
+            list_id,
+            user_id,
+        )
+
+        if grocery_list is None:
+            return None
+
         result = await db.execute(
-            select(GroceryListItem)
-            .join(GroceryList)
-            .where(
+            select(GroceryListItem).where(
                 GroceryListItem.id == item_id,
-                GroceryList.id == list_id,
-                GroceryList.user_id == user_id,
+                GroceryListItem.list_id == list_id,
             )
         )
 
@@ -223,6 +240,7 @@ class ListsRepository:
             return None
 
         await db.delete(item)
+        grocery_list.updated_at = datetime.now(timezone.utc)
 
         try:
             await db.commit()
