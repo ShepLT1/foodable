@@ -4,6 +4,8 @@
 
 .DS_Store
 Thumbs.db
+repomix.config.json
+repomix-output.xml
 
 # ============================================
 # Editors / IDEs
