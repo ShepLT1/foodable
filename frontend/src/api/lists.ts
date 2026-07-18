@@ -6,6 +6,7 @@ export interface GroceryListItem {
   quantity: number;
   unit: string | null;
   checked: boolean;
+  created_at: string;
 }
 
 export interface GroceryList {
@@ -25,10 +26,20 @@ export interface UpdateListRequest {
   title: string;
 }
 
+interface UpdateListParams {
+  listId: string;
+  data: UpdateListRequest;
+}
+
 export interface CreateListItemRequest {
   name: string;
   quantity: number;
   unit?: string | null;
+}
+
+interface CreateListItemParams {
+  listId: string;
+  data: CreateListItemRequest;
 }
 
 export interface UpdateListItemRequest {
@@ -38,8 +49,19 @@ export interface UpdateListItemRequest {
   checked?: boolean;
 }
 
+interface UpdateListItemParams {
+  listId: string;
+  itemId: string;
+  data: UpdateListItemRequest;
+}
+
 export interface DeleteListResponse {
   id: string;
+}
+
+interface DeleteListItemParams {
+  listId: string;
+  itemId: string;
 }
 
 // Grocery List API request handlers
@@ -58,7 +80,7 @@ export function getList(listId: string) {
   return api<GroceryList>(`/lists/${listId}`);
 }
 
-export function updateList(listId: string, data: UpdateListRequest) {
+export function updateList({ listId, data }: UpdateListParams) {
   return api<GroceryList>(`/lists/${listId}`, {
     method: "PATCH",
     body: JSON.stringify(data),
@@ -72,25 +94,21 @@ export function deleteList(listId: string) {
 }
 
 // Grocery List Item API request handlers
-export function createListItem(listId: string, data: CreateListItemRequest) {
+export function createListItem({ listId, data }: CreateListItemParams) {
   return api<GroceryList>(`/lists/${listId}/items`, {
     method: "POST",
     body: JSON.stringify(data),
   });
 }
 
-export function updateListItem(
-  listId: string,
-  itemId: string,
-  data: UpdateListItemRequest,
-) {
+export function updateListItem({ listId, itemId, data }: UpdateListItemParams) {
   return api<GroceryList>(`/lists/${listId}/items/${itemId}`, {
     method: "PATCH",
     body: JSON.stringify(data),
   });
 }
 
-export function deleteListItem(listId: string, itemId: string) {
+export function deleteListItem({ listId, itemId }: DeleteListItemParams) {
   return api<GroceryList>(`/lists/${listId}/items/${itemId}`, {
     method: "DELETE",
   });
