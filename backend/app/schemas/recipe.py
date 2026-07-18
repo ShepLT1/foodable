@@ -41,7 +41,7 @@ class StrictBaseModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
-class RecipeCreate(BaseModel):
+class RecipeCreate(StrictBaseModel):
     user_id: UUID
     title: str = Field(max_length=TITLE_MAX_LENGTH)
     description: str | None = Field(default=None, max_length=DESCRIPTION_MAX_LENGTH)
@@ -53,10 +53,12 @@ class RecipeCreate(BaseModel):
     ingredients_json: list[dict]
     nutrition_json: dict
 
-class RecipeGenerateRequest(BaseModel):
+
+class RecipeGenerateRequest(StrictBaseModel):
     ingredients: list[str] = Field(min_length=1)
     meal_type: Literal["breakfast", "lunch", "dinner", "dessert", "snack"] | None = None
     cuisine_type: str | None = None
+
 
 class Ingredient(StrictBaseModel):
     name: str
