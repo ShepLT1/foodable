@@ -15,8 +15,10 @@ missing nutrition data, truncated responses, and unrealistic
 metric units for US kitchens).
 """
 
-from pydantic import BaseModel, ConfigDict, Field
+from uuid import UUID
+
 from typing import Literal, Optional
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.schemas.prompts_recipe_gen import (
     CARBS_DESCRIPTION,
@@ -27,9 +29,29 @@ from app.schemas.prompts_recipe_gen import (
     UNIT_DESCRIPTION,
 )
 
+from app.models.recipe import (
+    CUISINE_TYPE_MAX_LENGTH,
+    DESCRIPTION_MAX_LENGTH,
+    MEAL_TYPE_MAX_LENGTH,
+    TITLE_MAX_LENGTH,
+)
+
 
 class StrictBaseModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
+
+
+class RecipeCreate(BaseModel):
+    user_id: UUID
+    title: str = Field(max_length=TITLE_MAX_LENGTH)
+    description: str | None = Field(default=None, max_length=DESCRIPTION_MAX_LENGTH)
+    meal_type: str | None = Field(default=None, max_length=MEAL_TYPE_MAX_LENGTH)
+    cuisine_type: str | None = Field(default=None, max_length=CUISINE_TYPE_MAX_LENGTH)
+    servings: int
+    tools_needed: list[str]
+    steps: list[dict]
+    ingredients_json: list[dict]
+    nutrition_json: dict
 
 
 class Ingredient(StrictBaseModel):
