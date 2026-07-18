@@ -4,6 +4,7 @@ import { useSession } from './hooks/useSession'
 import { AuthForm } from './components/AuthForm'
 import { NavBar } from './components/NavBar'
 import { UserPage } from './pages/UserPage'
+import { ProfilePage } from './pages/ProfilePage'
 
 function App() {
   const { session, loading } = useSession()
@@ -26,6 +27,7 @@ function App() {
         <main className="flex-1 p-8">
           <Routes>
             <Route path="/" element={<UserPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
             <Route
               path="/recipes"
               element={
