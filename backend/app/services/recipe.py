@@ -4,7 +4,7 @@ from anthropic import Anthropic
 from anthropic.types import ToolUseBlock
 from pydantic import ValidationError
 
-from app.schemas.recipe import Recipe
+from app.schemas.recipe import Recipe, RecipeGenerateRequest
 
 client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
@@ -57,3 +57,16 @@ async def generate_recipe(prompt: str) -> Recipe:
         raise RecipeGenerationError(f"Unexpected block type: {type(block)}")
 
     return _validate_recipe_response(block.input)
+
+
+def _build_prompt(request: RecipeGenerateRequest) -> str:
+    """Build the base Claude prompt from the user's generation request."""
+    parts = [f"Create a recipe using: {', '.join(request.ingredients)}."]
+
+    if request.meal_type:
+        parts.append(f"This should be a {request.meal_type} recipe.")
+
+    if request.cuisine_type:
+        parts.append(f"Cuisine style: {request.cuisine_type}.")
+
+    return " ".join(parts)
