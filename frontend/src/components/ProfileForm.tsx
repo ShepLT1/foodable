@@ -17,6 +17,11 @@ const DIETARY_OPTIONS = [
   'Low-Carb',
 ]
 
+// order-insensitive comparison of two string lists (values are unique)
+function sameItems(a: string[], b: string[]) {
+  return a.length === b.length && a.every((x) => b.includes(x))
+}
+
 export function ProfileForm({ user }: { user: UserMe }) {
   const update = useUpdateCurrentUser()
 
@@ -27,8 +32,15 @@ export function ProfileForm({ user }: { user: UserMe }) {
   const [allergies, setAllergies] = useState(user.allergies)
   const [preferences, setPreferences] = useState(user.preferences)
 
+  const dirty =
+    displayName.trim() !== user.display_name ||
+    !sameItems(dietaryRestrictions, user.dietary_restrictions) ||
+    !sameItems(allergies, user.allergies) ||
+    !sameItems(preferences, user.preferences)
+
   function handleSubmit(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
+    // TODO: zod validation
     update.mutate({
       display_name: displayName.trim(),
       dietary_restrictions: dietaryRestrictions,
@@ -40,7 +52,7 @@ export function ProfileForm({ user }: { user: UserMe }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="mx-auto flex w-full max-w-lg flex-col gap-4 rounded-xl border border-gray-200 bg-white p-8 shadow-sm"
+      className="mx-auto flex w-full max-w-lg flex-col gap-6 rounded-xl border border-gray-200 bg-white p-8 shadow-sm"
     >
       <h2 className="text-2xl font-semibold">Profile</h2>
 
@@ -87,14 +99,12 @@ export function ProfileForm({ user }: { user: UserMe }) {
         </p>
       )}
 
-      {update.isSuccess && <p className="text-sm text-green-700">Saved.</p>}
-
       <button
         type="submit"
-        disabled={update.isPending}
+        disabled={!dirty || update.isPending}
         className="cursor-pointer rounded-lg bg-blue-600 py-2.5 text-base font-semibold text-white disabled:cursor-default disabled:opacity-60"
       >
-        {update.isPending ? 'Saving…' : 'Save'}
+        {update.isPending ? 'Saving…' : dirty ? 'Save' : 'Saved'}
       </button>
     </form>
   )

@@ -65,7 +65,7 @@ export function TagInput({
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={handleKeyDown}
           onBlur={add}
-          placeholder={placeholder}
+          placeholder={value.length === 0 ? placeholder : undefined}
           className="min-w-24 flex-1 border-none bg-transparent py-0.5 text-base font-normal focus:outline-none"
         />
       </div>
