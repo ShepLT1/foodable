@@ -29,14 +29,6 @@ export function GroceryListTable({
 }: GroceryListTableProps) {
   const [addingItem, setAddingItem] = useState(false)
 
-  if (items.length === 0) {
-    return (
-      <div className="rounded-lg border border-dashed border-slate-300 p-8 text-center text-slate-500">
-        This grocery list doesn't have any items yet.
-      </div>
-    )
-  }
-
   return (
     <div className="mx-auto w-fit">
       <div className="mb-6 flex justify-center">
@@ -46,12 +38,12 @@ export function GroceryListTable({
           className="flex cursor-pointer items-center gap-2 rounded-md bg-green-600 px-4 py-2 font-medium text-white transition hover:bg-green-700"
         >
           <Plus size={18} />
-          Add Ingredient
+          Add Item
         </button>
       </div>
       {/* Desktop table header */}
       <div className="hidden grid-cols-[10rem_7rem_7rem_7rem_7rem] items-center gap-4 border-b border-slate-300 pb-2 text-sm font-semibold text-slate-600 md:grid">
-        <div>Ingredient</div>
+        <div>Item Name</div>
         <div className="text-center">Quantity</div>
         <div className="text-center">Unit</div>
         <div className="text-center">Purchased</div>
