@@ -1,15 +1,19 @@
+import { useNavigate } from 'react-router-dom'
 import { GroceryListRow } from '../components/grocery-lists/GroceryListRow'
 import { useCreateGroceryList, useGroceryLists } from '../hooks/useGroceryLists'
 
 export function GroceryListsPage() {
   const { data: groceryLists = [], isPending, error } = useGroceryLists()
+  const navigate = useNavigate()
 
   const createGroceryList = useCreateGroceryList()
 
-  const handleCreateList = () => {
-    createGroceryList.mutate({
+  async function handleCreateList() {
+    const newList = await createGroceryList.mutateAsync({
       title: 'New Grocery List',
     })
+
+    navigate(`/lists/${newList.id}`)
   }
 
   return (
