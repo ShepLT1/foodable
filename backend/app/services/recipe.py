@@ -23,6 +23,16 @@ class RecipeGenerationError(Exception):
     """Raised when Claude's recipe gen output is invalid, or unusable."""
 
 
+def _validate_recipe_response(raw_input: dict) -> Recipe:
+    """Validate Claude's tool-use input against the Recipe schema."""
+    try:
+        return Recipe.model_validate(raw_input)
+    except ValidationError as e:
+        raise RecipeGenerationError(
+            f"Claude's response failed schema validation: {e}"
+        ) from e
+
+
 async def generate_recipe(prompt: str) -> Recipe:
     """
     Generate a recipe using the Claude API and validate it against the
@@ -44,10 +54,6 @@ async def generate_recipe(prompt: str) -> Recipe:
 
     block = response.content[0]
     if not isinstance(block, ToolUseBlock):
-        raise ValueError(f"Unexpected block type: {type(block)}")
-    try:
-        return Recipe.model_validate(block.input)
-    except ValidationError as e:
-        raise RecipeGenerationError(
-            f"Claude's response failed schema validation: {e}"
-        ) from e
+        raise RecipeGenerationError(f"Unexpected block type: {type(block)}")
+
+    return _validate_recipe_response(block.input)
