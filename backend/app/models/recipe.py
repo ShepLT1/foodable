@@ -1,5 +1,6 @@
 from uuid import UUID, uuid4
 from datetime import datetime
+
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import ForeignKey, String, Boolean, DateTime, func
@@ -42,7 +43,7 @@ class Recipe(Base):
 
     steps_json: Mapped[dict] = mapped_column(JSONB, nullable=False)
 
-    ingredients_json: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    ingredients_json: Mapped[list[dict]] = mapped_column(JSONB, nullable=False)
 
     nutrition_json: Mapped[dict] = mapped_column(JSONB, nullable=False)
 
