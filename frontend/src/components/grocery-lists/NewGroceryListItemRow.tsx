@@ -110,13 +110,13 @@ export function NewGroceryListItemRow({
                 void handleSave();
               }
             }}
-            className="w-full rounded border border-slate-300 px-2 py-1"
+            className={`w-full rounded border px-2 py-1 ${
+              errors.name
+                ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                : "border-slate-300"
+            }`}
             ref={nameInputRef}
           />
-
-          {errors.name && (
-            <p className="mt-1 text-xs text-red-600">{errors.name}</p>
-          )}
         </div>
 
         <div className="flex justify-center">
@@ -132,12 +132,12 @@ export function NewGroceryListItemRow({
                   void handleSave();
                 }
               }}
-              className="w-20 rounded border border-slate-300 px-2 py-1"
+              className={`w-20 rounded border px-2 py-1 text-center ${
+                errors.quantity
+                  ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                  : "border-slate-300"
+              }`}
             />
-
-            {errors.quantity && (
-              <p className="mt-1 text-xs text-red-600">{errors.quantity}</p>
-            )}
           </div>
         </div>
 
@@ -198,13 +198,13 @@ export function NewGroceryListItemRow({
                   void handleSave();
                 }
               }}
-              className="w-42 rounded border border-slate-300 px-2 py-1"
+              className={`w-42 rounded border px-2 py-1 ${
+                errors.name
+                  ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                  : "border-slate-300"
+              }`}
               ref={nameInputRef}
             />
-
-            {errors.name && (
-              <p className="mt-1 text-xs text-red-600">{errors.name}</p>
-            )}
 
             <button
               type="button"
@@ -230,12 +230,12 @@ export function NewGroceryListItemRow({
                   void handleSave();
                 }
               }}
-              className="w-20 rounded border border-slate-300 px-2 py-1"
+              className={`w-20 rounded border px-2 py-1 text-center ${
+                errors.quantity
+                  ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                  : "border-slate-300"
+              }`}
             />
-
-            {errors.quantity && (
-              <p className="mt-1 text-xs text-red-600">{errors.quantity}</p>
-            )}
 
             <input
               type="text"
