@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 
-import type { UpdateListItemRequest } from "../api/lists";
+import type { CreateListItemRequest, UpdateListItemRequest } from "../api/lists";
 
 import { GroceryListHeader } from "../components/grocery-lists/GroceryListHeader";
 import { GroceryListTable } from "../components/grocery-lists/GroceryListTable";
@@ -38,14 +38,10 @@ export function GroceryListPage() {
     });
   }
 
-  async function handleAddItem() {
+  async function handleAddItem(data: CreateListItemRequest) {
     await createItemMutation.mutateAsync({
       listId: groceryListId,
-      data: {
-        name: "Ingredient",
-        quantity: 1,
-        unit: null,
-      },
+      data,
     });
   }
 

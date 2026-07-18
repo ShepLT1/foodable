@@ -1,4 +1,7 @@
+import { useState } from "react";
+
 import type {
+  CreateListItemRequest,
   GroceryListItem,
   UpdateListItemRequest,
 } from "../../api/lists";
@@ -6,16 +9,14 @@ import type {
 import { Plus } from "lucide-react";
 
 import { GroceryListItemRow } from "./GroceryListItemRow";
+import { NewGroceryListItemRow } from "./NewGroceryListItemRow";
 
 interface GroceryListTableProps {
   items: GroceryListItem[];
 
-  onAddItem: () => Promise<void>;
+  onAddItem: (data: CreateListItemRequest) => Promise<void>;
 
-  onUpdateItem: (
-    itemId: string,
-    data: UpdateListItemRequest,
-  ) => Promise<void>;
+  onUpdateItem: (itemId: string, data: UpdateListItemRequest) => Promise<void>;
 
   onDeleteItem: (itemId: string) => Promise<void>;
 }
@@ -26,6 +27,8 @@ export function GroceryListTable({
   onUpdateItem,
   onDeleteItem,
 }: GroceryListTableProps) {
+  const [addingItem, setAddingItem] = useState(false);
+
   if (items.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-slate-300 p-8 text-center text-slate-500">
@@ -39,7 +42,7 @@ export function GroceryListTable({
       <div className="mb-6 flex justify-center">
         <button
           type="button"
-          onClick={() => void onAddItem()}
+          onClick={() => setAddingItem(true)}
           className="flex cursor-pointer items-center gap-2 rounded-md bg-green-600 px-4 py-2 font-medium text-white transition hover:bg-green-700"
         >
           <Plus size={18} />
@@ -52,7 +55,7 @@ export function GroceryListTable({
         <div className="text-center">Quantity</div>
         <div className="text-center">Unit</div>
         <div className="text-center">Purchased</div>
-        <div className="text-center">Remove</div>
+        <div className="text-center">Action</div>
       </div>
 
       {items.map((item) => (
@@ -63,6 +66,16 @@ export function GroceryListTable({
           onDelete={onDeleteItem}
         />
       ))}
+
+      {addingItem && (
+        <NewGroceryListItemRow
+          onCancel={() => setAddingItem(false)}
+          onSave={async (data) => {
+            await onAddItem(data);
+            setAddingItem(false);
+          }}
+        />
+      )}
     </div>
   );
 }

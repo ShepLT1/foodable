@@ -88,7 +88,7 @@ export function GroceryListItemRow({
                 cancelQuantity();
               }
             }}
-            className="w-18 rounded border border-slate-300 px-2 py-1 trun"
+            className="w-20 rounded border border-slate-300 px-2 py-1"
           />
         </div>
         <div className="flex justify-center">
@@ -136,14 +136,6 @@ export function GroceryListItemRow({
         <div className="mb-3 flex items-start justify-between">
           <div className="flex items-center gap-1">
             <h2 className="font-medium truncate">{item.name}</h2>
-
-            <button
-              type="button"
-              onClick={() => void onDelete(item.id)}
-              className="cursor-pointer rounded p-1 text-red-600 hover:bg-red-50"
-            >
-              <Trash2 size={18} />
-            </button>
           </div>
 
           <input
@@ -158,40 +150,50 @@ export function GroceryListItemRow({
           />
         </div>
 
-        <div className="flex items-center gap-2">
-          <input
-            type="number"
-            step="0.125"
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
-            onBlur={saveQuantity}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                void saveQuantity();
-              }
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex gap-2">
+            <input
+              type="number"
+              step="0.125"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+              onBlur={saveQuantity}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  void saveQuantity();
+                }
 
-              if (e.key === "Escape") {
-                cancelQuantity();
-              }
-            }}
-            className="w-18 rounded border border-slate-300 px-2 py-1"
-          />
+                if (e.key === "Escape") {
+                  cancelQuantity();
+                }
+              }}
+              className="w-20 rounded border border-slate-300 px-2 py-1"
+            />
 
-          <input
-            value={unit}
-            onChange={(e) => setUnit(e.target.value)}
-            onBlur={saveUnit}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                void saveUnit();
-              }
+            <input
+              value={unit}
+              onChange={(e) => setUnit(e.target.value)}
+              onBlur={saveUnit}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  void saveUnit();
+                }
 
-              if (e.key === "Escape") {
-                cancelUnit();
-              }
-            }}
-            className="w-30 flex-1 rounded border border-slate-300 px-2 py-1"
-          />
+                if (e.key === "Escape") {
+                  cancelUnit();
+                }
+              }}
+              className="w-20 flex-1 rounded border border-slate-300 px-2 py-1"
+            />
+          </div>
+
+          <button
+            type="button"
+            onClick={() => void onDelete(item.id)}
+            className="cursor-pointer flex justify-center rounded h-5 w-5 text-red-600 hover:bg-red-50"
+          >
+            <Trash2 size={18} />
+          </button>
         </div>
       </div>
     </>
