@@ -40,4 +40,3 @@ class RecipeRepository:
 
 
 recipe_repository = RecipeRepository()
-
