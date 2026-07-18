@@ -1,9 +1,9 @@
 from uuid import UUID, uuid4
 from datetime import datetime
 
+from sqlalchemy import ForeignKey, String, Boolean, DateTime, func, CheckConstraint
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import ForeignKey, String, Boolean, DateTime, func
 from sqlalchemy.dialects.postgresql import JSONB
 
 from app.db.base import Base
@@ -16,6 +16,12 @@ CUISINE_TYPE_MAX_LENGTH = 100
 
 class Recipe(Base):
     __tablename__ = "recipes"
+    __table_args__ = (
+        CheckConstraint(
+            "meal_type IN ('breakfast', 'lunch', 'dinner', 'dessert', 'snack')",
+            name="recipes_meal_type_check",
+        ),
+    )
 
     id: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True),
@@ -25,7 +31,7 @@ class Recipe(Base):
 
     user_id: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True),
-        ForeignKey("profiles.id", ondelete="CASCADE"),
+        ForeignKey("auth.users.id", ondelete="CASCADE"),
         nullable=False,
     )
 
