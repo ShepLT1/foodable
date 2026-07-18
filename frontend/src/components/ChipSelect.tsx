@@ -1,5 +1,6 @@
 type ChipSelectProps = {
   label: string
+  sublabel?: string
   options: string[]
   value: string[]
   onChange: (next: string[]) => void
@@ -7,6 +8,7 @@ type ChipSelectProps = {
 
 export function ChipSelect({
   label,
+  sublabel,
   options,
   value,
   onChange,
@@ -25,6 +27,7 @@ export function ChipSelect({
   return (
     <div className="flex flex-col gap-1.5">
       <span className="text-sm font-medium">{label}</span>
+      {sublabel && <span className="text-xs text-gray-500">{sublabel}</span>}
       <div className="flex flex-wrap gap-1.5">
         {allOptions.map((option) => {
           const selected = value.includes(option)

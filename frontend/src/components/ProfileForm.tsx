@@ -61,13 +61,22 @@ export function ProfileForm({ user }: { user: UserMe }) {
 
       <ChipSelect
         label="Dietary Restrictions"
+        sublabel="Select all that apply."
         options={DIETARY_OPTIONS}
         value={dietaryRestrictions}
         onChange={setDietaryRestrictions}
       />
-      <TagInput label="Allergies" value={allergies} onChange={setAllergies} />
+      <TagInput
+        label="Allergies"
+        sublabel="Add any ingredients you need to avoid."
+        placeholder="e.g. peanuts"
+        value={allergies}
+        onChange={setAllergies}
+      />
       <TagInput
         label="Preferences"
+        sublabel="Add foods or cuisines you enjoy."
+        placeholder="e.g. spicy food"
         value={preferences}
         onChange={setPreferences}
       />

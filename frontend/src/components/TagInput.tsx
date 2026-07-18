@@ -2,6 +2,7 @@ import { useState, type KeyboardEvent } from 'react'
 
 type TagInputProps = {
   label: string
+  sublabel?: string
   value: string[]
   onChange: (next: string[]) => void
   placeholder?: string
@@ -14,6 +15,7 @@ type TagInputProps = {
  */
 export function TagInput({
   label,
+  sublabel,
   value,
   onChange,
   placeholder,
@@ -38,6 +40,9 @@ export function TagInput({
   return (
     <label className="flex flex-col gap-1.5 text-sm font-medium">
       {label}
+      {sublabel && (
+        <span className="text-xs font-normal text-gray-500">{sublabel}</span>
+      )}
       <div className="flex flex-wrap items-center gap-1.5 rounded-lg border border-gray-300 px-2 py-1.5 focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-200">
         {value.map((tag) => (
           <span
