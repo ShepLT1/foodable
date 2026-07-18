@@ -5,6 +5,7 @@ import { NavBar } from './components/NavBar'
 import { UserPage } from './pages/UserPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { GroceryListsPage } from './pages/GroceryListsPage'
+import { GroceryListPage } from './pages/GroceryListPage'
 
 function App() {
   const { session, loading } = useSession()
@@ -42,6 +43,7 @@ function App() {
               }
             />
             <Route path="/lists" element={<GroceryListsPage />} />
+            <Route path="/lists/:listId" element={<GroceryListPage />} />
           </Routes>
         </main>
       </div>
