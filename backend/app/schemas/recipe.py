@@ -53,6 +53,10 @@ class RecipeCreate(BaseModel):
     ingredients_json: list[dict]
     nutrition_json: dict
 
+class RecipeGenerateRequest(BaseModel):
+    ingredients: list[str] = Field(min_length=1)
+    meal_type: Literal["breakfast", "lunch", "dinner", "dessert", "snack"] | None = None
+    cuisine_type: str | None = None
 
 class Ingredient(StrictBaseModel):
     name: str
