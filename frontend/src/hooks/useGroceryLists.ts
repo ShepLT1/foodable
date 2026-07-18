@@ -67,7 +67,7 @@ export function useCreateGroceryList() {
 
     onSuccess: (newList) => {
       queryClient.setQueryData<GroceryList[]>(groceryListKeys.all, (lists) =>
-        lists ? [...lists, newList] : lists,
+        lists ? [newList, ...lists] : lists,
       )
 
       queryClient.setQueryData(groceryListKeys.detail(newList.id), newList)
