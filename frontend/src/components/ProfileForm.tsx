@@ -3,6 +3,7 @@ import type { UserMe } from '../api/users'
 import { useUpdateCurrentUser } from '../hooks/useUpdateCurrentUser'
 import { TagInput } from './TagInput'
 import { ChipSelect } from './ChipSelect'
+import { UserAvatar } from './UserAvatar'
 
 const DIETARY_OPTIONS = [
   'Vegetarian',
@@ -54,7 +55,10 @@ export function ProfileForm({ user }: { user: UserMe }) {
       onSubmit={handleSubmit}
       className="mx-auto flex w-full max-w-lg flex-col gap-6 rounded-xl border border-gray-200 bg-white p-8 shadow-sm"
     >
-      <h2 className="text-2xl font-semibold">Profile</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-semibold">Profile</h2>
+        <UserAvatar name={displayName} size="lg" />
+      </div>
 
       <label className="flex flex-col gap-1.5 text-sm font-medium">
         Display Name
