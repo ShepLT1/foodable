@@ -5,6 +5,7 @@ from anthropic.types import ToolUseBlock
 from pydantic import ValidationError
 
 from app.schemas.recipe import Recipe, RecipeGenerateRequest
+from app.models.profile import Profile
 
 client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
@@ -59,7 +60,7 @@ async def generate_recipe(prompt: str) -> Recipe:
     return _validate_recipe_response(block.input)
 
 
-def _build_prompt(request: RecipeGenerateRequest) -> str:
+def _build_prompt(request: RecipeGenerateRequest, profile: Profile) -> str:
     """Build the base Claude prompt from the user's generation request."""
     parts = [f"Create a recipe using: {', '.join(request.ingredients)}."]
 
@@ -68,5 +69,23 @@ def _build_prompt(request: RecipeGenerateRequest) -> str:
 
     if request.cuisine_type:
         parts.append(f"Cuisine style: {request.cuisine_type}.")
+
+    if profile.allergies:
+        parts.append(
+            f"IMPORTANT: this person has the following allergies and the "
+            f"recipe must not include any of these ingredients under any "
+            f"circumstances: {', '.join(profile.allergies)}."
+        )
+
+    if profile.dietary_restrictions:
+        parts.append(
+            f"Dietary restrictions to respect: "
+            f"{', '.join(profile.dietary_restrictions)}."
+        )
+
+    if profile.preferences:
+        parts.append(
+            f"Additional preferences to consider: {', '.join(profile.preferences)}."
+        )
 
     return " ".join(parts)
