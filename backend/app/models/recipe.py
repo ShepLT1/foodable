@@ -35,6 +35,8 @@ class Recipe(Base):
         nullable=False,
     )
 
+    title: Mapped[str] = mapped_column(String(TITLE_MAX_LENGTH), nullable=False)
+
     description: Mapped[str | None] = mapped_column(
         String(DESCRIPTION_MAX_LENGTH), nullable=True
     )
