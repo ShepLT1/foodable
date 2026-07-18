@@ -16,6 +16,7 @@ metric units for US kitchens).
 """
 
 from uuid import UUID
+from datetime import datetime
 
 from typing import Literal, Optional
 from pydantic import BaseModel, ConfigDict, Field
@@ -113,3 +114,19 @@ class Recipe(StrictBaseModel):
     meal_type: Literal["breakfast", "lunch", "dinner", "dessert", "snack"] = Field(
         description="The type of meal this recipe is intended for."
     )
+
+
+class RecipeResponse(StrictBaseModel):
+    id: UUID
+    user_id: UUID
+    title: str
+    description: str | None
+    meal_type: str | None
+    cuisine_type: str | None
+    servings: int
+    tools_needed: list[str]
+    steps: list[Step]
+    ingredients: list[Ingredient]
+    nutrition: NutritionInfo
+    is_public: bool
+    created_at: datetime
