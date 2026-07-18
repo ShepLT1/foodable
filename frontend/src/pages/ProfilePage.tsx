@@ -1,4 +1,5 @@
 import { useCurrentUser } from '../hooks/useCurrentUser'
+import { ProfileForm } from '../components/ProfileForm'
 
 export function ProfilePage() {
   const { data: user, isPending, error } = useCurrentUser()
@@ -7,11 +8,5 @@ export function ProfilePage() {
   if (error instanceof Error) return <p>Error: {error.message}</p>
   if (!user) return <p>No user found.</p>
 
-  return (
-    <section className="mx-auto flex w-full max-w-lg flex-col gap-4 rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
-      <h2 className="text-2xl font-semibold">Profile</h2>
-
-      {/* TODO: profile form sections */}
-    </section>
-  )
+  return <ProfileForm user={user} />
 }
