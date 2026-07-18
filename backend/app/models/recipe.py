@@ -1,7 +1,9 @@
 from uuid import UUID, uuid4
+from datetime import datetime
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey, String, Boolean, DateTime, func
+from sqlalchemy.dialects.postgresql import JSONB
 
 from app.db.base import Base
 
@@ -36,4 +38,16 @@ class Recipe(Base):
 
     cuisine_type: Mapped[str | None] = mapped_column(
         String(CUISINE_TYPE_MAX_LENGTH), nullable=True
+    )
+
+    steps_json: Mapped[dict] = mapped_column(JSONB, nullable=False)
+
+    ingredients_json: Mapped[dict] = mapped_column(JSONB, nullable=False)
+
+    nutrition_json: Mapped[dict] = mapped_column(JSONB, nullable=False)
+
+    is_public: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
     )
