@@ -42,6 +42,7 @@ export function ProfileForm({ user }: { user: UserMe }) {
   function handleSubmit(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
     // TODO: zod validation
+    // - enforce display_name max length (100)
     update.mutate({
       display_name: displayName.trim(),
       dietary_restrictions: dietaryRestrictions,
@@ -66,6 +67,7 @@ export function ProfileForm({ user }: { user: UserMe }) {
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
           required
+          maxLength={100}
           className="rounded-lg border border-gray-300 px-3 py-2 text-base font-normal focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-200"
         />
       </label>
