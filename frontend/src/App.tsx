@@ -1,4 +1,3 @@
-import { supabase } from './lib/supabase'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { useSession } from './hooks/useSession'
 import { AuthForm } from './components/AuthForm'
@@ -43,16 +42,6 @@ function App() {
             />
           </Routes>
         </main>
-
-        {/* Sign Out Action Footer */}
-        <div className="p-8 bg-white border-t border-gray-100 flex justify-end">
-          <button
-            onClick={() => supabase.auth.signOut()}
-            className="cursor-pointer rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 transition"
-          >
-            Sign Out
-          </button>
-        </div>
       </div>
     </BrowserRouter>
   )
