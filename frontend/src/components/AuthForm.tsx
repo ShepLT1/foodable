@@ -77,7 +77,9 @@ export function AuthForm() {
         }}
         className="cursor-pointer text-sm text-blue-600"
       >
-        {mode === 'login' ? 'Need an account? Register' : 'Have an account? Sign In'}
+        {mode === 'login'
+          ? 'Need an account? Register'
+          : 'Have an account? Sign In'}
       </button>
     </form>
   )
