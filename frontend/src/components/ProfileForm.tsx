@@ -2,6 +2,20 @@ import { useState, type SyntheticEvent } from 'react'
 import type { UserMe } from '../api/users'
 import { useUpdateCurrentUser } from '../hooks/useUpdateCurrentUser'
 import { TagInput } from './TagInput'
+import { ChipSelect } from './ChipSelect'
+
+const DIETARY_OPTIONS = [
+  'Vegetarian',
+  'Vegan',
+  'Pescatarian',
+  'Gluten-Free',
+  'Dairy-Free',
+  'Keto',
+  'Paleo',
+  'Halal',
+  'Kosher',
+  'Low-Carb',
+]
 
 export function ProfileForm({ user }: { user: UserMe }) {
   const update = useUpdateCurrentUser()
@@ -45,8 +59,9 @@ export function ProfileForm({ user }: { user: UserMe }) {
         <p className="text-gray-600">{user.email}</p>
       </div>
 
-      <TagInput
+      <ChipSelect
         label="Dietary Restrictions"
+        options={DIETARY_OPTIONS}
         value={dietaryRestrictions}
         onChange={setDietaryRestrictions}
       />
