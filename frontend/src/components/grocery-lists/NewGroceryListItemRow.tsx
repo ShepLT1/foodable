@@ -105,7 +105,7 @@ export function NewGroceryListItemRow({
             type="text"
             value={name}
             maxLength={200}
-            placeholder="Ingredient"
+            placeholder="Item name"
             onChange={(e) => handleNameChange(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
@@ -193,7 +193,7 @@ export function NewGroceryListItemRow({
               type="text"
               value={name}
               maxLength={100}
-              placeholder="Ingredient"
+              placeholder="Item name"
               onChange={(e) => handleNameChange(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
