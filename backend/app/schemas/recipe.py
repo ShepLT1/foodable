@@ -18,7 +18,7 @@ metric units for US kitchens).
 from uuid import UUID
 from datetime import datetime
 
-from typing import Literal, Optional
+from typing import Literal, Optional, TYPE_CHECKING
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.schemas.prompts_recipe_gen import (
@@ -130,3 +130,24 @@ class RecipeResponse(StrictBaseModel):
     nutrition: NutritionInfo
     is_public: bool
     created_at: datetime
+
+    if TYPE_CHECKING:
+        from app.models.recipe import Recipe as DBRecipe
+
+    @classmethod
+    def from_db_recipe(cls, recipe: "DBRecipe") -> "RecipeResponse":
+        return cls(
+            id=recipe.id,
+            user_id=recipe.user_id,
+            title=recipe.title,
+            description=recipe.description,
+            meal_type=recipe.meal_type,
+            cuisine_type=recipe.cuisine_type,
+            servings=recipe.steps_json["servings"],
+            tools_needed=recipe.steps_json["tools_needed"],
+            steps=[Step.model_validate(s) for s in recipe.steps_json["steps"]],
+            ingredients=[Ingredient.model_validate(i) for i in recipe.ingredients_json],
+            nutrition=NutritionInfo.model_validate(recipe.nutrition_json),
+            is_public=recipe.is_public,
+            created_at=recipe.created_at,
+        )
