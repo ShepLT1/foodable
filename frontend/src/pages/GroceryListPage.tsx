@@ -1,9 +1,9 @@
-import { useParams } from "react-router-dom";
+import { useParams } from 'react-router-dom'
 
-import type { CreateListItemRequest, UpdateListItemRequest } from "../api/lists";
+import type { CreateListItemRequest, UpdateListItemRequest } from '../api/lists'
 
-import { GroceryListHeader } from "../components/grocery-lists/GroceryListHeader";
-import { GroceryListTable } from "../components/grocery-lists/GroceryListTable";
+import { GroceryListHeader } from '../components/grocery-lists/GroceryListHeader'
+import { GroceryListTable } from '../components/grocery-lists/GroceryListTable'
 
 import {
   useCreateGroceryListItem,
@@ -11,23 +11,23 @@ import {
   useGroceryList,
   useUpdateGroceryList,
   useUpdateGroceryListItem,
-} from "../hooks/useGroceryLists";
+} from '../hooks/useGroceryLists'
 
 export function GroceryListPage() {
-  const { listId } = useParams<{ listId: string }>();
+  const { listId } = useParams<{ listId: string }>()
 
-  const { data: groceryList, isLoading, isError } = useGroceryList(listId ?? "");
+  const { data: groceryList, isLoading, isError } = useGroceryList(listId ?? '')
 
-  const updateListMutation = useUpdateGroceryList();
-  const createItemMutation = useCreateGroceryListItem();
-  const updateItemMutation = useUpdateGroceryListItem();
-  const deleteItemMutation = useDeleteGroceryListItem();
+  const updateListMutation = useUpdateGroceryList()
+  const createItemMutation = useCreateGroceryListItem()
+  const updateItemMutation = useUpdateGroceryListItem()
+  const deleteItemMutation = useDeleteGroceryListItem()
 
   if (!listId) {
-    return <div className="p-8">Invalid grocery list.</div>;
+    return <div className="p-8">Invalid grocery list.</div>
   }
 
-  const groceryListId = listId;
+  const groceryListId = listId
 
   async function handleRename(title: string) {
     await updateListMutation.mutateAsync({
@@ -35,32 +35,29 @@ export function GroceryListPage() {
       data: {
         title,
       },
-    });
+    })
   }
 
   async function handleAddItem(data: CreateListItemRequest) {
     await createItemMutation.mutateAsync({
       listId: groceryListId,
       data,
-    });
+    })
   }
 
-  async function handleUpdateItem(
-    itemId: string,
-    data: UpdateListItemRequest,
-  ) {
+  async function handleUpdateItem(itemId: string, data: UpdateListItemRequest) {
     await updateItemMutation.mutateAsync({
       listId: groceryListId,
       itemId,
       data,
-    });
+    })
   }
 
   async function handleDeleteItem(itemId: string) {
     await deleteItemMutation.mutateAsync({
       listId: groceryListId,
       itemId,
-    });
+    })
   }
 
   if (isLoading) {
@@ -70,7 +67,7 @@ export function GroceryListPage() {
           Loading grocery list...
         </div>
       </main>
-    );
+    )
   }
 
   if (isError || !groceryList) {
@@ -80,7 +77,7 @@ export function GroceryListPage() {
           Grocery list not found.
         </div>
       </main>
-    );
+    )
   }
 
   return (
@@ -94,5 +91,5 @@ export function GroceryListPage() {
         onDeleteItem={handleDeleteItem}
       />
     </main>
-  );
+  )
 }

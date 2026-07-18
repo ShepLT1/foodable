@@ -1,18 +1,12 @@
-import { useState } from "react";
-import { Trash2 } from "lucide-react";
+import { useState } from 'react'
+import { Trash2 } from 'lucide-react'
 
-import type {
-  GroceryListItem,
-  UpdateListItemRequest,
-} from "../../api/lists";
+import type { GroceryListItem, UpdateListItemRequest } from '../../api/lists'
 
 interface GroceryListItemRowProps {
-  item: GroceryListItem;
-  onUpdate: (
-    itemId: string,
-    data: UpdateListItemRequest,
-  ) => Promise<void>;
-  onDelete: (itemId: string) => Promise<void>;
+  item: GroceryListItem
+  onUpdate: (itemId: string, data: UpdateListItemRequest) => Promise<void>
+  onDelete: (itemId: string) => Promise<void>
 }
 
 export function GroceryListItemRow({
@@ -20,51 +14,51 @@ export function GroceryListItemRow({
   onUpdate,
   onDelete,
 }: GroceryListItemRowProps) {
-  const [quantity, setQuantity] = useState(Number(item.quantity).toString());
-  const [unit, setUnit] = useState(item.unit ?? "");
+  const [quantity, setQuantity] = useState(Number(item.quantity).toString())
+  const [unit, setUnit] = useState(item.unit ?? '')
 
   async function saveQuantity() {
-    const trimmed = quantity.trim();
+    const trimmed = quantity.trim()
 
-    if (trimmed === "") {
-      setQuantity(Number(item.quantity).toString());
-      return;
+    if (trimmed === '') {
+      setQuantity(Number(item.quantity).toString())
+      return
     }
 
-    const value = Number(trimmed);
+    const value = Number(trimmed)
 
     if (!Number.isFinite(value)) {
-      setQuantity(Number(item.quantity).toString());
-      return;
+      setQuantity(Number(item.quantity).toString())
+      return
     }
 
     if (value === item.quantity) {
-      return;
+      return
     }
 
     await onUpdate(item.id, {
       quantity: value,
-    });
+    })
   }
 
   async function saveUnit() {
-    const trimmed = unit.trim();
+    const trimmed = unit.trim()
 
     if (trimmed === item.unit) {
-      return;
+      return
     }
 
     await onUpdate(item.id, {
       unit: trimmed,
-    });
+    })
   }
 
   function cancelQuantity() {
-    setQuantity(Number(item.quantity).toString());
+    setQuantity(Number(item.quantity).toString())
   }
 
   function cancelUnit() {
-    setUnit(item.unit ?? "");
+    setUnit(item.unit ?? '')
   }
 
   return (
@@ -80,12 +74,12 @@ export function GroceryListItemRow({
             onChange={(e) => setQuantity(e.target.value)}
             onBlur={saveQuantity}
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                void saveQuantity();
+              if (e.key === 'Enter') {
+                void saveQuantity()
               }
 
-              if (e.key === "Escape") {
-                cancelQuantity();
+              if (e.key === 'Escape') {
+                cancelQuantity()
               }
             }}
             className="w-20 rounded border border-slate-300 px-2 py-1"
@@ -97,12 +91,12 @@ export function GroceryListItemRow({
             onChange={(e) => setUnit(e.target.value)}
             onBlur={saveUnit}
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                void saveUnit();
+              if (e.key === 'Enter') {
+                void saveUnit()
               }
 
-              if (e.key === "Escape") {
-                cancelUnit();
+              if (e.key === 'Escape') {
+                cancelUnit()
               }
             }}
             className="w-30 rounded border border-slate-300 px-2 py-1"
@@ -159,12 +153,12 @@ export function GroceryListItemRow({
               onChange={(e) => setQuantity(e.target.value)}
               onBlur={saveQuantity}
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  void saveQuantity();
+                if (e.key === 'Enter') {
+                  void saveQuantity()
                 }
 
-                if (e.key === "Escape") {
-                  cancelQuantity();
+                if (e.key === 'Escape') {
+                  cancelQuantity()
                 }
               }}
               className="w-20 rounded border border-slate-300 px-2 py-1"
@@ -175,12 +169,12 @@ export function GroceryListItemRow({
               onChange={(e) => setUnit(e.target.value)}
               onBlur={saveUnit}
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  void saveUnit();
+                if (e.key === 'Enter') {
+                  void saveUnit()
                 }
 
-                if (e.key === "Escape") {
-                  cancelUnit();
+                if (e.key === 'Escape') {
+                  cancelUnit()
                 }
               }}
               className="w-20 flex-1 rounded border border-slate-300 px-2 py-1"
@@ -197,5 +191,5 @@ export function GroceryListItemRow({
         </div>
       </div>
     </>
-  );
+  )
 }

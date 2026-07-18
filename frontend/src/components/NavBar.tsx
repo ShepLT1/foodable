@@ -11,9 +11,15 @@ export function NavBar() {
       <div className="flex items-center gap-8">
         <span className="text-xl font-bold text-blue-600">Foodable</span>
         <nav className="flex gap-4 font-medium text-gray-600">
-          <Link to="/" className="hover:text-blue-600">Dashboard</Link>
-          <Link to="/recipes" className="hover:text-blue-600">Recipes</Link>
-          <Link to="/lists" className="hover:text-blue-600">Grocery Lists</Link>
+          <Link to="/" className="hover:text-blue-600">
+            Dashboard
+          </Link>
+          <Link to="/recipes" className="hover:text-blue-600">
+            Recipes
+          </Link>
+          <Link to="/lists" className="hover:text-blue-600">
+            Grocery Lists
+          </Link>
         </nav>
       </div>
 

@@ -1,49 +1,49 @@
-import { useEffect, useRef, useState } from "react";
-import { Pencil } from "lucide-react";
+import { useEffect, useRef, useState } from 'react'
+import { Pencil } from 'lucide-react'
 
 interface EditableTitleProps {
-  title: string;
-  onSave: (title: string) => Promise<void>;
+  title: string
+  onSave: (title: string) => Promise<void>
 }
 
 export function EditableTitle({ title, onSave }: EditableTitleProps) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [draftTitle, setDraftTitle] = useState(title);
+  const [isEditing, setIsEditing] = useState(false)
+  const [draftTitle, setDraftTitle] = useState(title)
 
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (isEditing) {
-      inputRef.current?.focus();
-      inputRef.current?.select();
+      inputRef.current?.focus()
+      inputRef.current?.select()
     }
-  }, [isEditing]);
+  }, [isEditing])
 
   function startEditing() {
-    setDraftTitle(title);
-    setIsEditing(true);
+    setDraftTitle(title)
+    setIsEditing(true)
   }
 
   async function save() {
-    const trimmedTitle = draftTitle.trim();
+    const trimmedTitle = draftTitle.trim()
 
-    setIsEditing(false);
+    setIsEditing(false)
 
     if (trimmedTitle.length === 0) {
-      setDraftTitle(title);
-      return;
+      setDraftTitle(title)
+      return
     }
 
     if (trimmedTitle === title) {
-      return;
+      return
     }
 
-    await onSave(trimmedTitle);
+    await onSave(trimmedTitle)
   }
 
   function cancel() {
-    setDraftTitle(title);
-    setIsEditing(false);
+    setDraftTitle(title)
+    setIsEditing(false)
   }
 
   if (isEditing) {
@@ -55,18 +55,18 @@ export function EditableTitle({ title, onSave }: EditableTitleProps) {
         onChange={(e) => setDraftTitle(e.target.value)}
         onBlur={save}
         onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            save();
+          if (e.key === 'Enter') {
+            save()
           }
 
-          if (e.key === "Escape") {
-            e.preventDefault();
-            cancel();
+          if (e.key === 'Escape') {
+            e.preventDefault()
+            cancel()
           }
         }}
         className="w-full rounded-md border border-slate-300 bg-white px-2 py-1 text-3xl font-bold outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200"
       />
-    );
+    )
   }
 
   return (
@@ -82,5 +82,5 @@ export function EditableTitle({ title, onSave }: EditableTitleProps) {
         <Pencil size={18} />
       </button>
     </div>
-  );
+  )
 }

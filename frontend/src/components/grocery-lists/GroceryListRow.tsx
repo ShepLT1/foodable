@@ -1,17 +1,17 @@
-import { Link } from "react-router-dom";
-import type { GroceryList } from "../../api/lists";
-import { useDeleteGroceryList } from "../../hooks/useGroceryLists";
+import { Link } from 'react-router-dom'
+import type { GroceryList } from '../../api/lists'
+import { useDeleteGroceryList } from '../../hooks/useGroceryLists'
 
 interface GroceryListRowProps {
-  groceryList: GroceryList;
+  groceryList: GroceryList
 }
 
 export function GroceryListRow({ groceryList }: GroceryListRowProps) {
-  const deleteGroceryList = useDeleteGroceryList();
+  const deleteGroceryList = useDeleteGroceryList()
 
   const handleDelete = () => {
-    deleteGroceryList.mutate(groceryList.id);
-  };
+    deleteGroceryList.mutate(groceryList.id)
+  }
 
   return (
     <div className="flex items-center justify-between max-w-xl rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md">
@@ -38,5 +38,5 @@ export function GroceryListRow({ groceryList }: GroceryListRowProps) {
         Delete
       </button>
     </div>
-  );
+  )
 }

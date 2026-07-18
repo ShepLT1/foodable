@@ -1,19 +1,16 @@
-import { GroceryListRow } from "../components/grocery-lists/GroceryListRow";
-import {
-  useCreateGroceryList,
-  useGroceryLists,
-} from "../hooks/useGroceryLists";
+import { GroceryListRow } from '../components/grocery-lists/GroceryListRow'
+import { useCreateGroceryList, useGroceryLists } from '../hooks/useGroceryLists'
 
 export function GroceryListsPage() {
-  const { data: groceryLists = [], isPending, error } = useGroceryLists();
+  const { data: groceryLists = [], isPending, error } = useGroceryLists()
 
-  const createGroceryList = useCreateGroceryList();
+  const createGroceryList = useCreateGroceryList()
 
   const handleCreateList = () => {
     createGroceryList.mutate({
-      title: "New Grocery List",
-    });
-  };
+      title: 'New Grocery List',
+    })
+  }
 
   return (
     <main className="mx-auto max-w-5xl px-8">
@@ -52,5 +49,5 @@ export function GroceryListsPage() {
         </>
       )}
     </main>
-  );
+  )
 }

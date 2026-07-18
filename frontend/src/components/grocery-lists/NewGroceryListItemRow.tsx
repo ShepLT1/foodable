@@ -1,99 +1,101 @@
-import { useState, useEffect, useRef } from "react";
-import { Save, X } from "lucide-react";
+import { useState, useEffect, useRef } from 'react'
+import { Save, X } from 'lucide-react'
 
-import type { CreateListItemRequest } from "../../api/lists";
+import type { CreateListItemRequest } from '../../api/lists'
 
 interface NewGroceryListItemRowProps {
-  onSave: (data: CreateListItemRequest) => Promise<void>;
-  onCancel: () => void;
+  onSave: (data: CreateListItemRequest) => Promise<void>
+  onCancel: () => void
 }
 
 interface ValidationErrors {
-  name?: string;
-  quantity?: string;
+  name?: string
+  quantity?: string
 }
 
 export function NewGroceryListItemRow({
   onSave,
   onCancel,
 }: NewGroceryListItemRowProps) {
-  const [name, setName] = useState("");
-  const [quantity, setQuantity] = useState("1");
-  const [unit, setUnit] = useState("");
+  const [name, setName] = useState('')
+  const [quantity, setQuantity] = useState('1')
+  const [unit, setUnit] = useState('')
 
-  const [saving, setSaving] = useState(false);
+  const [saving, setSaving] = useState(false)
 
-  const [errors, setErrors] = useState<ValidationErrors>({});
+  const [errors, setErrors] = useState<ValidationErrors>({})
 
-  const nameInputRef = useRef<HTMLInputElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    nameInputRef.current?.focus();
-  }, []);
+    nameInputRef.current?.focus()
+  }, [])
 
   function validate(): boolean {
-    const nextErrors: ValidationErrors = {};
+    const nextErrors: ValidationErrors = {}
 
     if (!name.trim()) {
-      nextErrors.name = "Ingredient name is required.";
+      nextErrors.name = 'Ingredient name is required.'
     }
 
-    const parsedQuantity = Number(quantity);
+    const parsedQuantity = Number(quantity)
 
     if (Number.isNaN(parsedQuantity) || parsedQuantity <= 0) {
-      nextErrors.quantity = "Quantity must be greater than 0.";
+      nextErrors.quantity = 'Quantity must be greater than 0.'
     }
 
-    setErrors(nextErrors);
+    setErrors(nextErrors)
 
-    return Object.keys(nextErrors).length === 0;
+    return Object.keys(nextErrors).length === 0
   }
 
   async function handleSave() {
     if (saving) {
-      return;
+      return
     }
 
     if (!validate()) {
-      return;
+      return
     }
 
-    setSaving(true);
+    setSaving(true)
 
     try {
       await onSave({
         name: name.trim(),
         quantity: Number(quantity),
         unit: unit.trim() || null,
-      });
+      })
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
   }
 
   function handleNameChange(value: string) {
-    setName(value);
+    setName(value)
 
     if (errors.name) {
       setErrors((previous) => ({
         ...previous,
         name: undefined,
-      }));
+      }))
     }
   }
 
   function handleQuantityChange(value: string) {
-    setQuantity(value);
+    setQuantity(value)
 
     if (errors.quantity) {
       setErrors((previous) => ({
         ...previous,
         quantity: undefined,
-      }));
+      }))
     }
   }
 
-  {/* Desktop */}
+  {
+    /* Desktop */
+  }
 
   return (
     <>
@@ -106,14 +108,14 @@ export function NewGroceryListItemRow({
             placeholder="Ingredient"
             onChange={(e) => handleNameChange(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                void handleSave();
+              if (e.key === 'Enter') {
+                void handleSave()
               }
             }}
             className={`w-full rounded border px-2 py-1 ${
               errors.name
-                ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                : "border-slate-300"
+                ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                : 'border-slate-300'
             }`}
             ref={nameInputRef}
           />
@@ -128,14 +130,14 @@ export function NewGroceryListItemRow({
               value={quantity}
               onChange={(e) => handleQuantityChange(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  void handleSave();
+                if (e.key === 'Enter') {
+                  void handleSave()
                 }
               }}
               className={`w-20 rounded border px-2 py-1 text-center ${
                 errors.quantity
-                  ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                  : "border-slate-300"
+                  ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                  : 'border-slate-300'
               }`}
             />
           </div>
@@ -149,8 +151,8 @@ export function NewGroceryListItemRow({
             placeholder="Unit"
             onChange={(e) => setUnit(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                void handleSave();
+              if (e.key === 'Enter') {
+                void handleSave()
               }
             }}
             className="w-30 rounded border border-slate-300 px-2 py-1"
@@ -194,14 +196,14 @@ export function NewGroceryListItemRow({
               placeholder="Ingredient"
               onChange={(e) => handleNameChange(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  void handleSave();
+                if (e.key === 'Enter') {
+                  void handleSave()
                 }
               }}
               className={`w-42 rounded border px-2 py-1 ${
                 errors.name
-                  ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                  : "border-slate-300"
+                  ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                  : 'border-slate-300'
               }`}
               ref={nameInputRef}
             />
@@ -226,14 +228,14 @@ export function NewGroceryListItemRow({
               value={quantity}
               onChange={(e) => handleQuantityChange(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  void handleSave();
+                if (e.key === 'Enter') {
+                  void handleSave()
                 }
               }}
               className={`w-20 rounded border px-2 py-1 text-center ${
                 errors.quantity
-                  ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                  : "border-slate-300"
+                  ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                  : 'border-slate-300'
               }`}
             />
 
@@ -244,8 +246,8 @@ export function NewGroceryListItemRow({
               placeholder="Unit"
               onChange={(e) => setUnit(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  void handleSave();
+                if (e.key === 'Enter') {
+                  void handleSave()
                 }
               }}
               className="w-20 rounded border border-slate-300 px-2 py-1"
@@ -262,5 +264,5 @@ export function NewGroceryListItemRow({
         </div>
       </div>
     </>
-  );
+  )
 }

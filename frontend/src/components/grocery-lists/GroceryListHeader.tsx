@@ -1,8 +1,8 @@
-import { EditableTitle } from "../EditableTitle";
+import { EditableTitle } from '../EditableTitle'
 
 interface GroceryListHeaderProps {
-  title: string;
-  onRename: (title: string) => Promise<void>;
+  title: string
+  onRename: (title: string) => Promise<void>
 }
 
 export function GroceryListHeader({ title, onRename }: GroceryListHeaderProps) {
@@ -10,5 +10,5 @@ export function GroceryListHeader({ title, onRename }: GroceryListHeaderProps) {
     <header className="mb-8">
       <EditableTitle title={title} onSave={onRename} />
     </header>
-  );
+  )
 }

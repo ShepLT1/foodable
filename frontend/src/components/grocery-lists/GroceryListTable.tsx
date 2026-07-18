@@ -1,24 +1,24 @@
-import { useState } from "react";
+import { useState } from 'react'
 
 import type {
   CreateListItemRequest,
   GroceryListItem,
   UpdateListItemRequest,
-} from "../../api/lists";
+} from '../../api/lists'
 
-import { Plus } from "lucide-react";
+import { Plus } from 'lucide-react'
 
-import { GroceryListItemRow } from "./GroceryListItemRow";
-import { NewGroceryListItemRow } from "./NewGroceryListItemRow";
+import { GroceryListItemRow } from './GroceryListItemRow'
+import { NewGroceryListItemRow } from './NewGroceryListItemRow'
 
 interface GroceryListTableProps {
-  items: GroceryListItem[];
+  items: GroceryListItem[]
 
-  onAddItem: (data: CreateListItemRequest) => Promise<void>;
+  onAddItem: (data: CreateListItemRequest) => Promise<void>
 
-  onUpdateItem: (itemId: string, data: UpdateListItemRequest) => Promise<void>;
+  onUpdateItem: (itemId: string, data: UpdateListItemRequest) => Promise<void>
 
-  onDeleteItem: (itemId: string) => Promise<void>;
+  onDeleteItem: (itemId: string) => Promise<void>
 }
 
 export function GroceryListTable({
@@ -27,14 +27,14 @@ export function GroceryListTable({
   onUpdateItem,
   onDeleteItem,
 }: GroceryListTableProps) {
-  const [addingItem, setAddingItem] = useState(false);
+  const [addingItem, setAddingItem] = useState(false)
 
   if (items.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-slate-300 p-8 text-center text-slate-500">
         This grocery list doesn't have any items yet.
       </div>
-    );
+    )
   }
 
   return (
@@ -71,11 +71,11 @@ export function GroceryListTable({
         <NewGroceryListItemRow
           onCancel={() => setAddingItem(false)}
           onSave={async (data) => {
-            await onAddItem(data);
-            setAddingItem(false);
+            await onAddItem(data)
+            setAddingItem(false)
           }}
         />
       )}
     </div>
-  );
+  )
 }
