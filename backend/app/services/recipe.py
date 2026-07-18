@@ -1,13 +1,21 @@
 import os
+from uuid import UUID
 
-from anthropic import Anthropic
+from anthropic import AsyncAnthropic
 from anthropic.types import ToolUseBlock
 from pydantic import ValidationError
 
-from app.schemas.recipe import Recipe, RecipeGenerateRequest
-from app.models.profile import Profile
+from app.schemas.recipe import Recipe, RecipeGenerateRequest, RecipeCreate
 
-client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+from app.repositories.recipe import recipe_repository
+from app.repositories.profile import profile_repository
+
+from app.models.profile import Profile
+from app.models.recipe import Recipe as DBRecipe
+
+from sqlalchemy.ext.asyncio import AsyncSession
+
+client = AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
 CLAUDE_MODEL = "claude-haiku-4-5-20251001"
 MAX_TOKENS = 2500
@@ -45,7 +53,7 @@ async def generate_recipe(prompt: str) -> Recipe:
     Returns:
         Recipe: The validated recipe object.
     """
-    response = client.messages.create(
+    response = await client.messages.create(
         model=CLAUDE_MODEL,
         max_tokens=MAX_TOKENS,
         tools=[RECIPE_TOOL],  # type: ignore[call-overload]
@@ -89,3 +97,35 @@ def _build_prompt(request: RecipeGenerateRequest, profile: Profile) -> str:
         )
 
     return " ".join(parts)
+
+
+class ProfileNotFoundError(Exception):
+    """Raised when the requesting user has no profile."""
+
+
+async def create_recipe_for_user(
+    db: AsyncSession,
+    user_id: UUID,
+    request: RecipeGenerateRequest,
+) -> DBRecipe:
+    profile = await profile_repository.get_by_id(db, profile_id=user_id)
+    if profile is None:
+        raise ProfileNotFoundError(f"No profile found for user_id={user_id}")
+
+    prompt = _build_prompt(request, profile)
+    recipe = await generate_recipe(prompt)
+
+    data = RecipeCreate(
+        user_id=user_id,
+        title=recipe.title,
+        description=recipe.description,
+        meal_type=recipe.meal_type,
+        cuisine_type=recipe.cuisine_type,
+        servings=recipe.servings,
+        tools_needed=recipe.tools_needed,
+        steps=[step.model_dump() for step in recipe.steps],
+        ingredients_json=[ing.model_dump() for ing in recipe.ingredients],
+        nutrition_json=recipe.nutrition.model_dump(),
+    )
+
+    return await recipe_repository.create(db, data)

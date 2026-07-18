@@ -37,3 +37,7 @@ class RecipeRepository:
             raise
 
         return recipe
+
+
+recipe_repository = RecipeRepository()
+
