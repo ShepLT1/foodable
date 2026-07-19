@@ -22,7 +22,7 @@ export function RecipeGeneratePage() {
   const [mealType, setMealType] = useState<string | null>(null)
   const [cuisineType, setCuisineType] = useState<string | null>(null)
 
-  const { mutate, isPending, error, data } = useGenerateRecipe()
+  const { mutate, isPending } = useGenerateRecipe()
 
   function handleSubmit() {
     mutate(
