@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { TagInput } from '../components/TagInput'
 import { SingleChipSelect } from '../components/SingleChipSelect'
 import { useGenerateRecipe } from '../hooks/useRecipes'
@@ -16,6 +17,7 @@ const CUISINE_TYPES = [
 ]
 
 export function RecipeGeneratePage() {
+  const navigate = useNavigate()
   const [ingredients, setIngredients] = useState<string[]>([])
   const [mealType, setMealType] = useState<string | null>(null)
   const [cuisineType, setCuisineType] = useState<string | null>(null)
@@ -23,12 +25,19 @@ export function RecipeGeneratePage() {
   const { mutate, isPending, error, data } = useGenerateRecipe()
 
   function handleSubmit() {
-    mutate({
-      ingredients,
-      meal_type: (mealType ?? undefined) as
-        'breakfast' | 'lunch' | 'dinner' | 'dessert' | 'snack' | undefined,
-      cuisine_type: cuisineType ?? undefined,
-    })
+    mutate(
+      {
+        ingredients,
+        meal_type: (mealType ?? undefined) as
+          'breakfast' | 'lunch' | 'dinner' | 'dessert' | 'snack' | undefined,
+        cuisine_type: cuisineType ?? undefined,
+      },
+      {
+        onSuccess: (recipe) => {
+          navigate(`/recipe/${recipe.id}`, { state: { recipe } })
+        },
+      },
+    )
   }
 
   return (
