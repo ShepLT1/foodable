@@ -66,6 +66,7 @@ def print_recipe(recipe: Recipe) -> None:
     """Print a validated Recipe in a readable format."""
     print("Validation passed")
     print(f"Title: {recipe.title}")
+    print(f"Servings: {recipe.servings}")
     print(f"Meal type: {recipe.meal_type}")
     print(
         f"Nutrition: cal={recipe.nutrition.calories}, "
