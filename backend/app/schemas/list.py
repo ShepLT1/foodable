@@ -13,6 +13,7 @@ class GroceryListItem(BaseModel):
     quantity: Decimal
     unit: str | None
     checked: bool
+    created_at: datetime
 
 
 class GroceryListItemCreate(BaseModel):

@@ -17,6 +17,9 @@ export function NavBar() {
           <Link to="/recipes" className="hover:text-blue-600">
             Recipes
           </Link>
+          <Link to="/lists" className="hover:text-blue-600">
+            Grocery Lists
+          </Link>
         </nav>
       </div>
 

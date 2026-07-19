@@ -4,6 +4,8 @@ import { AuthForm } from './components/AuthForm'
 import { NavBar } from './components/NavBar'
 import { UserPage } from './pages/UserPage'
 import { ProfilePage } from './pages/ProfilePage'
+import { GroceryListsPage } from './pages/GroceryListsPage'
+import { GroceryListPage } from './pages/GroceryListPage'
 
 function App() {
   const { session, loading } = useSession()
@@ -19,7 +21,7 @@ function App() {
   // 3. If user is logged in, show the application with the new Router layout
   return (
     <BrowserRouter>
-      <div className="flex min-h-screen flex-col bg-gray-50 text-left">
+      <div className="flex min-h-screen flex-col text-left bg-slate-50">
         <NavBar />
 
         {/* Dynamic SPA Page Views */}
@@ -40,6 +42,8 @@ function App() {
                 </div>
               }
             />
+            <Route path="/lists" element={<GroceryListsPage />} />
+            <Route path="/lists/:listId" element={<GroceryListPage />} />
           </Routes>
         </main>
       </div>
