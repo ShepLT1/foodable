@@ -1,3 +1,5 @@
+import { api } from './api'
+
 export interface Ingredient {
   name: string
   quantity: number
@@ -38,4 +40,12 @@ export interface GenerateRecipeRequest {
   ingredients: string[]
   meal_type?: 'breakfast' | 'lunch' | 'dinner' | 'dessert' | 'snack'
   cuisine_type?: string
+}
+
+// Recipe API request handlers
+export function generateRecipe(data: GenerateRecipeRequest) {
+  return api<Recipe>('/recipes/generate', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
 }
