@@ -15,8 +15,11 @@ missing nutrition data, truncated responses, and unrealistic
 metric units for US kitchens).
 """
 
+from uuid import UUID
+from datetime import datetime
+
+from typing import Literal, Optional, TYPE_CHECKING
 from pydantic import BaseModel, ConfigDict, Field
-from typing import Literal, Optional
 
 from app.schemas.prompts_recipe_gen import (
     CARBS_DESCRIPTION,
@@ -27,9 +30,35 @@ from app.schemas.prompts_recipe_gen import (
     UNIT_DESCRIPTION,
 )
 
+from app.models.recipe import (
+    CUISINE_TYPE_MAX_LENGTH,
+    DESCRIPTION_MAX_LENGTH,
+    MEAL_TYPE_MAX_LENGTH,
+    TITLE_MAX_LENGTH,
+)
+
 
 class StrictBaseModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
+
+
+class RecipeCreate(StrictBaseModel):
+    user_id: UUID
+    title: str = Field(max_length=TITLE_MAX_LENGTH)
+    description: str | None = Field(default=None, max_length=DESCRIPTION_MAX_LENGTH)
+    meal_type: str | None = Field(default=None, max_length=MEAL_TYPE_MAX_LENGTH)
+    cuisine_type: str | None = Field(default=None, max_length=CUISINE_TYPE_MAX_LENGTH)
+    servings: int
+    tools_needed: list[str]
+    steps: list[dict]
+    ingredients_json: list[dict]
+    nutrition_json: dict
+
+
+class RecipeGenerateRequest(StrictBaseModel):
+    ingredients: list[str] = Field(min_length=1)
+    meal_type: Literal["breakfast", "lunch", "dinner", "dessert", "snack"] | None = None
+    cuisine_type: str | None = None
 
 
 class Ingredient(StrictBaseModel):
@@ -85,3 +114,40 @@ class Recipe(StrictBaseModel):
     meal_type: Literal["breakfast", "lunch", "dinner", "dessert", "snack"] = Field(
         description="The type of meal this recipe is intended for."
     )
+
+
+class RecipeResponse(StrictBaseModel):
+    id: UUID
+    user_id: UUID
+    title: str
+    description: str | None
+    meal_type: str | None
+    cuisine_type: str | None
+    servings: int
+    tools_needed: list[str]
+    steps: list[Step]
+    ingredients: list[Ingredient]
+    nutrition: NutritionInfo
+    is_public: bool
+    created_at: datetime
+
+    if TYPE_CHECKING:
+        from app.models.recipe import Recipe as DBRecipe
+
+    @classmethod
+    def from_db_recipe(cls, recipe: "DBRecipe") -> "RecipeResponse":
+        return cls(
+            id=recipe.id,
+            user_id=recipe.user_id,
+            title=recipe.title,
+            description=recipe.description,
+            meal_type=recipe.meal_type,
+            cuisine_type=recipe.cuisine_type,
+            servings=recipe.steps_json["servings"],
+            tools_needed=recipe.steps_json["tools_needed"],
+            steps=[Step.model_validate(s) for s in recipe.steps_json["steps"]],
+            ingredients=[Ingredient.model_validate(i) for i in recipe.ingredients_json],
+            nutrition=NutritionInfo.model_validate(recipe.nutrition_json),
+            is_public=recipe.is_public,
+            created_at=recipe.created_at,
+        )
