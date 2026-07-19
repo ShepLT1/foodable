@@ -1,9 +1,12 @@
+import { useState } from 'react'
+
 type SingleChipSelectProps = {
   label: string
   sublabel?: string
   options: string[]
   value: string | null
   onChange: (next: string | null) => void
+  allowCustom?: boolean
 }
 
 export function SingleChipSelect({
@@ -12,9 +15,24 @@ export function SingleChipSelect({
   options,
   value,
   onChange,
+  allowCustom,
 }: SingleChipSelectProps) {
+  const [customDraft, setCustomDraft] = useState('')
+
+  // Surface selected value that isn't a preset option to be not be hidden
+  const allOptions =
+    value && !options.includes(value) ? [...options, value] : options
+
   function toggle(option: string) {
     onChange(value === option ? null : option)
+  }
+
+  function submitCustom() {
+    const trimmed = customDraft.trim()
+    if (trimmed) {
+      onChange(trimmed)
+      setCustomDraft('')
+    }
   }
 
   return (
@@ -22,7 +40,7 @@ export function SingleChipSelect({
       <span className="text-sm font-medium">{label}</span>
       {sublabel && <span className="text-xs text-gray-500">{sublabel}</span>}
       <div className="flex flex-wrap gap-1.5">
-        {options.map((option) => {
+        {allOptions.map((option) => {
           const selected = value === option
           return (
             <button
@@ -41,6 +59,22 @@ export function SingleChipSelect({
           )
         })}
       </div>
+      {allowCustom && (
+        <input
+          type="text"
+          value={customDraft}
+          onChange={(e) => setCustomDraft(e.target.value)}
+          onBlur={submitCustom}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              submitCustom()
+            }
+          }}
+          placeholder="Or type your own"
+          className="mt-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-200"
+        />
+      )}
     </div>
   )
 }
