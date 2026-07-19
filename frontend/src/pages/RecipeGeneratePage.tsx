@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { TagInput } from '../components/TagInput'
 import { SingleChipSelect } from '../components/SingleChipSelect'
+import { useGenerateRecipe } from '../hooks/useRecipes'
 
 const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'dessert', 'snack']
 const CUISINE_TYPES = [
@@ -17,7 +18,18 @@ const CUISINE_TYPES = [
 export function RecipeGeneratePage() {
   const [ingredients, setIngredients] = useState<string[]>([])
   const [mealType, setMealType] = useState<string | null>(null)
-  const [cuisineType, setCuisineType] = useState('')
+  const [cuisineType, setCuisineType] = useState<string | null>(null)
+
+  const { mutate, isPending, error, data } = useGenerateRecipe()
+
+  function handleSubmit() {
+    mutate({
+      ingredients,
+      meal_type: (mealType ?? undefined) as
+        'breakfast' | 'lunch' | 'dinner' | 'dessert' | 'snack' | undefined,
+      cuisine_type: cuisineType ?? undefined,
+    })
+  }
 
   return (
     <div className="rounded-xl bg-white p-8 shadow-sm border border-gray-100">
@@ -45,6 +57,15 @@ export function RecipeGeneratePage() {
           onChange={setCuisineType}
           allowCustom
         />
+
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={isPending || ingredients.length === 0}
+          className="cursor-pointer rounded-lg bg-blue-600 px-4 py-2 text-white disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {isPending ? 'Generating...' : 'Generate Recipe'}
+        </button>
       </div>
     </div>
   )
