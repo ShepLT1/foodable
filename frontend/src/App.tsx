@@ -1,9 +1,11 @@
-import { supabase } from './lib/supabase'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { useSession } from './hooks/useSession'
 import { AuthForm } from './components/AuthForm'
 import { NavBar } from './components/NavBar'
 import { UserPage } from './pages/UserPage'
+import { ProfilePage } from './pages/ProfilePage'
+import { GroceryListsPage } from './pages/GroceryListsPage'
+import { GroceryListPage } from './pages/GroceryListPage'
 
 function App() {
   const { session, loading } = useSession()
@@ -19,13 +21,14 @@ function App() {
   // 3. If user is logged in, show the application with the new Router layout
   return (
     <BrowserRouter>
-      <div className="flex min-h-screen flex-col bg-gray-50 text-left">
+      <div className="flex min-h-screen flex-col text-left bg-slate-50">
         <NavBar />
 
         {/* Dynamic SPA Page Views */}
         <main className="flex-1 p-8">
           <Routes>
             <Route path="/" element={<UserPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
             <Route
               path="/recipes"
               element={
@@ -39,18 +42,10 @@ function App() {
                 </div>
               }
             />
+            <Route path="/lists" element={<GroceryListsPage />} />
+            <Route path="/lists/:listId" element={<GroceryListPage />} />
           </Routes>
         </main>
-
-        {/* Sign Out Action Footer */}
-        <div className="p-8 bg-white border-t border-gray-100 flex justify-end">
-          <button
-            onClick={() => supabase.auth.signOut()}
-            className="cursor-pointer rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 transition"
-          >
-            Sign Out
-          </button>
-        </div>
       </div>
     </BrowserRouter>
   )
