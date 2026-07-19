@@ -1,7 +1,11 @@
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useCurrentUser } from '../hooks/useCurrentUser'
+import { UserAvatar } from './UserAvatar'
 
 export function NavBar() {
+  const { data: user } = useCurrentUser()
+
   return (
     <header className="flex items-center justify-between border-b border-gray-200 bg-white px-8 py-4 shadow-sm">
       <div className="flex items-center gap-8">
@@ -23,6 +27,10 @@ export function NavBar() {
         >
           Sign Out
         </button>
+
+        <Link to="/profile" aria-label="Profile">
+          <UserAvatar name={user?.display_name} />
+        </Link>
       </div>
     </header>
   )
