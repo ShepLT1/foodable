@@ -9,7 +9,7 @@ function App() {
   const { session, loading } = useSession()
 
   // 1. Wait out initial session check
-  if (loading) return null 
+  if (loading) return null
 
   // 2. If user is not logged in, show the Auth Form
   if (!session) {
@@ -26,14 +26,18 @@ function App() {
         <main className="flex-1 p-8">
           <Routes>
             <Route path="/" element={<UserPage />} />
-            <Route 
-              path="/recipes" 
+            <Route
+              path="/recipes"
               element={
                 <div className="rounded-xl bg-white p-8 shadow-sm border border-gray-100">
-                  <h2 className="text-3xl font-bold text-gray-900">Your Recipes</h2>
-                  <p className="mt-2 text-gray-600">AI Meal plans and shared recipes will list out here.</p>
+                  <h2 className="text-3xl font-bold text-gray-900">
+                    Your Recipes
+                  </h2>
+                  <p className="mt-2 text-gray-600">
+                    AI Meal plans and shared recipes will list out here.
+                  </p>
                 </div>
-              } 
+              }
             />
           </Routes>
         </main>
