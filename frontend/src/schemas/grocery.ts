@@ -13,8 +13,7 @@ export const ingredientNameSchema = z
   .min(1, 'Ingredient name is required')
   .max(150, 'Ingredient name is too long')
 
-export const quantitySchema = z
-  .coerce
+export const quantitySchema = z.coerce
   .number({ message: 'Must be a number' })
   .positive('Quantity must be greater than 0')
   .max(9999, 'Quantity is too large')

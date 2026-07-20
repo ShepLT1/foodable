@@ -25,9 +25,17 @@ export const recipeSchema = z.object({
   description: z.string().trim().max(500, 'Description too long').optional(),
   prepTimeMinutes: z.coerce.number().int().nonnegative().optional(),
   cookTimeMinutes: z.coerce.number().int().nonnegative().optional(),
-  servings: z.coerce.number().int().positive('Must serve at least 1').default(1),
-  ingredients: z.array(recipeIngredientSchema).min(1, 'At least 1 ingredient required'),
-  instructions: z.array(instructionStepSchema).min(1, 'At least 1 instruction step required'),
+  servings: z.coerce
+    .number()
+    .int()
+    .positive('Must serve at least 1')
+    .default(1),
+  ingredients: z
+    .array(recipeIngredientSchema)
+    .min(1, 'At least 1 ingredient required'),
+  instructions: z
+    .array(instructionStepSchema)
+    .min(1, 'At least 1 instruction step required'),
 })
 
 export type RecipeInput = z.infer<typeof recipeSchema>
