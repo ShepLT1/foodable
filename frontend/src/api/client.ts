@@ -1,17 +1,17 @@
-import { supabase } from "../lib/supabase";
+import { supabase } from '../lib/supabase'
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL
 
 export class ApiError extends Error {
-  public readonly status: number;
-  public readonly detail: string;
+  public readonly status: number
+  public readonly detail: string
 
   constructor(status: number, detail: string) {
-    super(detail);
+    super(detail)
 
-    this.name = "ApiError";
-    this.status = status;
-    this.detail = detail;
+    this.name = 'ApiError'
+    this.status = status
+    this.detail = detail
   }
 }
 
@@ -19,27 +19,27 @@ export class ApiError extends Error {
 export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   const {
     data: { session },
-  } = await supabase.auth.getSession();
+  } = await supabase.auth.getSession()
 
-  const headers = new Headers(init.headers);
+  const headers = new Headers(init.headers)
 
-  headers.set("Content-Type", "application/json");
+  headers.set('Content-Type', 'application/json')
 
   // Include Supabase bearer token as header for each request
   if (session?.access_token) {
-    headers.set("Authorization", `Bearer ${session.access_token}`);
+    headers.set('Authorization', `Bearer ${session.access_token}`)
   }
 
   const response = await fetch(`${API_URL}${path}`, {
     ...init,
     headers,
-  });
-  
-  if (!response.ok) {
-    const body = await response.json().catch(() => null);
+  })
 
-    throw new ApiError(response.status, body?.detail ?? response.statusText);
+  if (!response.ok) {
+    const body = await response.json().catch(() => null)
+
+    throw new ApiError(response.status, body?.detail ?? response.statusText)
   }
 
-  return response.json() as Promise<T>;
+  return response.json() as Promise<T>
 }

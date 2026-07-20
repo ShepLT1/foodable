@@ -1,18 +1,18 @@
-import { useCurrentUser } from "../hooks/useCurrentUser";
+import { useCurrentUser } from '../hooks/useCurrentUser'
 
 export function UserPage() {
-  const { data: user, isPending, error } = useCurrentUser();
+  const { data: user, isPending, error } = useCurrentUser()
 
   if (isPending) {
-    return <p>Loading...</p>;
+    return <p>Loading...</p>
   }
 
   if (error instanceof Error) {
-    return <p>Error: {error.message}</p>;
+    return <p>Error: {error.message}</p>
   }
 
   if (!user) {
-    return <p>No user found.</p>;
+    return <p>No user found.</p>
   }
 
   return (
@@ -31,5 +31,5 @@ export function UserPage() {
         <strong>Display Name:</strong> {user.display_name}
       </p>
     </section>
-  );
+  )
 }

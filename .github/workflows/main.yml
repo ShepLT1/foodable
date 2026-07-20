@@ -5,23 +5,50 @@ on:
     branches:
       - main
       - develop
-    paths:
-      - "backend/**"
-      - "frontend/**"
-      - ".github/workflows/**"
 
   pull_request:
     branches:
       - main
       - develop
-    paths:
-      - "backend/**"
-      - "frontend/**"
-      - ".github/workflows/**"
 
 jobs:
+  changes:
+    name: Detect changed files
+    runs-on: ubuntu-latest
+
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+      supabase: ${{ steps.filter.outputs.supabase }}
+      workflow: ${{ steps.filter.outputs.workflow }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+
+            frontend:
+              - 'frontend/**'
+
+            supabase:
+              - 'supabase/**'
+
+            workflow:
+              - '.github/workflows/**'
+
   backend:
     name: Backend (FastAPI)
+    needs: changes
+
+    if: |
+      needs.changes.outputs.backend == 'true' ||
+      needs.changes.outputs.workflow == 'true'
+
     runs-on: ubuntu-latest
 
     env:
@@ -41,7 +68,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-          cache: "pip"
+          cache: pip
           cache-dependency-path: backend/requirements-dev.txt
 
       - name: Install dependencies
@@ -63,6 +90,12 @@ jobs:
 
   frontend:
     name: Frontend (React)
+    needs: changes
+
+    if: |
+      needs.changes.outputs.frontend == 'true' ||
+      needs.changes.outputs.workflow == 'true'
+
     runs-on: ubuntu-latest
 
     defaults:
@@ -83,11 +116,65 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Check formatting
+        run: npm run format:check
+
       - name: Run ESLint
         run: npm run lint
 
       - name: TypeScript type check
         run: npm run type-check
+      - name: Run tests  
+        run: npx vitest run
 
       - name: Build frontend
         run: npm run build
+
+  supabase:
+    name: Supabase
+    needs: changes
+
+    if: |
+      needs.changes.outputs.supabase == 'true' ||
+      needs.changes.outputs.workflow == 'true'
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Placeholder
+        run: echo "No Supabase validation configured yet."
+
+  ci:
+    name: CI
+
+    if: always()
+
+    needs:
+      - changes
+      - backend
+      - frontend
+      - supabase
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Verify required jobs
+        run: |
+          echo "Backend:  ${{ needs.backend.result }}"
+          echo "Frontend: ${{ needs.frontend.result }}"
+          echo "Supabase: ${{ needs.supabase.result }}"
+
+          if [[ \
+            "${{ needs.backend.result }}" == "failure" || \
+            "${{ needs.frontend.result }}" == "failure" || \
+            "${{ needs.supabase.result }}" == "failure" || \
+            "${{ needs.backend.result }}" == "cancelled" || \
+            "${{ needs.frontend.result }}" == "cancelled" || \
+            "${{ needs.supabase.result }}" == "cancelled" \
+          ]]; then
+            exit 1
+          fi
+
+          echo "All required checks passed."
