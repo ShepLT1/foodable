@@ -10,7 +10,9 @@ vi.mock('../hooks/useCurrentUser', () => ({
 }))
 
 const mockUseCurrentUser = (v: Partial<ReturnType<typeof useCurrentUser>>) =>
-  vi.mocked(useCurrentUser).mockReturnValue(v as unknown as ReturnType<typeof useCurrentUser>)
+  vi
+    .mocked(useCurrentUser)
+    .mockReturnValue(v as unknown as ReturnType<typeof useCurrentUser>)
 
 describe('UserPage Component', () => {
   beforeEach(() => {
@@ -37,7 +39,9 @@ describe('UserPage Component', () => {
     })
 
     render(<UserPage />)
-    expect(screen.getByText('Error: Failed to fetch user profiles')).toBeInTheDocument()
+    expect(
+      screen.getByText('Error: Failed to fetch user profiles'),
+    ).toBeInTheDocument()
   })
 
   it('renders a fallback message when no user object is found', () => {
@@ -64,7 +68,9 @@ describe('UserPage Component', () => {
 
     render(<UserPage />)
 
-    expect(screen.getByRole('heading', { name: 'Current User' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Current User' }),
+    ).toBeInTheDocument()
     expect(screen.getByText('usr_8971120')).toBeInTheDocument()
     expect(screen.getByText('tobi@oregonstate.edu')).toBeInTheDocument()
     expect(screen.getByText('Tobi Fanibi')).toBeInTheDocument()
