@@ -117,3 +117,5 @@ temp/
 *.zip
 *.tar
 *.gz
+
+repomix*
