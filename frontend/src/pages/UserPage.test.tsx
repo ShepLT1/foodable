@@ -58,12 +58,10 @@ describe('UserPage Component', () => {
   it('renders user details successfully when data populates', () => {
     mockUseCurrentUser({
       data: {
-        id: 'usr_8971120',
-        email: 'tobi@oregonstate.edu',
-        display_name: 'Tobi Fanibi',
-      },
-      isPending: false,
-      error: null,
+        id: '123',
+        email: 'test@example.com',
+        display_name: 'Test User',
+      } as unknown as ReturnType<typeof useCurrentUser>['data'],
     })
 
     render(<UserPage />)
