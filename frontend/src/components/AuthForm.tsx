@@ -1,18 +1,7 @@
 import { useState, type SyntheticEvent } from 'react'
 import { supabase } from '../lib/supabase'
-import { z } from 'zod' // 👈 Import Zod validation library
 
-// 1. Define the validation schema
-const authSchema = z.object({
-  email: z.string().email('Please enter a valid email address.'),
-  password: z.string().min(6, 'Password must be at least 6 characters long.'),
-})
-
-// 2. Clear out malicious HTML/Script tags before processing string vectors
-function sanitizeInput(input: string): string {
-  return input.replace(/<[^>]*>/g, '').trim()
-}
-
+// Basic combined login / register form.
 export function AuthForm() {
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [email, setEmail] = useState('')
@@ -23,31 +12,16 @@ export function AuthForm() {
   async function handleSubmit(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)
-
-    // 3. Apply text sanitization routines
-    const cleanEmail = sanitizeInput(email)
-    const cleanPassword = sanitizeInput(password)
-
-    // 4. Safe-parse the clean data against our schema rules
-    const validationResult = authSchema.safeParse({ email: cleanEmail, password: cleanPassword })
-
-    if (!validationResult.success) {
-      // Catch the first Zod rule violation and flag it on screen
-      const firstErrorMessage = validationResult.error.issues[0].message
-      setError(firstErrorMessage)
-      return // 👈 Halts submission early before calling out to any API network layers
-    }
-
     setSubmitting(true)
 
-    // 5. Submit valid, clean inputs down to Supabase engine
-    const { error: supabaseError } =
+    const { error } =
       mode === 'login'
-        ? await supabase.auth.signInWithPassword({ email: cleanEmail, password: cleanPassword })
-        : await supabase.auth.signUp({ email: cleanEmail, password: cleanPassword })
+        ? await supabase.auth.signInWithPassword({ email, password })
+        : await supabase.auth.signUp({ email, password })
 
-    if (supabaseError) setError(supabaseError.message)
+    if (error) setError(error.message)
     setSubmitting(false)
+    // On success the session updates via onAuthStateChange — no manual redirect needed.
   }
 
   return (
@@ -103,7 +77,9 @@ export function AuthForm() {
         }}
         className="cursor-pointer text-sm text-blue-600"
       >
-        {mode === 'login' ? 'Need an account? Register' : 'Have an account? Sign In'}
+        {mode === 'login'
+          ? 'Need an account? Register'
+          : 'Have an account? Sign In'}
       </button>
     </form>
   )
