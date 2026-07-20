@@ -4,3 +4,4 @@ pyjwt[crypto]
 sqlalchemy
 asyncpg
 greenlet
+anthropic
