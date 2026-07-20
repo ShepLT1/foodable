@@ -58,7 +58,7 @@ describe('UserPage Component', () => {
   it('renders user details successfully when data populates', () => {
     mockUseCurrentUser({
       data: {
-        id: '123',
+        id: 'user-123',
         email: 'test@example.com',
         display_name: 'Test User',
       } as unknown as ReturnType<typeof useCurrentUser>['data'],
@@ -69,8 +69,8 @@ describe('UserPage Component', () => {
     expect(
       screen.getByRole('heading', { name: 'Current User' }),
     ).toBeInTheDocument()
-    expect(screen.getByText('usr_8971120')).toBeInTheDocument()
-    expect(screen.getByText('tobi@oregonstate.edu')).toBeInTheDocument()
-    expect(screen.getByText('Tobi Fanibi')).toBeInTheDocument()
+    expect(screen.getByText('user-123')).toBeInTheDocument()
+    expect(screen.getByText('test@example.com')).toBeInTheDocument()
+    expect(screen.getByText('Test User')).toBeInTheDocument()
   })
 })
