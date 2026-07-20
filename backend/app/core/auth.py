@@ -4,7 +4,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt import PyJWKClient
 
 from app.core.config import settings
-from app.schemas import AuthUser
+from app.schemas import CurrentUser
 
 # jwks client will cache the JWK set for 5m by default (`lifespan` param),
 # which prevents us needing to fetch it on each request to validate every call
@@ -17,7 +17,7 @@ _bearer = HTTPBearer(auto_error=False)
 # reference: https://fastapi.tiangolo.com/tutorial/security/get-current-user/
 def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
-) -> AuthUser:
+) -> CurrentUser:
     if credentials is None:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "missing bearer token")
 
@@ -37,4 +37,4 @@ def get_current_user(
     if email is None:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Missing email from token")
 
-    return AuthUser(id=claims["sub"], email=email)
+    return CurrentUser(id=claims["sub"], email=email)
