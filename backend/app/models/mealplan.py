@@ -20,7 +20,7 @@ class MealPlan(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(
         UUID(as_uuid=True),
-        ForeignKey("auth.users.id", ondelete="CASCADE"),  # <-- Must include auth. prefix!
+        ForeignKey("auth.users.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
@@ -35,8 +35,8 @@ class MealPlan(Base):
     slot = Column(
         SQLEnum(
             MealSlot,
-            name="meal_slot_enum",
-            values_callable=lambda obj: [e.value for e in obj],  # <-- Perfectly maps lowercase DB values!
+            native_enum=False,  # 🪄 Prevents Postgres $6::meal_slot_enum casting error!
+            values_callable=lambda obj: [e.value for e in obj],
         ),
         nullable=False,
     )
