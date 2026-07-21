@@ -33,7 +33,7 @@ export const tagSchema = z
   .min(1, 'Tag cannot be empty')
   .max(30, 'Tag name is too long')
 
-// 2. Composed Form / Input Schemas
+// 2. Composed API / Form Schemas
 export const groceryItemSchema = z.object({
   id: z.string().uuid().optional(),
   name: ingredientNameSchema,
@@ -70,6 +70,7 @@ export const groceryListResponseSchema = z.object({
   created_at: z.string().optional(),
   updated_at: z.string().nullable().optional(),
 })
+
 // 4. Inferred TypeScript Types
 export type GroceryItemInput = z.infer<typeof groceryItemSchema>
 export type GroceryListInput = z.infer<typeof groceryListSchema>
