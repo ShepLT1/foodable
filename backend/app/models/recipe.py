@@ -49,11 +49,13 @@ class Recipe(Base):
         String(CUISINE_TYPE_MAX_LENGTH), nullable=True
     )
 
-    steps_json: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    steps: Mapped[list] = mapped_column("steps_json", JSONB, nullable=False)
 
-    ingredients_json: Mapped[list[dict]] = mapped_column(JSONB, nullable=False)
+    ingredients: Mapped[list[dict]] = mapped_column(
+        "ingredients_json", JSONB, nullable=False
+    )
 
-    nutrition_json: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    nutrition: Mapped[dict] = mapped_column("nutrition_json", JSONB, nullable=False)
 
     is_public: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 

@@ -1,76 +1,106 @@
-// @vitest-environment jsdom
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { UserPage } from './UserPage'
-import { useCurrentUser } from '../hooks/useCurrentUser'
+import { api } from '../api/client'
 
-// 1. Tell Vitest to mock the useCurrentUser hook file
-vi.mock('../hooks/useCurrentUser', () => ({
-  useCurrentUser: vi.fn(),
+vi.mock('../api/client', () => ({
+  api: vi.fn(),
+  ApiError: class ApiError extends Error {
+    status: number
+    detail: string
+    constructor(detail: string, status = 400) {
+      super(detail)
+      this.status = status
+      this.detail = detail
+    }
+  },
 }))
-
-const mockUseCurrentUser = (v: Partial<ReturnType<typeof useCurrentUser>>) =>
-  vi
-    .mocked(useCurrentUser)
-    .mockReturnValue(v as unknown as ReturnType<typeof useCurrentUser>)
 
 describe('UserPage Component', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
-  it('renders the loading state correctly', () => {
-    // Look how clean this is now! No manual casting required inside the test blocks.
-    mockUseCurrentUser({
-      data: undefined,
-      isPending: true,
-      error: null,
+  it('renders the dashboard layout and main sections correctly', async () => {
+    vi.mocked(api).mockImplementation((endpoint: string) => {
+      if (endpoint === '/users/me') {
+        return Promise.resolve({ display_name: 'Test Chef' })
+      }
+      if (endpoint.startsWith('/meal-plans')) {
+        return Promise.resolve([])
+      }
+      if (endpoint === '/recipes') {
+        return Promise.resolve([])
+      }
+      if (endpoint === '/lists') {
+        return Promise.resolve([])
+      }
+      return Promise.resolve([])
     })
 
     render(<UserPage />)
-    expect(screen.getByText('Loading...')).toBeInTheDocument()
+
+    await waitFor(() => {
+      expect(screen.getByText(/Welcome back, Test Chef!/i)).toBeInTheDocument()
+    })
+
+    expect(screen.getByText(/Daily Nutrition Breakdown/i)).toBeInTheDocument()
+    expect(screen.getByText(/Planned Meals/i)).toBeInTheDocument()
+    expect(screen.getByText(/Grocery List Export/i)).toBeInTheDocument()
   })
 
-  it('renders the error state cleanly if user fetch breaks', () => {
-    mockUseCurrentUser({
-      data: undefined,
-      isPending: false,
-      error: new Error('Failed to fetch user profiles'),
-    })
+  it('renders all meal slots (breakfast, lunch, dinner, snack)', async () => {
+    vi.mocked(api).mockResolvedValue([])
 
     render(<UserPage />)
-    expect(
-      screen.getByText('Error: Failed to fetch user profiles'),
-    ).toBeInTheDocument()
+
+    await waitFor(() => {
+      expect(screen.getByText(/breakfast \(0\)/i)).toBeInTheDocument()
+      expect(screen.getByText(/lunch \(0\)/i)).toBeInTheDocument()
+      expect(screen.getByText(/dinner \(0\)/i)).toBeInTheDocument()
+      expect(screen.getByText(/snack \(0\)/i)).toBeInTheDocument()
+    })
   })
 
-  it('renders a fallback message when no user object is found', () => {
-    mockUseCurrentUser({
-      data: undefined,
-      isPending: false,
-      error: null,
+  it('renders custom quick items in planned meal slots with macros', async () => {
+    const todayStr = new Date().toLocaleDateString('en-CA')
+
+    vi.mocked(api).mockImplementation((endpoint: string) => {
+      if (endpoint === '/users/me') {
+        return Promise.resolve({ display_name: 'John' })
+      }
+      if (endpoint.startsWith('/meal-plans')) {
+        return Promise.resolve([
+          {
+            id: 'meal-1',
+            user_id: 'user-1',
+            recipe_id: null,
+            custom_name: '{"name":"Burger","qty":1,"cal":500}',
+            date: todayStr,
+            slot: 'lunch',
+            recipe: null,
+          },
+        ])
+      }
+      return Promise.resolve([])
     })
 
     render(<UserPage />)
-    expect(screen.getByText('No user found.')).toBeInTheDocument()
+
+    await waitFor(() => {
+      expect(screen.getByText('Burger')).toBeInTheDocument()
+      // Use getAllByText to handle 500 kcal matching both the summary banner and card
+      expect(screen.getAllByText(/500 kcal/i).length).toBeGreaterThanOrEqual(1)
+    })
   })
 
-  it('renders user details successfully when data populates', () => {
-    mockUseCurrentUser({
-      data: {
-        id: 'user-123',
-        email: 'test@example.com',
-        display_name: 'Test User',
-      } as unknown as ReturnType<typeof useCurrentUser>['data'],
-    })
+  it('handles API fetch errors gracefully without crashing', async () => {
+    vi.mocked(api).mockRejectedValue(new Error('Network error'))
 
     render(<UserPage />)
 
-    expect(
-      screen.getByRole('heading', { name: 'Current User' }),
-    ).toBeInTheDocument()
-    expect(screen.getByText('user-123')).toBeInTheDocument()
-    expect(screen.getByText('test@example.com')).toBeInTheDocument()
-    expect(screen.getByText('Test User')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText(/Welcome back!/i)).toBeInTheDocument()
+    })
   })
 })
