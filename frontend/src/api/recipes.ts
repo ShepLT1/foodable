@@ -42,6 +42,10 @@ export interface GenerateRecipeRequest {
   cuisine_type?: string
 }
 
+export function getRecipe(recipeId: string) {
+  return api<Recipe>(`/recipes/${recipeId}`)
+}
+
 // Recipe API request handlers
 export function generateRecipe(data: GenerateRecipeRequest) {
   return api<Recipe>('/recipes/generate', {
