@@ -67,7 +67,7 @@ export const groceryListResponseSchema = z.object({
     .nullable()
     .optional()
     .transform((items) => items ?? []),
-  created_at: z.string().optional(),
+  created_at: z.string(), // Required string matching Postgres NOT NULL constraint
   updated_at: z.string().nullable().optional(),
 })
 
