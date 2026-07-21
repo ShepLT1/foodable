@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import {
   ChevronLeft,
   ChevronRight,
@@ -89,7 +89,7 @@ function parseCustomName(customName: string | null): CustomItemData | null {
         return parsed
       }
     }
-  } catch (e) {
+  } catch {
     // fallback to plain text if not JSON
   }
   return { name: customName }
@@ -107,7 +107,7 @@ function formatCustomName(data: CustomItemData): string {
     return data.name.trim()
   }
 
-  const obj: Record<string, any> = { name: data.name.trim() }
+  const obj: Record<string, unknown> = { name: data.name.trim() }
   if (data.qty !== undefined && !isNaN(data.qty)) obj.qty = data.qty
   if (data.unit) obj.unit = data.unit.trim()
   if (data.cal !== undefined && !isNaN(data.cal)) obj.cal = data.cal
@@ -133,7 +133,7 @@ export const UserPage: React.FC = () => {
   const [groceryLists, setGroceryLists] = useState<GroceryList[]>([])
   const [selectedListId, setSelectedListId] = useState<string>('')
   const [selectedListItems, setSelectedListItems] = useState<GroceryListItem[]>(
-    [],
+    []
   )
   const [newListTitle, setNewListTitle] = useState<string>('')
   const [isCreatingNewList, setIsCreatingNewList] = useState<boolean>(false)
@@ -166,23 +166,35 @@ export const UserPage: React.FC = () => {
     text: string
   } | null>(null)
 
-  useEffect(() => {
+  // Date Change Handler
+  const handleDateChange = (newDate: string) => {
+    setSelectedDate(newDate)
     setAllowPastEditing(false)
-  }, [selectedDate])
+    setMessage(null)
+  }
 
-  useEffect(() => {
-    if (!selectedListId) return
-    const saved = localStorage.getItem(`exported_meals_${selectedListId}`)
+  // Exported Meals Storage Helper
+  const loadExportedMeals = (listId: string) => {
+    if (!listId) {
+      setExportedMealIds(new Set())
+      return
+    }
+    const saved = localStorage.getItem(`exported_meals_${listId}`)
     if (saved) {
       try {
         setExportedMealIds(new Set(JSON.parse(saved)))
-      } catch (e) {
+      } catch {
         setExportedMealIds(new Set())
       }
     } else {
       setExportedMealIds(new Set())
     }
-  }, [selectedListId])
+  }
+
+  const handleSelectGroceryList = (id: string) => {
+    setSelectedListId(id)
+    loadExportedMeals(id)
+  }
 
   const markMealsAsExported = (mealIds: string[]) => {
     if (!selectedListId) return
@@ -190,7 +202,7 @@ export const UserPage: React.FC = () => {
       const updated = new Set([...prev, ...mealIds])
       localStorage.setItem(
         `exported_meals_${selectedListId}`,
-        JSON.stringify(Array.from(updated)),
+        JSON.stringify(Array.from(updated))
       )
       return updated
     })
@@ -210,13 +222,13 @@ export const UserPage: React.FC = () => {
   }, [selectedDate])
 
   // --- Fetch Dashboard Data ---
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       const userData = await api<{ display_name: string }>('/users/me')
       setDisplayName(userData.display_name || 'Foodable User')
 
       const mealData = await api<MealPlan[]>(
-        `/meal-plans?startDate=${queryStartDate}&endDate=${queryEndDate}`,
+        `/meal-plans?startDate=${queryStartDate}&endDate=${queryEndDate}`
       )
       setMeals(Array.isArray(mealData) ? mealData : [])
 
@@ -224,38 +236,43 @@ export const UserPage: React.FC = () => {
         const recipesData = await api<Recipe[]>('/recipes')
         if (Array.isArray(recipesData)) {
           setAvailableRecipes(recipesData)
-          if (recipesData.length > 0 && !selectedRecipeId) {
-            setSelectedRecipeId(recipesData[0].id)
+          if (recipesData.length > 0) {
+            setSelectedRecipeId((prev) => prev || recipesData[0].id)
           }
         }
-      } catch (e) {
+      } catch {
         // ignore if recipes endpoint unavailable
       }
 
       const listData = await api<GroceryList[]>('/lists')
       if (Array.isArray(listData) && listData.length > 0) {
         setGroceryLists(listData)
-        if (!selectedListId) setSelectedListId(listData[0].id)
+        setSelectedListId((prev) => {
+          const targetId = prev || listData[0].id
+          loadExportedMeals(targetId)
+          return targetId
+        })
       }
     } catch (err) {
       console.error('Error loading dashboard data:', err)
     }
-  }
+  }, [queryStartDate, queryEndDate])
 
   useEffect(() => {
     fetchDashboardData()
-  }, [selectedDate])
+  }, [fetchDashboardData])
 
   // --- Fetch Grocery Preview ---
   useEffect(() => {
     if (!selectedListId || isCreatingNewList) {
-      setSelectedListItems([])
       return
     }
 
+    let isMounted = true
     const fetchListDetails = async () => {
       try {
         const rawData = await api<unknown>(`/lists/${selectedListId}`)
+        if (!isMounted) return
         const parsed = groceryListResponseSchema.parse(rawData)
         setSelectedListItems(parsed.items)
       } catch (err) {
@@ -264,17 +281,24 @@ export const UserPage: React.FC = () => {
     }
 
     fetchListDetails()
+
+    return () => {
+      isMounted = false
+    }
   }, [selectedListId, isCreatingNewList])
 
-  // --- Date Control Helpers ---
+  // Derived Preview Items
+  const activeListItems =
+    !selectedListId || isCreatingNewList ? [] : selectedListItems
+
+  // --- Date Helpers ---
   const changeDate = (offsetDays: number) => {
     const current = new Date(selectedDate + 'T00:00:00')
     current.setDate(current.getDate() + offsetDays)
     const yyyy = current.getFullYear()
     const mm = String(current.getMonth() + 1).padStart(2, '0')
     const dd = String(current.getDate()).padStart(2, '0')
-    setSelectedDate(`${yyyy}-${mm}-${dd}`)
-    setMessage(null)
+    handleDateChange(`${yyyy}-${mm}-${dd}`)
   }
 
   const isPastDay = selectedDate < todayStr
@@ -325,12 +349,14 @@ export const UserPage: React.FC = () => {
         }
         return acc
       },
-      { calories: 0, protein: 0, carbs: 0, fat: 0 },
+      { calories: 0, protein: 0, carbs: 0, fat: 0 }
     )
   }, [selectedDayMeals])
 
   const targetMealsForExport = useMemo(() => {
-    return unexportedDayMeals.length > 0 ? unexportedDayMeals : selectedDayMeals
+    return unexportedDayMeals.length > 0
+      ? unexportedDayMeals
+      : selectedDayMeals
   }, [unexportedDayMeals, selectedDayMeals])
 
   // Consolidates both Recipe Ingredients AND Custom Items (with quantities/units)
@@ -396,7 +422,7 @@ export const UserPage: React.FC = () => {
 
   // --- Modal Openers ---
   const handleOpenAddModal = (
-    slot: 'breakfast' | 'lunch' | 'dinner' | 'snack',
+    slot: 'breakfast' | 'lunch' | 'dinner' | 'snack'
   ) => {
     setEditingMealId(null)
     resetModalInputs()
@@ -423,7 +449,6 @@ export const UserPage: React.FC = () => {
         setCustomCarbs(parsed.c !== undefined ? String(parsed.c) : '')
         setCustomFat(parsed.f !== undefined ? String(parsed.f) : '')
 
-        // Auto-expand optional details drawer if custom numbers exist
         if (
           parsed.qty !== undefined ||
           parsed.unit ||
@@ -451,9 +476,7 @@ export const UserPage: React.FC = () => {
 
     try {
       const isEditing = Boolean(editingMealId)
-      const endpoint = isEditing
-        ? `/meal-plans/${editingMealId}`
-        : '/meal-plans'
+      const endpoint = isEditing ? `/meal-plans/${editingMealId}` : '/meal-plans'
       const method = isEditing ? 'PATCH' : 'POST'
 
       const payload: Record<string, unknown> = {
@@ -495,8 +518,7 @@ export const UserPage: React.FC = () => {
       })
     } catch (err) {
       console.error('Error saving meal item:', err)
-      const detail =
-        err instanceof ApiError ? err.detail : 'Failed to save item.'
+      const detail = err instanceof ApiError ? err.detail : 'Failed to save item.'
       setMessage({ type: 'error', text: detail })
     } finally {
       setSavingMeal(false)
@@ -569,11 +591,11 @@ export const UserPage: React.FC = () => {
       let mergedCount = 0
 
       for (const item of consolidatedExportIngredients) {
-        const existingItem = selectedListItems.find(
+        const existingItem = activeListItems.find(
           (existing) =>
             existing.name.trim().toLowerCase() === item.name.toLowerCase() &&
             (existing.unit || '').trim().toLowerCase() ===
-              item.unit.toLowerCase(),
+              item.unit.toLowerCase()
         )
 
         if (existingItem && !isCreatingNewList) {
@@ -628,8 +650,7 @@ export const UserPage: React.FC = () => {
               Welcome back{displayName ? `, ${displayName}` : ''}! 👋
             </h1>
             <p className="text-sm text-slate-500 mt-0.5">
-              Plan your weekly meals, track daily macros, and generate your
-              shop.
+              Plan your weekly meals, track daily macros, and generate your shop.
             </p>
           </div>
         </div>
@@ -651,8 +672,7 @@ export const UserPage: React.FC = () => {
                 value={selectedDate}
                 onChange={(e) => {
                   if (e.target.value) {
-                    setSelectedDate(e.target.value)
-                    setMessage(null)
+                    handleDateChange(e.target.value)
                   }
                 }}
                 className="bg-transparent text-sm font-bold text-slate-800 outline-none cursor-pointer"
@@ -685,13 +705,11 @@ export const UserPage: React.FC = () => {
               >
                 {allowPastEditing ? (
                   <>
-                    <Unlock className="w-3.5 h-3.5 text-emerald-600" /> Editing
-                    Unlocked
+                    <Unlock className="w-3.5 h-3.5 text-emerald-600" /> Editing Unlocked
                   </>
                 ) : (
                   <>
-                    <Lock className="w-3.5 h-3.5 text-amber-600" /> Archived
-                    (Click to Unlock)
+                    <Lock className="w-3.5 h-3.5 text-amber-600" /> Archived (Click to Unlock)
                   </>
                 )}
               </button>
@@ -699,7 +717,7 @@ export const UserPage: React.FC = () => {
 
             {!isToday && (
               <button
-                onClick={() => setSelectedDate(todayStr)}
+                onClick={() => handleDateChange(todayStr)}
                 className="px-3 py-1.5 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors cursor-pointer"
               >
                 Jump to Today
@@ -743,9 +761,7 @@ export const UserPage: React.FC = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 text-center">
               <span className="text-xs opacity-80 block">Calories</span>
-              <span className="text-2xl font-bold">
-                {dayTotals.calories} kcal
-              </span>
+              <span className="text-2xl font-bold">{dayTotals.calories} kcal</span>
             </div>
             <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 text-center">
               <span className="text-xs opacity-80 block">Protein</span>
@@ -813,7 +829,9 @@ export const UserPage: React.FC = () => {
                     {slotMeals.map((mealItem) => {
                       const isExported = exportedMealIds.has(mealItem.id)
                       const isQuickItem = !mealItem.recipe_id
-                      const parsedCustom = parseCustomName(mealItem.custom_name)
+                      const parsedCustom = parseCustomName(
+                        mealItem.custom_name
+                      )
 
                       const displayTitle =
                         mealItem.recipe?.title ||
@@ -821,7 +839,7 @@ export const UserPage: React.FC = () => {
                         mealItem.custom_name
                       const hasNutrition = Boolean(
                         mealItem.recipe?.nutrition ||
-                        parsedCustom?.cal !== undefined,
+                          parsedCustom?.cal !== undefined
                       )
 
                       const calVal =
@@ -896,7 +914,7 @@ export const UserPage: React.FC = () => {
                                       >
                                         {ing.quantity} {ing.unit} {ing.name}
                                       </span>
-                                    ),
+                                    )
                                   )}
                                 </div>
                               )}
@@ -905,8 +923,7 @@ export const UserPage: React.FC = () => {
                             {isQuickItem && parsedCustom?.qty && (
                               <div className="pt-0.5">
                                 <span className="px-2 py-0.5 rounded-md text-[11px] bg-slate-100 text-slate-600 border border-slate-200">
-                                  {parsedCustom.qty}{' '}
-                                  {parsedCustom.unit || 'item'}
+                                  {parsedCustom.qty} {parsedCustom.unit || 'item'}
                                 </span>
                               </div>
                             )}
@@ -1000,7 +1017,7 @@ export const UserPage: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <select
                     value={selectedListId}
-                    onChange={(e) => setSelectedListId(e.target.value)}
+                    onChange={(e) => handleSelectGroceryList(e.target.value)}
                     className="bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 outline-none cursor-pointer focus:border-emerald-500"
                   >
                     {groceryLists.map((list) => (
@@ -1049,15 +1066,15 @@ export const UserPage: React.FC = () => {
             <div className="pt-3 border-t border-slate-100 flex items-center gap-3">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1 flex-shrink-0">
                 <ListChecks className="w-3.5 h-3.5 text-emerald-600" />
-                Current Items ({selectedListItems.length}):
+                Current Items ({activeListItems.length}):
               </span>
-              {selectedListItems.length === 0 ? (
+              {activeListItems.length === 0 ? (
                 <span className="text-xs text-slate-400 italic">
                   This list is currently empty.
                 </span>
               ) : (
                 <div className="flex flex-wrap gap-1.5 max-h-16 overflow-y-auto pr-1">
-                  {selectedListItems.map((item) => (
+                  {activeListItems.map((item) => (
                     <span
                       key={item.id}
                       className={`px-2 py-0.5 rounded-md text-[11px] font-medium border ${
@@ -1233,9 +1250,7 @@ export const UserPage: React.FC = () => {
                                 type="number"
                                 placeholder="g"
                                 value={customProtein}
-                                onChange={(e) =>
-                                  setCustomProtein(e.target.value)
-                                }
+                                onChange={(e) => setCustomProtein(e.target.value)}
                                 className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-800 outline-none focus:border-emerald-500"
                               />
                             </div>
