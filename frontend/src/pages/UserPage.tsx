@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react'
 import {
   ChevronLeft,
   ChevronRight,
@@ -23,76 +23,76 @@ import {
   Info,
   ChevronDown,
   ChevronUp,
-} from 'lucide-react';
+} from 'lucide-react'
 
-import { api, ApiError } from '../api/client';
+import { api, ApiError } from '../api/client'
 import {
   groceryListResponseSchema,
   type GroceryList,
   type GroceryListItem,
-} from '../schemas/grocery';
+} from '../schemas/grocery'
 
 // --- Types ---
 interface Ingredient {
-  name: string;
-  quantity: number;
-  unit: string;
+  name: string
+  quantity: number
+  unit: string
 }
 
 interface Nutrition {
-  calories?: number;
-  protein_g?: number;
-  protein?: number;
-  carbs_g?: number;
-  carbs?: number;
-  fat_g?: number;
-  fat?: number;
+  calories?: number
+  protein_g?: number
+  protein?: number
+  carbs_g?: number
+  carbs?: number
+  fat_g?: number
+  fat?: number
 }
 
 interface Recipe {
-  id: string;
-  title: string;
-  description?: string;
-  ingredients?: Ingredient[];
-  steps?: string[];
-  nutrition?: Nutrition;
+  id: string
+  title: string
+  description?: string
+  ingredients?: Ingredient[]
+  steps?: string[]
+  nutrition?: Nutrition
 }
 
 interface MealPlan {
-  id: string;
-  user_id: string;
-  recipe_id: string | null;
-  custom_name: string | null;
-  date: string;
-  slot: 'breakfast' | 'lunch' | 'dinner' | 'snack';
-  recipe: Recipe | null;
+  id: string
+  user_id: string
+  recipe_id: string | null
+  custom_name: string | null
+  date: string
+  slot: 'breakfast' | 'lunch' | 'dinner' | 'snack'
+  recipe: Recipe | null
 }
 
 // Custom Quick Item Payload Shape
 interface CustomItemData {
-  name: string;
-  qty?: number;
-  unit?: string;
-  cal?: number;
-  p?: number;
-  c?: number;
-  f?: number;
+  name: string
+  qty?: number
+  unit?: string
+  cal?: number
+  p?: number
+  c?: number
+  f?: number
 }
 
 // Helpers to safely parse/format Custom Item Data inside custom_name
 function parseCustomName(customName: string | null): CustomItemData | null {
-  if (!customName) return null;
+  if (!customName) return null
   try {
     if (customName.startsWith('{') && customName.endsWith('}')) {
-      const parsed = JSON.parse(customName);
+      const parsed = JSON.parse(customName)
       if (parsed && typeof parsed.name === 'string') {
-        return parsed;
+        return parsed
       }
     }
   } catch (e) {
     // fallback to plain text if not JSON
   }
-  return { name: customName };
+  return { name: customName }
 }
 
 function formatCustomName(data: CustomItemData): string {
@@ -104,311 +104,324 @@ function formatCustomName(data: CustomItemData): string {
     data.c === undefined &&
     data.f === undefined
   ) {
-    return data.name.trim();
+    return data.name.trim()
   }
 
-  const obj: Record<string, any> = { name: data.name.trim() };
-  if (data.qty !== undefined && !isNaN(data.qty)) obj.qty = data.qty;
-  if (data.unit) obj.unit = data.unit.trim();
-  if (data.cal !== undefined && !isNaN(data.cal)) obj.cal = data.cal;
-  if (data.p !== undefined && !isNaN(data.p)) obj.p = data.p;
-  if (data.c !== undefined && !isNaN(data.c)) obj.c = data.c;
-  if (data.f !== undefined && !isNaN(data.f)) obj.f = data.f;
+  const obj: Record<string, any> = { name: data.name.trim() }
+  if (data.qty !== undefined && !isNaN(data.qty)) obj.qty = data.qty
+  if (data.unit) obj.unit = data.unit.trim()
+  if (data.cal !== undefined && !isNaN(data.cal)) obj.cal = data.cal
+  if (data.p !== undefined && !isNaN(data.p)) obj.p = data.p
+  if (data.c !== undefined && !isNaN(data.c)) obj.c = data.c
+  if (data.f !== undefined && !isNaN(data.f)) obj.f = data.f
 
-  const json = JSON.stringify(obj);
-  return json.length <= 150 ? json : data.name.trim();
+  const json = JSON.stringify(obj)
+  return json.length <= 150 ? json : data.name.trim()
 }
 
 export const UserPage: React.FC = () => {
-  const todayStr = useMemo(() => new Date().toLocaleDateString('en-CA'), []);
+  const todayStr = useMemo(() => new Date().toLocaleDateString('en-CA'), [])
 
   // --- Main States ---
-  const [displayName, setDisplayName] = useState<string>('');
-  const [selectedDate, setSelectedDate] = useState<string>(todayStr);
-  const [allowPastEditing, setAllowPastEditing] = useState<boolean>(false);
-  const [meals, setMeals] = useState<MealPlan[]>([]);
-  const [availableRecipes, setAvailableRecipes] = useState<Recipe[]>([]);
-  
+  const [displayName, setDisplayName] = useState<string>('')
+  const [selectedDate, setSelectedDate] = useState<string>(todayStr)
+  const [allowPastEditing, setAllowPastEditing] = useState<boolean>(false)
+  const [meals, setMeals] = useState<MealPlan[]>([])
+  const [availableRecipes, setAvailableRecipes] = useState<Recipe[]>([])
+
   // --- Grocery List States ---
-  const [groceryLists, setGroceryLists] = useState<GroceryList[]>([]);
-  const [selectedListId, setSelectedListId] = useState<string>('');
-  const [selectedListItems, setSelectedListItems] = useState<GroceryListItem[]>([]);
-  const [newListTitle, setNewListTitle] = useState<string>('');
-  const [isCreatingNewList, setIsCreatingNewList] = useState<boolean>(false);
+  const [groceryLists, setGroceryLists] = useState<GroceryList[]>([])
+  const [selectedListId, setSelectedListId] = useState<string>('')
+  const [selectedListItems, setSelectedListItems] = useState<GroceryListItem[]>(
+    [],
+  )
+  const [newListTitle, setNewListTitle] = useState<string>('')
+  const [isCreatingNewList, setIsCreatingNewList] = useState<boolean>(false)
 
   // --- Export Tracking State ---
-  const [exportedMealIds, setExportedMealIds] = useState<Set<string>>(new Set());
+  const [exportedMealIds, setExportedMealIds] = useState<Set<string>>(new Set())
 
   // --- Modal States ---
-  const [activeModalSlot, setActiveModalSlot] = useState<'breakfast' | 'lunch' | 'dinner' | 'snack' | null>(null);
-  const [editingMealId, setEditingMealId] = useState<string | null>(null);
-  const [itemType, setItemType] = useState<'recipe' | 'custom'>('custom');
-  const [selectedRecipeId, setSelectedRecipeId] = useState<string>('');
-  const [mealNameInput, setMealNameInput] = useState<string>('');
-  
+  const [activeModalSlot, setActiveModalSlot] = useState<
+    'breakfast' | 'lunch' | 'dinner' | 'snack' | null
+  >(null)
+  const [editingMealId, setEditingMealId] = useState<string | null>(null)
+  const [itemType, setItemType] = useState<'recipe' | 'custom'>('custom')
+  const [selectedRecipeId, setSelectedRecipeId] = useState<string>('')
+  const [mealNameInput, setMealNameInput] = useState<string>('')
+
   // Optional Nutrition & Quantity Inputs
-  const [showOptionalDetails, setShowOptionalDetails] = useState<boolean>(false);
-  const [customQty, setCustomQty] = useState<string>('');
-  const [customUnit, setCustomUnit] = useState<string>('');
-  const [customCal, setCustomCal] = useState<string>('');
-  const [customProtein, setCustomProtein] = useState<string>('');
-  const [customCarbs, setCustomCarbs] = useState<string>('');
-  const [customFat, setCustomFat] = useState<string>('');
+  const [showOptionalDetails, setShowOptionalDetails] = useState<boolean>(false)
+  const [customQty, setCustomQty] = useState<string>('')
+  const [customUnit, setCustomUnit] = useState<string>('')
+  const [customCal, setCustomCal] = useState<string>('')
+  const [customProtein, setCustomProtein] = useState<string>('')
+  const [customCarbs, setCustomCarbs] = useState<string>('')
+  const [customFat, setCustomFat] = useState<string>('')
 
-  const [savingMeal, setSavingMeal] = useState<boolean>(false);
-  const [exporting, setExporting] = useState<boolean>(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [savingMeal, setSavingMeal] = useState<boolean>(false)
+  const [exporting, setExporting] = useState<boolean>(false)
+  const [message, setMessage] = useState<{
+    type: 'success' | 'error'
+    text: string
+  } | null>(null)
 
   useEffect(() => {
-    setAllowPastEditing(false);
-  }, [selectedDate]);
+    setAllowPastEditing(false)
+  }, [selectedDate])
 
   useEffect(() => {
-    if (!selectedListId) return;
-    const saved = localStorage.getItem(`exported_meals_${selectedListId}`);
+    if (!selectedListId) return
+    const saved = localStorage.getItem(`exported_meals_${selectedListId}`)
     if (saved) {
       try {
-        setExportedMealIds(new Set(JSON.parse(saved)));
+        setExportedMealIds(new Set(JSON.parse(saved)))
       } catch (e) {
-        setExportedMealIds(new Set());
+        setExportedMealIds(new Set())
       }
     } else {
-      setExportedMealIds(new Set());
+      setExportedMealIds(new Set())
     }
-  }, [selectedListId]);
+  }, [selectedListId])
 
   const markMealsAsExported = (mealIds: string[]) => {
-    if (!selectedListId) return;
+    if (!selectedListId) return
     setExportedMealIds((prev) => {
-      const updated = new Set([...prev, ...mealIds]);
-      localStorage.setItem(`exported_meals_${selectedListId}`, JSON.stringify(Array.from(updated)));
-      return updated;
-    });
-  };
+      const updated = new Set([...prev, ...mealIds])
+      localStorage.setItem(
+        `exported_meals_${selectedListId}`,
+        JSON.stringify(Array.from(updated)),
+      )
+      return updated
+    })
+  }
 
   const { queryStartDate, queryEndDate } = useMemo(() => {
-    const current = new Date(selectedDate + 'T00:00:00');
-    const start = new Date(current);
-    start.setDate(start.getDate() - 15);
-    const end = new Date(current);
-    end.setDate(end.getDate() + 15);
+    const current = new Date(selectedDate + 'T00:00:00')
+    const start = new Date(current)
+    start.setDate(start.getDate() - 15)
+    const end = new Date(current)
+    end.setDate(end.getDate() + 15)
 
     return {
       queryStartDate: start.toISOString().slice(0, 10),
       queryEndDate: end.toISOString().slice(0, 10),
-    };
-  }, [selectedDate]);
+    }
+  }, [selectedDate])
 
   // --- Fetch Dashboard Data ---
   const fetchDashboardData = async () => {
     try {
-      const userData = await api<{ display_name: string }>('/users/me');
-      setDisplayName(userData.display_name || 'Foodable User');
+      const userData = await api<{ display_name: string }>('/users/me')
+      setDisplayName(userData.display_name || 'Foodable User')
 
       const mealData = await api<MealPlan[]>(
-        `/meal-plans?startDate=${queryStartDate}&endDate=${queryEndDate}`
-      );
-      setMeals(Array.isArray(mealData) ? mealData : []);
+        `/meal-plans?startDate=${queryStartDate}&endDate=${queryEndDate}`,
+      )
+      setMeals(Array.isArray(mealData) ? mealData : [])
 
       try {
-        const recipesData = await api<Recipe[]>('/recipes');
+        const recipesData = await api<Recipe[]>('/recipes')
         if (Array.isArray(recipesData)) {
-          setAvailableRecipes(recipesData);
+          setAvailableRecipes(recipesData)
           if (recipesData.length > 0 && !selectedRecipeId) {
-            setSelectedRecipeId(recipesData[0].id);
+            setSelectedRecipeId(recipesData[0].id)
           }
         }
       } catch (e) {
         // ignore if recipes endpoint unavailable
       }
 
-      const listData = await api<GroceryList[]>('/lists');
+      const listData = await api<GroceryList[]>('/lists')
       if (Array.isArray(listData) && listData.length > 0) {
-        setGroceryLists(listData);
-        if (!selectedListId) setSelectedListId(listData[0].id);
+        setGroceryLists(listData)
+        if (!selectedListId) setSelectedListId(listData[0].id)
       }
     } catch (err) {
-      console.error('Error loading dashboard data:', err);
+      console.error('Error loading dashboard data:', err)
     }
-  };
+  }
 
   useEffect(() => {
-    fetchDashboardData();
-  }, [selectedDate]);
+    fetchDashboardData()
+  }, [selectedDate])
 
   // --- Fetch Grocery Preview ---
   useEffect(() => {
     if (!selectedListId || isCreatingNewList) {
-      setSelectedListItems([]);
-      return;
+      setSelectedListItems([])
+      return
     }
 
     const fetchListDetails = async () => {
       try {
-        const rawData = await api<unknown>(`/lists/${selectedListId}`);
-        const parsed = groceryListResponseSchema.parse(rawData);
-        setSelectedListItems(parsed.items);
+        const rawData = await api<unknown>(`/lists/${selectedListId}`)
+        const parsed = groceryListResponseSchema.parse(rawData)
+        setSelectedListItems(parsed.items)
       } catch (err) {
-        console.error('Error fetching list preview items:', err);
+        console.error('Error fetching list preview items:', err)
       }
-    };
+    }
 
-    fetchListDetails();
-  }, [selectedListId, isCreatingNewList]);
+    fetchListDetails()
+  }, [selectedListId, isCreatingNewList])
 
   // --- Date Control Helpers ---
   const changeDate = (offsetDays: number) => {
-    const current = new Date(selectedDate + 'T00:00:00');
-    current.setDate(current.getDate() + offsetDays);
-    const yyyy = current.getFullYear();
-    const mm = String(current.getMonth() + 1).padStart(2, '0');
-    const dd = String(current.getDate()).padStart(2, '0');
-    setSelectedDate(`${yyyy}-${mm}-${dd}`);
-    setMessage(null);
-  };
+    const current = new Date(selectedDate + 'T00:00:00')
+    current.setDate(current.getDate() + offsetDays)
+    const yyyy = current.getFullYear()
+    const mm = String(current.getMonth() + 1).padStart(2, '0')
+    const dd = String(current.getDate()).padStart(2, '0')
+    setSelectedDate(`${yyyy}-${mm}-${dd}`)
+    setMessage(null)
+  }
 
-  const isPastDay = selectedDate < todayStr;
-  const isToday = selectedDate === todayStr;
-  const isEditingLocked = isPastDay && !allowPastEditing;
+  const isPastDay = selectedDate < todayStr
+  const isToday = selectedDate === todayStr
+  const isEditingLocked = isPastDay && !allowPastEditing
 
   // --- Meal Filtering ---
   const selectedDayMeals = useMemo(() => {
     return meals.filter((meal) => {
-      if (!meal.date) return false;
-      return meal.date.slice(0, 10) === selectedDate.slice(0, 10);
-    });
-  }, [meals, selectedDate]);
+      if (!meal.date) return false
+      return meal.date.slice(0, 10) === selectedDate.slice(0, 10)
+    })
+  }, [meals, selectedDate])
 
   const unexportedDayMeals = useMemo(() => {
-    return selectedDayMeals.filter((m) => !exportedMealIds.has(m.id));
-  }, [selectedDayMeals, exportedMealIds]);
+    return selectedDayMeals.filter((m) => !exportedMealIds.has(m.id))
+  }, [selectedDayMeals, exportedMealIds])
 
-  const allMealsExported = selectedDayMeals.length > 0 && unexportedDayMeals.length === 0;
+  const allMealsExported =
+    selectedDayMeals.length > 0 && unexportedDayMeals.length === 0
 
   // Check items lacking nutrition data
   const itemsWithoutNutritionCount = useMemo(() => {
     return selectedDayMeals.filter((m) => {
-      if (m.recipe?.nutrition) return false;
-      const parsed = parseCustomName(m.custom_name);
-      return parsed?.cal === undefined;
-    }).length;
-  }, [selectedDayMeals]);
+      if (m.recipe?.nutrition) return false
+      const parsed = parseCustomName(m.custom_name)
+      return parsed?.cal === undefined
+    }).length
+  }, [selectedDayMeals])
 
   // Macros Calculation (Includes both Recipe Nutrition AND Custom Item Nutrition)
   const dayTotals = useMemo(() => {
     return selectedDayMeals.reduce(
       (acc, meal) => {
-        const nut = meal.recipe?.nutrition;
-        const parsedCustom = parseCustomName(meal.custom_name);
+        const nut = meal.recipe?.nutrition
+        const parsedCustom = parseCustomName(meal.custom_name)
 
         if (nut) {
-          acc.calories += Number(nut.calories) || 0;
-          acc.protein += Number(nut.protein_g ?? nut.protein) || 0;
-          acc.carbs += Number(nut.carbs_g ?? nut.carbs) || 0;
-          acc.fat += Number(nut.fat_g ?? nut.fat) || 0;
+          acc.calories += Number(nut.calories) || 0
+          acc.protein += Number(nut.protein_g ?? nut.protein) || 0
+          acc.carbs += Number(nut.carbs_g ?? nut.carbs) || 0
+          acc.fat += Number(nut.fat_g ?? nut.fat) || 0
         } else if (parsedCustom) {
-          acc.calories += Number(parsedCustom.cal) || 0;
-          acc.protein += Number(parsedCustom.p) || 0;
-          acc.carbs += Number(parsedCustom.c) || 0;
-          acc.fat += Number(parsedCustom.f) || 0;
+          acc.calories += Number(parsedCustom.cal) || 0
+          acc.protein += Number(parsedCustom.p) || 0
+          acc.carbs += Number(parsedCustom.c) || 0
+          acc.fat += Number(parsedCustom.f) || 0
         }
-        return acc;
+        return acc
       },
-      { calories: 0, protein: 0, carbs: 0, fat: 0 }
-    );
-  }, [selectedDayMeals]);
+      { calories: 0, protein: 0, carbs: 0, fat: 0 },
+    )
+  }, [selectedDayMeals])
 
   const targetMealsForExport = useMemo(() => {
-    return unexportedDayMeals.length > 0 ? unexportedDayMeals : selectedDayMeals;
-  }, [unexportedDayMeals, selectedDayMeals]);
+    return unexportedDayMeals.length > 0 ? unexportedDayMeals : selectedDayMeals
+  }, [unexportedDayMeals, selectedDayMeals])
 
   // Consolidates both Recipe Ingredients AND Custom Items (with quantities/units)
   const consolidatedExportIngredients = useMemo(() => {
-    const map = new Map<string, Ingredient>();
+    const map = new Map<string, Ingredient>()
 
     targetMealsForExport.forEach((meal) => {
-      const ings = meal.recipe?.ingredients;
+      const ings = meal.recipe?.ingredients
       if (Array.isArray(ings) && ings.length > 0) {
         ings.forEach((ing) => {
-          if (!ing || !ing.name) return;
+          if (!ing || !ing.name) return
 
-          const key = `${ing.name.trim().toLowerCase()}_${(ing.unit || '').trim().toLowerCase()}`;
-          const qty = Number(ing.quantity) || 1;
+          const key = `${ing.name.trim().toLowerCase()}_${(ing.unit || '').trim().toLowerCase()}`
+          const qty = Number(ing.quantity) || 1
 
           if (map.has(key)) {
-            const existing = map.get(key)!;
-            existing.quantity += qty;
+            const existing = map.get(key)!
+            existing.quantity += qty
           } else {
             map.set(key, {
               name: ing.name.trim(),
               quantity: qty,
               unit: ing.unit || 'item',
-            });
+            })
           }
-        });
+        })
       } else if (meal.custom_name) {
-        const parsed = parseCustomName(meal.custom_name);
+        const parsed = parseCustomName(meal.custom_name)
         if (parsed && parsed.name) {
-          const name = parsed.name.trim();
-          const unit = parsed.unit ? parsed.unit.trim() : 'item';
-          const qty = parsed.qty ? Number(parsed.qty) : 1;
-          const key = `${name.toLowerCase()}_${unit.toLowerCase()}`;
+          const name = parsed.name.trim()
+          const unit = parsed.unit ? parsed.unit.trim() : 'item'
+          const qty = parsed.qty ? Number(parsed.qty) : 1
+          const key = `${name.toLowerCase()}_${unit.toLowerCase()}`
 
           if (map.has(key)) {
-            const existing = map.get(key)!;
-            existing.quantity += qty;
+            const existing = map.get(key)!
+            existing.quantity += qty
           } else {
             map.set(key, {
               name,
               quantity: qty,
               unit,
-            });
+            })
           }
         }
       }
-    });
+    })
 
-    return Array.from(map.values());
-  }, [targetMealsForExport]);
+    return Array.from(map.values())
+  }, [targetMealsForExport])
 
   // --- Modal Reset Helper ---
   const resetModalInputs = () => {
-    setMealNameInput('');
-    setCustomQty('');
-    setCustomUnit('');
-    setCustomCal('');
-    setCustomProtein('');
-    setCustomCarbs('');
-    setCustomFat('');
-    setShowOptionalDetails(false);
-  };
+    setMealNameInput('')
+    setCustomQty('')
+    setCustomUnit('')
+    setCustomCal('')
+    setCustomProtein('')
+    setCustomCarbs('')
+    setCustomFat('')
+    setShowOptionalDetails(false)
+  }
 
   // --- Modal Openers ---
-  const handleOpenAddModal = (slot: 'breakfast' | 'lunch' | 'dinner' | 'snack') => {
-    setEditingMealId(null);
-    resetModalInputs();
-    setItemType('custom');
-    setActiveModalSlot(slot);
-  };
+  const handleOpenAddModal = (
+    slot: 'breakfast' | 'lunch' | 'dinner' | 'snack',
+  ) => {
+    setEditingMealId(null)
+    resetModalInputs()
+    setItemType('custom')
+    setActiveModalSlot(slot)
+  }
 
   const handleOpenEditModal = (meal: MealPlan) => {
-    setEditingMealId(meal.id);
-    resetModalInputs();
+    setEditingMealId(meal.id)
+    resetModalInputs()
 
     if (meal.recipe_id) {
-      setItemType('recipe');
-      setSelectedRecipeId(meal.recipe_id);
+      setItemType('recipe')
+      setSelectedRecipeId(meal.recipe_id)
     } else {
-      setItemType('custom');
-      const parsed = parseCustomName(meal.custom_name);
+      setItemType('custom')
+      const parsed = parseCustomName(meal.custom_name)
       if (parsed) {
-        setMealNameInput(parsed.name || '');
-        setCustomQty(parsed.qty !== undefined ? String(parsed.qty) : '');
-        setCustomUnit(parsed.unit || '');
-        setCustomCal(parsed.cal !== undefined ? String(parsed.cal) : '');
-        setCustomProtein(parsed.p !== undefined ? String(parsed.p) : '');
-        setCustomCarbs(parsed.c !== undefined ? String(parsed.c) : '');
-        setCustomFat(parsed.f !== undefined ? String(parsed.f) : '');
+        setMealNameInput(parsed.name || '')
+        setCustomQty(parsed.qty !== undefined ? String(parsed.qty) : '')
+        setCustomUnit(parsed.unit || '')
+        setCustomCal(parsed.cal !== undefined ? String(parsed.cal) : '')
+        setCustomProtein(parsed.p !== undefined ? String(parsed.p) : '')
+        setCustomCarbs(parsed.c !== undefined ? String(parsed.c) : '')
+        setCustomFat(parsed.f !== undefined ? String(parsed.f) : '')
 
         // Auto-expand optional details drawer if custom numbers exist
         if (
@@ -419,145 +432,157 @@ export const UserPage: React.FC = () => {
           parsed.c !== undefined ||
           parsed.f !== undefined
         ) {
-          setShowOptionalDetails(true);
+          setShowOptionalDetails(true)
         }
       } else {
-        setMealNameInput(meal.custom_name || '');
+        setMealNameInput(meal.custom_name || '')
       }
     }
-    setActiveModalSlot(meal.slot);
-  };
+    setActiveModalSlot(meal.slot)
+  }
 
   // --- Save / Update Meal Item ---
   const handleSaveMealItem = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!activeModalSlot) return;
+    e.preventDefault()
+    if (!activeModalSlot) return
 
-    setSavingMeal(true);
-    setMessage(null);
+    setSavingMeal(true)
+    setMessage(null)
 
     try {
-      const isEditing = Boolean(editingMealId);
-      const endpoint = isEditing ? `/meal-plans/${editingMealId}` : '/meal-plans';
-      const method = isEditing ? 'PATCH' : 'POST';
+      const isEditing = Boolean(editingMealId)
+      const endpoint = isEditing
+        ? `/meal-plans/${editingMealId}`
+        : '/meal-plans'
+      const method = isEditing ? 'PATCH' : 'POST'
 
       const payload: Record<string, unknown> = {
         date: selectedDate,
         slot: activeModalSlot,
-      };
+      }
 
       if (itemType === 'recipe') {
-        payload.recipe_id = selectedRecipeId;
-        payload.custom_name = null;
+        payload.recipe_id = selectedRecipeId
+        payload.custom_name = null
       } else {
         const customData: CustomItemData = {
           name: mealNameInput.trim(),
-        };
+        }
 
-        if (customQty.trim()) customData.qty = Number(customQty);
-        if (customUnit.trim()) customData.unit = customUnit.trim();
-        if (customCal.trim()) customData.cal = Number(customCal);
-        if (customProtein.trim()) customData.p = Number(customProtein);
-        if (customCarbs.trim()) customData.c = Number(customCarbs);
-        if (customFat.trim()) customData.f = Number(customFat);
+        if (customQty.trim()) customData.qty = Number(customQty)
+        if (customUnit.trim()) customData.unit = customUnit.trim()
+        if (customCal.trim()) customData.cal = Number(customCal)
+        if (customProtein.trim()) customData.p = Number(customProtein)
+        if (customCarbs.trim()) customData.c = Number(customCarbs)
+        if (customFat.trim()) customData.f = Number(customFat)
 
-        payload.custom_name = formatCustomName(customData);
-        payload.recipe_id = null;
+        payload.custom_name = formatCustomName(customData)
+        payload.recipe_id = null
       }
 
       await api(endpoint, {
         method,
         body: JSON.stringify(payload),
-      });
+      })
 
-      await fetchDashboardData();
-      setActiveModalSlot(null);
-      setEditingMealId(null);
-      resetModalInputs();
+      await fetchDashboardData()
+      setActiveModalSlot(null)
+      setEditingMealId(null)
+      resetModalInputs()
       setMessage({
         type: 'success',
         text: `Saved "${itemType === 'custom' ? mealNameInput : 'recipe'}" for ${activeModalSlot}!`,
-      });
+      })
     } catch (err) {
-      console.error('Error saving meal item:', err);
-      const detail = err instanceof ApiError ? err.detail : 'Failed to save item.';
-      setMessage({ type: 'error', text: detail });
+      console.error('Error saving meal item:', err)
+      const detail =
+        err instanceof ApiError ? err.detail : 'Failed to save item.'
+      setMessage({ type: 'error', text: detail })
     } finally {
-      setSavingMeal(false);
+      setSavingMeal(false)
     }
-  };
+  }
 
   // --- Delete Item Handler ---
   const handleDeleteMealItem = async (mealId: string) => {
-    setSavingMeal(true);
+    setSavingMeal(true)
 
     try {
-      await api(`/meal-plans/${mealId}`, { method: 'DELETE' });
-      await fetchDashboardData();
-      setActiveModalSlot(null);
-      setEditingMealId(null);
-      resetModalInputs();
-      setMessage({ type: 'success', text: 'Item removed from meal.' });
+      await api(`/meal-plans/${mealId}`, { method: 'DELETE' })
+      await fetchDashboardData()
+      setActiveModalSlot(null)
+      setEditingMealId(null)
+      resetModalInputs()
+      setMessage({ type: 'success', text: 'Item removed from meal.' })
     } catch (err) {
-      console.error('Error deleting item:', err);
-      setMessage({ type: 'error', text: 'Failed to delete item.' });
+      console.error('Error deleting item:', err)
+      setMessage({ type: 'error', text: 'Failed to delete item.' })
     } finally {
-      setSavingMeal(false);
+      setSavingMeal(false)
     }
-  };
+  }
 
   // --- Smart Export Action ---
   const handleExportIngredients = async () => {
     if (consolidatedExportIngredients.length === 0) {
-      setMessage({ type: 'error', text: 'No items found on this date to export.' });
-      return;
+      setMessage({
+        type: 'error',
+        text: 'No items found on this date to export.',
+      })
+      return
     }
 
-    setExporting(true);
-    setMessage(null);
+    setExporting(true)
+    setMessage(null)
 
     try {
-      let targetId = selectedListId;
-      let targetTitle = groceryLists.find((l) => l.id === selectedListId)?.title || 'Grocery List';
+      let targetId = selectedListId
+      let targetTitle =
+        groceryLists.find((l) => l.id === selectedListId)?.title ||
+        'Grocery List'
 
       if (isCreatingNewList) {
         if (!newListTitle.trim()) {
-          setMessage({ type: 'error', text: 'Please enter a name for the new list.' });
-          setExporting(false);
-          return;
+          setMessage({
+            type: 'error',
+            text: 'Please enter a name for the new list.',
+          })
+          setExporting(false)
+          return
         }
 
         const newList = await api<GroceryList>('/lists', {
           method: 'POST',
           body: JSON.stringify({ title: newListTitle.trim() }),
-        });
+        })
 
-        targetId = newList.id;
-        targetTitle = newList.title;
+        targetId = newList.id
+        targetTitle = newList.title
 
-        setGroceryLists((prev) => [...prev, newList]);
-        setSelectedListId(newList.id);
-        setIsCreatingNewList(false);
-        setNewListTitle('');
+        setGroceryLists((prev) => [...prev, newList])
+        setSelectedListId(newList.id)
+        setIsCreatingNewList(false)
+        setNewListTitle('')
       }
 
-      let addedCount = 0;
-      let mergedCount = 0;
+      let addedCount = 0
+      let mergedCount = 0
 
       for (const item of consolidatedExportIngredients) {
         const existingItem = selectedListItems.find(
           (existing) =>
             existing.name.trim().toLowerCase() === item.name.toLowerCase() &&
-            (existing.unit || '').trim().toLowerCase() === item.unit.toLowerCase()
-        );
+            (existing.unit || '').trim().toLowerCase() ===
+              item.unit.toLowerCase(),
+        )
 
         if (existingItem && !isCreatingNewList) {
-          const newQty = (Number(existingItem.quantity) || 0) + item.quantity;
+          const newQty = (Number(existingItem.quantity) || 0) + item.quantity
           await api(`/lists/${targetId}/items/${existingItem.id}`, {
             method: 'PATCH',
             body: JSON.stringify({ quantity: newQty }),
-          });
-          mergedCount++;
+          })
+          mergedCount++
         } else {
           await api(`/lists/${targetId}/items`, {
             method: 'POST',
@@ -566,37 +591,36 @@ export const UserPage: React.FC = () => {
               quantity: item.quantity,
               unit: item.unit,
             }),
-          });
-          addedCount++;
+          })
+          addedCount++
         }
       }
 
-      markMealsAsExported(targetMealsForExport.map((m) => m.id));
+      markMealsAsExported(targetMealsForExport.map((m) => m.id))
 
-      const refreshData = await api<unknown>(`/lists/${targetId}`);
-      const parsed = groceryListResponseSchema.parse(refreshData);
-      setSelectedListItems(parsed.items);
+      const refreshData = await api<unknown>(`/lists/${targetId}`)
+      const parsed = groceryListResponseSchema.parse(refreshData)
+      setSelectedListItems(parsed.items)
 
       const summaryText =
         mergedCount > 0
           ? `Added ${addedCount} item(s) and merged quantities for ${mergedCount} item(s) in "${targetTitle}"!`
-          : `Exported ${addedCount} item(s) directly to "${targetTitle}"!`;
+          : `Exported ${addedCount} item(s) directly to "${targetTitle}"!`
 
-      setMessage({ type: 'success', text: summaryText });
+      setMessage({ type: 'success', text: summaryText })
     } catch (err) {
-      console.error('Export error:', err);
-      setMessage({ type: 'error', text: 'Failed to export ingredients.' });
+      console.error('Export error:', err)
+      setMessage({ type: 'error', text: 'Failed to export ingredients.' })
     } finally {
-      setExporting(false);
+      setExporting(false)
     }
-  };
+  }
 
-  const slots = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
+  const slots = ['breakfast', 'lunch', 'dinner', 'snack'] as const
 
   return (
     <div className="min-h-screen bg-slate-50 p-6 font-sans text-slate-800">
       <div className="max-w-5xl mx-auto space-y-6">
-        
         {/* Header */}
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center justify-between">
           <div>
@@ -604,7 +628,8 @@ export const UserPage: React.FC = () => {
               Welcome back{displayName ? `, ${displayName}` : ''}! 👋
             </h1>
             <p className="text-sm text-slate-500 mt-0.5">
-              Plan your weekly meals, track daily macros, and generate your shop.
+              Plan your weekly meals, track daily macros, and generate your
+              shop.
             </p>
           </div>
         </div>
@@ -626,8 +651,8 @@ export const UserPage: React.FC = () => {
                 value={selectedDate}
                 onChange={(e) => {
                   if (e.target.value) {
-                    setSelectedDate(e.target.value);
-                    setMessage(null);
+                    setSelectedDate(e.target.value)
+                    setMessage(null)
                   }
                 }}
                 className="bg-transparent text-sm font-bold text-slate-800 outline-none cursor-pointer"
@@ -660,11 +685,13 @@ export const UserPage: React.FC = () => {
               >
                 {allowPastEditing ? (
                   <>
-                    <Unlock className="w-3.5 h-3.5 text-emerald-600" /> Editing Unlocked
+                    <Unlock className="w-3.5 h-3.5 text-emerald-600" /> Editing
+                    Unlocked
                   </>
                 ) : (
                   <>
-                    <Lock className="w-3.5 h-3.5 text-amber-600" /> Archived (Click to Unlock)
+                    <Lock className="w-3.5 h-3.5 text-amber-600" /> Archived
+                    (Click to Unlock)
                   </>
                 )}
               </button>
@@ -716,7 +743,9 @@ export const UserPage: React.FC = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 text-center">
               <span className="text-xs opacity-80 block">Calories</span>
-              <span className="text-2xl font-bold">{dayTotals.calories} kcal</span>
+              <span className="text-2xl font-bold">
+                {dayTotals.calories} kcal
+              </span>
             </div>
             <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 text-center">
               <span className="text-xs opacity-80 block">Protein</span>
@@ -738,7 +767,8 @@ export const UserPage: React.FC = () => {
           <div className="flex items-center gap-2">
             <Utensils className="w-5 h-5 text-emerald-600" />
             <h2 className="text-lg font-bold text-slate-900">
-              Planned Meals ({selectedDayMeals.length} item{selectedDayMeals.length === 1 ? '' : 's'})
+              Planned Meals ({selectedDayMeals.length} item
+              {selectedDayMeals.length === 1 ? '' : 's'})
             </h2>
           </div>
         </div>
@@ -746,13 +776,15 @@ export const UserPage: React.FC = () => {
         {/* Multi-Item Meal Slot Cards */}
         <div className="space-y-4">
           {slots.map((slot) => {
-            const slotMeals = selectedDayMeals.filter((m) => m.slot === slot);
+            const slotMeals = selectedDayMeals.filter((m) => m.slot === slot)
 
             return (
               <div
                 key={slot}
                 className={`bg-white rounded-2xl p-5 shadow-sm border transition-all space-y-3 ${
-                  isEditingLocked ? 'border-slate-100 bg-slate-50/50' : 'border-slate-100'
+                  isEditingLocked
+                    ? 'border-slate-100 bg-slate-50/50'
+                    : 'border-slate-100'
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -779,20 +811,44 @@ export const UserPage: React.FC = () => {
                 {slotMeals.length > 0 ? (
                   <div className="divide-y divide-slate-100 space-y-3 pt-1">
                     {slotMeals.map((mealItem) => {
-                      const isExported = exportedMealIds.has(mealItem.id);
-                      const isQuickItem = !mealItem.recipe_id;
-                      const parsedCustom = parseCustomName(mealItem.custom_name);
+                      const isExported = exportedMealIds.has(mealItem.id)
+                      const isQuickItem = !mealItem.recipe_id
+                      const parsedCustom = parseCustomName(mealItem.custom_name)
 
-                      const displayTitle = mealItem.recipe?.title || parsedCustom?.name || mealItem.custom_name;
-                      const hasNutrition = Boolean(mealItem.recipe?.nutrition || parsedCustom?.cal !== undefined);
+                      const displayTitle =
+                        mealItem.recipe?.title ||
+                        parsedCustom?.name ||
+                        mealItem.custom_name
+                      const hasNutrition = Boolean(
+                        mealItem.recipe?.nutrition ||
+                        parsedCustom?.cal !== undefined,
+                      )
 
-                      const calVal = mealItem.recipe?.nutrition?.calories ?? parsedCustom?.cal ?? 0;
-                      const pVal = mealItem.recipe?.nutrition?.protein_g ?? mealItem.recipe?.nutrition?.protein ?? parsedCustom?.p ?? 0;
-                      const cVal = mealItem.recipe?.nutrition?.carbs_g ?? mealItem.recipe?.nutrition?.carbs ?? parsedCustom?.c ?? 0;
-                      const fVal = mealItem.recipe?.nutrition?.fat_g ?? mealItem.recipe?.nutrition?.fat ?? parsedCustom?.f ?? 0;
+                      const calVal =
+                        mealItem.recipe?.nutrition?.calories ??
+                        parsedCustom?.cal ??
+                        0
+                      const pVal =
+                        mealItem.recipe?.nutrition?.protein_g ??
+                        mealItem.recipe?.nutrition?.protein ??
+                        parsedCustom?.p ??
+                        0
+                      const cVal =
+                        mealItem.recipe?.nutrition?.carbs_g ??
+                        mealItem.recipe?.nutrition?.carbs ??
+                        parsedCustom?.c ??
+                        0
+                      const fVal =
+                        mealItem.recipe?.nutrition?.fat_g ??
+                        mealItem.recipe?.nutrition?.fat ??
+                        parsedCustom?.f ??
+                        0
 
                       return (
-                        <div key={mealItem.id} className="pt-3 first:pt-0 flex items-start justify-between">
+                        <div
+                          key={mealItem.id}
+                          className="pt-3 first:pt-0 flex items-start justify-between"
+                        >
                           <div className="space-y-1">
                             <div className="flex items-center gap-2">
                               <h3 className="text-base font-bold text-slate-900">
@@ -823,28 +879,34 @@ export const UserPage: React.FC = () => {
                             </div>
 
                             {mealItem.recipe?.description && (
-                              <p className="text-xs text-slate-500 max-w-xl">{mealItem.recipe.description}</p>
+                              <p className="text-xs text-slate-500 max-w-xl">
+                                {mealItem.recipe.description}
+                              </p>
                             )}
 
                             {/* Recipe Ingredients Tag List */}
-                            {mealItem.recipe?.ingredients && mealItem.recipe.ingredients.length > 0 && (
-                              <div className="pt-1 flex flex-wrap gap-1.5">
-                                {mealItem.recipe.ingredients.map((ing, idx) => (
-                                  <span
-                                    key={idx}
-                                    className="px-2 py-0.5 rounded-md text-[11px] bg-slate-100 text-slate-600 border border-slate-200"
-                                  >
-                                    {ing.quantity} {ing.unit} {ing.name}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
+                            {mealItem.recipe?.ingredients &&
+                              mealItem.recipe.ingredients.length > 0 && (
+                                <div className="pt-1 flex flex-wrap gap-1.5">
+                                  {mealItem.recipe.ingredients.map(
+                                    (ing, idx) => (
+                                      <span
+                                        key={idx}
+                                        className="px-2 py-0.5 rounded-md text-[11px] bg-slate-100 text-slate-600 border border-slate-200"
+                                      >
+                                        {ing.quantity} {ing.unit} {ing.name}
+                                      </span>
+                                    ),
+                                  )}
+                                </div>
+                              )}
 
                             {/* Custom Quick Item Quantity Pill */}
                             {isQuickItem && parsedCustom?.qty && (
                               <div className="pt-0.5">
                                 <span className="px-2 py-0.5 rounded-md text-[11px] bg-slate-100 text-slate-600 border border-slate-200">
-                                  {parsedCustom.qty} {parsedCustom.unit || 'item'}
+                                  {parsedCustom.qty}{' '}
+                                  {parsedCustom.unit || 'item'}
                                 </span>
                               </div>
                             )}
@@ -866,14 +928,16 @@ export const UserPage: React.FC = () => {
                             </span>
                           )}
                         </div>
-                      );
+                      )
                     })}
                   </div>
                 ) : (
-                  <p className="text-sm text-slate-400 italic py-1">No items added to {slot} yet.</p>
+                  <p className="text-sm text-slate-400 italic py-1">
+                    No items added to {slot} yet.
+                  </p>
                 )}
               </div>
-            );
+            )
           })}
         </div>
 
@@ -885,7 +949,9 @@ export const UserPage: React.FC = () => {
                 <ShoppingCart className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-slate-900">Grocery List Export</h3>
+                <h3 className="text-base font-bold text-slate-900">
+                  Grocery List Export
+                </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
                   {allMealsExported ? (
                     <span className="text-emerald-600 font-semibold">
@@ -893,11 +959,19 @@ export const UserPage: React.FC = () => {
                     </span>
                   ) : unexportedDayMeals.length < selectedDayMeals.length ? (
                     <span>
-                      Found <span className="font-semibold text-emerald-600">{unexportedDayMeals.length} newly added item(s)</span> ready to export.
+                      Found{' '}
+                      <span className="font-semibold text-emerald-600">
+                        {unexportedDayMeals.length} newly added item(s)
+                      </span>{' '}
+                      ready to export.
                     </span>
                   ) : (
                     <span>
-                      Found <span className="font-semibold text-emerald-600">{consolidatedExportIngredients.length}</span> item(s) ready for export on {selectedDate}.
+                      Found{' '}
+                      <span className="font-semibold text-emerald-600">
+                        {consolidatedExportIngredients.length}
+                      </span>{' '}
+                      item(s) ready for export on {selectedDate}.
                     </span>
                   )}
                 </p>
@@ -948,21 +1022,25 @@ export const UserPage: React.FC = () => {
 
               <button
                 onClick={handleExportIngredients}
-                disabled={exporting || (selectedDayMeals.length === 0)}
+                disabled={exporting || selectedDayMeals.length === 0}
                 className={`px-5 py-2.5 rounded-xl text-white font-semibold text-xs transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer ${
                   allMealsExported
                     ? 'bg-slate-700 hover:bg-slate-800'
                     : 'bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300'
                 }`}
               >
-                {allMealsExported ? <RotateCw className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
+                {allMealsExported ? (
+                  <RotateCw className="w-4 h-4" />
+                ) : (
+                  <Sparkles className="w-4 h-4" />
+                )}
                 {exporting
                   ? 'Exporting...'
                   : allMealsExported
-                  ? 'Re-export All to List'
-                  : unexportedDayMeals.length < selectedDayMeals.length
-                  ? `Export ${unexportedDayMeals.length} New Item(s)`
-                  : `Export to List (${consolidatedExportIngredients.length})`}
+                    ? 'Re-export All to List'
+                    : unexportedDayMeals.length < selectedDayMeals.length
+                      ? `Export ${unexportedDayMeals.length} New Item(s)`
+                      : `Export to List (${consolidatedExportIngredients.length})`}
               </button>
             </div>
           </div>
@@ -974,7 +1052,9 @@ export const UserPage: React.FC = () => {
                 Current Items ({selectedListItems.length}):
               </span>
               {selectedListItems.length === 0 ? (
-                <span className="text-xs text-slate-400 italic">This list is currently empty.</span>
+                <span className="text-xs text-slate-400 italic">
+                  This list is currently empty.
+                </span>
               ) : (
                 <div className="flex flex-wrap gap-1.5 max-h-16 overflow-y-auto pr-1">
                   {selectedListItems.map((item) => (
@@ -1005,9 +1085,9 @@ export const UserPage: React.FC = () => {
                 </h3>
                 <button
                   onClick={() => {
-                    setActiveModalSlot(null);
-                    setEditingMealId(null);
-                    resetModalInputs();
+                    setActiveModalSlot(null)
+                    setEditingMealId(null)
+                    resetModalInputs()
                   }}
                   className="text-slate-400 hover:text-slate-600 cursor-pointer"
                 >
@@ -1050,7 +1130,9 @@ export const UserPage: React.FC = () => {
                       Choose Saved Recipe
                     </label>
                     {availableRecipes.length === 0 ? (
-                      <p className="text-xs text-slate-400 italic">No saved recipes found.</p>
+                      <p className="text-xs text-slate-400 italic">
+                        No saved recipes found.
+                      </p>
                     ) : (
                       <select
                         value={selectedRecipeId}
@@ -1085,11 +1167,17 @@ export const UserPage: React.FC = () => {
                     <div className="border border-slate-200 rounded-xl overflow-hidden bg-slate-50/50">
                       <button
                         type="button"
-                        onClick={() => setShowOptionalDetails(!showOptionalDetails)}
+                        onClick={() =>
+                          setShowOptionalDetails(!showOptionalDetails)
+                        }
                         className="w-full px-3 py-2 flex items-center justify-between text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
                       >
                         <span>Quantity & Nutrition Stats (Optional)</span>
-                        {showOptionalDetails ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                        {showOptionalDetails ? (
+                          <ChevronUp className="w-4 h-4" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4" />
+                        )}
                       </button>
 
                       {showOptionalDetails && (
@@ -1145,7 +1233,9 @@ export const UserPage: React.FC = () => {
                                 type="number"
                                 placeholder="g"
                                 value={customProtein}
-                                onChange={(e) => setCustomProtein(e.target.value)}
+                                onChange={(e) =>
+                                  setCustomProtein(e.target.value)
+                                }
                                 className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-800 outline-none focus:border-emerald-500"
                               />
                             </div>
@@ -1190,15 +1280,17 @@ export const UserPage: React.FC = () => {
                     >
                       <Trash2 className="w-4 h-4" /> Delete Item
                     </button>
-                  ) : <div />}
+                  ) : (
+                    <div />
+                  )}
 
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => {
-                        setActiveModalSlot(null);
-                        setEditingMealId(null);
-                        resetModalInputs();
+                        setActiveModalSlot(null)
+                        setEditingMealId(null)
+                        resetModalInputs()
                       }}
                       className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
                     >
@@ -1213,7 +1305,11 @@ export const UserPage: React.FC = () => {
                       }
                       className="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 transition-all cursor-pointer"
                     >
-                      {savingMeal ? 'Saving...' : editingMealId ? 'Update Item' : 'Add Item'}
+                      {savingMeal
+                        ? 'Saving...'
+                        : editingMealId
+                          ? 'Update Item'
+                          : 'Add Item'}
                     </button>
                   </div>
                 </div>
@@ -1221,10 +1317,9 @@ export const UserPage: React.FC = () => {
             </div>
           </div>
         )}
-
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default UserPage;
+export default UserPage

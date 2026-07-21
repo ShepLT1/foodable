@@ -66,7 +66,9 @@ export async function getList(listId: string): Promise<GroceryList> {
   return groceryListResponseSchema.parse(data)
 }
 
-export async function createList(data: CreateListRequest): Promise<GroceryList> {
+export async function createList(
+  data: CreateListRequest,
+): Promise<GroceryList> {
   const res = await api<unknown>('/lists', {
     method: 'POST',
     body: JSON.stringify(data),

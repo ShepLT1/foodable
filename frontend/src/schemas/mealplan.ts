@@ -21,7 +21,7 @@ export const mealPlanResponseSchema = z.object({
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
   // 👇 Add this so TS and Zod pass nutrition/ingredient data through!
-  recipe: z.any().optional(), 
+  recipe: z.any().optional(),
 })
 
 export type MealSlot = z.infer<typeof mealSlotEnum>
