@@ -3,7 +3,7 @@ import { useState } from 'react'
 type SingleChipSelectProps = {
   label: string
   sublabel?: string
-  options: string[]
+  options: readonly string[]
   value: string | null
   onChange: (next: string | null) => void
   allowCustom?: boolean

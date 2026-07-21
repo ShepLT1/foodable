@@ -20,7 +20,7 @@ const CUISINE_TYPES = [
 export function RecipeGeneratePage() {
   const navigate = useNavigate()
   const [ingredients, setIngredients] = useState<string[]>([])
-  const [mealType, setMealType] = useState<MealType | null>(null)
+  const [mealType, setMealType] = useState<string | null>(null)
   const [cuisineType, setCuisineType] = useState<string | null>(null)
 
   const { mutate, isPending } = useGenerateRecipe()
@@ -29,7 +29,7 @@ export function RecipeGeneratePage() {
     mutate(
       {
         ingredients,
-        meal_type: mealType ?? undefined,
+        meal_type: (mealType ?? undefined) as MealType | undefined,
         cuisine_type: cuisineType ?? undefined,
       },
       {
