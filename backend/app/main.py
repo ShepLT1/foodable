@@ -19,4 +19,3 @@ app.include_router(users_router)
 app.include_router(lists_router)
 app.include_router(recipes_router)
 app.include_router(meal_plan_router)
-

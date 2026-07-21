@@ -37,12 +37,16 @@ class MealPlanUpdateRequest(BaseModel):
     custom_details: CustomItemDetails | None = None
 
 
-def _build_quick_recipe(user_id: UUID, title: str, details: CustomItemDetails, slot_name: str) -> DBRecipe:
-    ingredients_json = [{
-        "name": title,
-        "quantity": details.quantity if details.quantity is not None else 1.0,
-        "unit": details.unit if details.unit else "item",
-    }]
+def _build_quick_recipe(
+    user_id: UUID, title: str, details: CustomItemDetails, slot_name: str
+) -> DBRecipe:
+    ingredients_json = [
+        {
+            "name": title,
+            "quantity": details.quantity if details.quantity is not None else 1.0,
+            "unit": details.unit if details.unit else "item",
+        }
+    ]
     nutrition_json = {
         "calories": details.calories or 0,
         "protein_g": details.protein_g or 0,
@@ -106,7 +110,9 @@ async def create_meal_plan_item(
 
     # Auto-generate a quick recipe row if item name + details were provided
     if custom_name and payload.custom_details:
-        quick_recipe = _build_quick_recipe(user_uuid, custom_name, payload.custom_details, slot_enum.value)
+        quick_recipe = _build_quick_recipe(
+            user_uuid, custom_name, payload.custom_details, slot_enum.value
+        )
         db.add(quick_recipe)
         await db.flush()
         recipe_id = quick_recipe.id
@@ -122,9 +128,7 @@ async def create_meal_plan_item(
     db.add(meal_plan)
     await db.commit()
 
-    reloaded = await db.execute(
-        select(MealPlan).where(MealPlan.id == meal_plan.id)
-    )
+    reloaded = await db.execute(select(MealPlan).where(MealPlan.id == meal_plan.id))
     return reloaded.scalar_one()
 
 
@@ -151,15 +155,23 @@ async def update_meal_plan_item(
         if payload.custom_details:
             # Update existing quick item recipe or build a new one
             if item.recipe_id:
-                recipe_stmt = select(DBRecipe).where(DBRecipe.id == item.recipe_id, DBRecipe.user_id == user_uuid)
+                recipe_stmt = select(DBRecipe).where(
+                    DBRecipe.id == item.recipe_id, DBRecipe.user_id == user_uuid
+                )
                 existing_recipe = (await db.execute(recipe_stmt)).scalar_one_or_none()
                 if existing_recipe:
                     existing_recipe.title = payload.custom_name
-                    existing_recipe.ingredients_json = [{
-                        "name": payload.custom_name,
-                        "quantity": payload.custom_details.quantity if payload.custom_details.quantity is not None else 1.0,
-                        "unit": payload.custom_details.unit if payload.custom_details.unit else "item",
-                    }]
+                    existing_recipe.ingredients_json = [
+                        {
+                            "name": payload.custom_name,
+                            "quantity": payload.custom_details.quantity
+                            if payload.custom_details.quantity is not None
+                            else 1.0,
+                            "unit": payload.custom_details.unit
+                            if payload.custom_details.unit
+                            else "item",
+                        }
+                    ]
                     existing_recipe.nutrition_json = {
                         "calories": payload.custom_details.calories or 0,
                         "protein_g": payload.custom_details.protein_g or 0,
@@ -167,13 +179,23 @@ async def update_meal_plan_item(
                         "fat_g": payload.custom_details.fat_g or 0,
                     }
                 else:
-                    quick_recipe = _build_quick_recipe(user_uuid, payload.custom_name, payload.custom_details, item.slot.value)
+                    quick_recipe = _build_quick_recipe(
+                        user_uuid,
+                        payload.custom_name,
+                        payload.custom_details,
+                        item.slot.value,
+                    )
                     db.add(quick_recipe)
                     await db.flush()
                     item.recipe_id = quick_recipe.id
                     item.custom_name = None
             else:
-                quick_recipe = _build_quick_recipe(user_uuid, payload.custom_name, payload.custom_details, item.slot.value)
+                quick_recipe = _build_quick_recipe(
+                    user_uuid,
+                    payload.custom_name,
+                    payload.custom_details,
+                    item.slot.value,
+                )
                 db.add(quick_recipe)
                 await db.flush()
                 item.recipe_id = quick_recipe.id
@@ -183,9 +205,7 @@ async def update_meal_plan_item(
 
     await db.commit()
 
-    reloaded = await db.execute(
-        select(MealPlan).where(MealPlan.id == meal_plan_id)
-    )
+    reloaded = await db.execute(select(MealPlan).where(MealPlan.id == meal_plan_id))
     return reloaded.scalar_one()
 
 

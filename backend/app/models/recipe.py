@@ -51,7 +51,9 @@ class Recipe(Base):
 
     steps: Mapped[list] = mapped_column("steps_json", JSONB, nullable=False)
 
-    ingredients: Mapped[list[dict]] = mapped_column("ingredients_json", JSONB, nullable=False)
+    ingredients: Mapped[list[dict]] = mapped_column(
+        "ingredients_json", JSONB, nullable=False
+    )
 
     nutrition: Mapped[dict] = mapped_column("nutrition_json", JSONB, nullable=False)
 
