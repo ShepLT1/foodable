@@ -1,3 +1,6 @@
+from uuid import UUID
+
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -37,6 +40,20 @@ class RecipeRepository:
             raise
 
         return recipe
+
+    async def get_by_id(
+        self,
+        db: AsyncSession,
+        recipe_id: UUID,
+        user_id: UUID,
+    ) -> Recipe | None:
+        result = await db.execute(
+            select(Recipe).where(
+                Recipe.id == recipe_id,
+                Recipe.user_id == user_id,
+            )
+        )
+        return result.scalar_one_or_none()
 
 
 recipe_repository = RecipeRepository()
