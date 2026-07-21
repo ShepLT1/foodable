@@ -41,9 +41,7 @@ describe('UserPage Component', () => {
     render(<UserPage />)
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/Welcome back, Test Chef!/i)
-      ).toBeInTheDocument()
+      expect(screen.getByText(/Welcome back, Test Chef!/i)).toBeInTheDocument()
     })
 
     expect(screen.getByText(/Daily Nutrition Breakdown/i)).toBeInTheDocument()
