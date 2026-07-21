@@ -1,16 +1,25 @@
-import { useLocation } from 'react-router-dom'
-import type { Recipe } from '../api/recipes'
+import { useParams } from 'react-router-dom'
+import { useRecipe } from '../hooks/useRecipes'
+
 import { useState } from 'react'
 
 export function RecipeDetailPage() {
-  const location = useLocation()
-  const recipe = location.state?.recipe as Recipe | undefined
+  const { id } = useParams()
+  const { data: recipe, isLoading, error } = useRecipe(id ?? '')
   const [showNutritionDetails, setShowNutritionDetails] = useState(false)
 
-  if (!recipe) {
+  if (isLoading) {
     return (
       <div className="rounded-xl bg-white p-8 shadow-sm border border-gray-100">
-        <p className="text-gray-600">No recipe data available.</p>
+        <p className="text-gray-600">Loading recipe...</p>
+      </div>
+    )
+  }
+
+  if (error || !recipe) {
+    return (
+      <div className="rounded-xl bg-white p-8 shadow-sm border border-gray-100">
+        <p className="text-gray-600">Recipe not found.</p>
       </div>
     )
   }

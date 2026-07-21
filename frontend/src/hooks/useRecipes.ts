@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { generateRecipe } from '../api/recipes'
+import { generateRecipe, getRecipe } from '../api/recipes'
 
 export function useGenerateRecipe() {
   return useMutation({
