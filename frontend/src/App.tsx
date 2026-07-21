@@ -45,7 +45,7 @@ function App() {
               }
             />
             <Route path="/recipes/new" element={<RecipeGeneratePage />} />
-            <Route path="/recipe/:id" element={<RecipeDetailPage />} />
+            <Route path="/recipes/:id" element={<RecipeDetailPage />} />
             <Route path="/lists" element={<GroceryListsPage />} />
             <Route path="/lists/:listId" element={<GroceryListPage />} />
           </Routes>

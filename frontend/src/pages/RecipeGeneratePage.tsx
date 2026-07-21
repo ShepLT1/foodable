@@ -34,7 +34,7 @@ export function RecipeGeneratePage() {
       },
       {
         onSuccess: (recipe) => {
-          navigate(`/recipe/${recipe.id}`, { state: { recipe } })
+          navigate(`/recipes/${recipe.id}`, { state: { recipe } })
         },
       },
     )
