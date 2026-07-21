@@ -16,7 +16,7 @@ export function RecipeDetailPage() {
   }
 
   return (
-    <div className="rounded-xl bg-white p-8 shadow-sm border border-gray-100">
+    <div className="rounded-lg bg-white p-8 shadow-sm border border-gray-100 w-full max-w-lg">
       <h2 className="text-3xl font-bold text-gray-900">{recipe.title}</h2>
 
       {recipe.description && (
