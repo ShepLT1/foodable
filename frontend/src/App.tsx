@@ -6,6 +6,8 @@ import { UserPage } from './pages/UserPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { GroceryListsPage } from './pages/GroceryListsPage'
 import { GroceryListPage } from './pages/GroceryListPage'
+import { RecipeGeneratePage } from './pages/RecipeGeneratePage'
+import { RecipeDetailPage } from './pages/RecipeDetailPage'
 
 function App() {
   const { session, loading } = useSession()
@@ -42,6 +44,8 @@ function App() {
                 </div>
               }
             />
+            <Route path="/recipes/new" element={<RecipeGeneratePage />} />
+            <Route path="/recipes/:id" element={<RecipeDetailPage />} />
             <Route path="/lists" element={<GroceryListsPage />} />
             <Route path="/lists/:listId" element={<GroceryListPage />} />
           </Routes>

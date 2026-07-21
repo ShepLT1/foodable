@@ -1,4 +1,5 @@
 from uuid import UUID
+from app.repositories.recipe import recipe_repository
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -38,5 +39,26 @@ async def generate_recipe_endpoint(
         )
     except (ProfileNotFoundError, RecipeGenerationError) as e:
         raise _map_recipe_error(e) from e
+
+    return RecipeResponse.from_db_recipe(recipe)
+
+
+@router.get("/{recipe_id}", response_model=RecipeResponse)
+async def get_recipe_endpoint(
+    recipe_id: UUID,
+    user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> RecipeResponse:
+    recipe = await recipe_repository.get_by_id(
+        db,
+        recipe_id=recipe_id,
+        user_id=UUID(user.id),
+    )
+
+    if recipe is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Recipe not found",
+        )
 
     return RecipeResponse.from_db_recipe(recipe)
