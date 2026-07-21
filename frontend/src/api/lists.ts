@@ -1,22 +1,13 @@
+import { z } from 'zod'
 import { api } from './client'
+import {
+  groceryListResponseSchema,
+  type GroceryList,
+  type GroceryListItem,
+} from '../schemas/grocery'
 
-export interface GroceryListItem {
-  id: string
-  name: string
-  quantity: number
-  unit: string | null
-  checked: boolean
-  created_at: string
-}
-
-export interface GroceryList {
-  id: string
-  user_id: string
-  title: string
-  items: GroceryListItem[]
-  created_at: string
-  updated_at: string
-}
+// Single source of truth: re-export types so components import them seamlessly
+export type { GroceryList, GroceryListItem }
 
 export interface CreateListRequest {
   title: string
@@ -65,51 +56,71 @@ interface DeleteListItemParams {
 }
 
 // Grocery List API request handlers
-export function getLists() {
-  return api<GroceryList[]>('/lists')
+export async function getLists(): Promise<GroceryList[]> {
+  const data = await api<unknown>('/lists')
+  return z.array(groceryListResponseSchema).parse(data)
 }
 
-export function createList(data: CreateListRequest) {
-  return api<GroceryList>('/lists', {
+export async function getList(listId: string): Promise<GroceryList> {
+  const data = await api<unknown>(`/lists/${listId}`)
+  return groceryListResponseSchema.parse(data)
+}
+
+export async function createList(data: CreateListRequest): Promise<GroceryList> {
+  const res = await api<unknown>('/lists', {
     method: 'POST',
     body: JSON.stringify(data),
   })
+  return groceryListResponseSchema.parse(res)
 }
 
-export function getList(listId: string) {
-  return api<GroceryList>(`/lists/${listId}`)
-}
-
-export function updateList({ listId, data }: UpdateListParams) {
-  return api<GroceryList>(`/lists/${listId}`, {
+export async function updateList({
+  listId,
+  data,
+}: UpdateListParams): Promise<GroceryList> {
+  const res = await api<unknown>(`/lists/${listId}`, {
     method: 'PATCH',
     body: JSON.stringify(data),
   })
+  return groceryListResponseSchema.parse(res)
 }
 
-export function deleteList(listId: string) {
+export async function deleteList(listId: string): Promise<DeleteListResponse> {
   return api<DeleteListResponse>(`/lists/${listId}`, {
     method: 'DELETE',
   })
 }
 
 // Grocery List Item API request handlers
-export function createListItem({ listId, data }: CreateListItemParams) {
-  return api<GroceryList>(`/lists/${listId}/items`, {
+export async function createListItem({
+  listId,
+  data,
+}: CreateListItemParams): Promise<GroceryList> {
+  const res = await api<unknown>(`/lists/${listId}/items`, {
     method: 'POST',
     body: JSON.stringify(data),
   })
+  return groceryListResponseSchema.parse(res)
 }
 
-export function updateListItem({ listId, itemId, data }: UpdateListItemParams) {
-  return api<GroceryList>(`/lists/${listId}/items/${itemId}`, {
+export async function updateListItem({
+  listId,
+  itemId,
+  data,
+}: UpdateListItemParams): Promise<GroceryList> {
+  const res = await api<unknown>(`/lists/${listId}/items/${itemId}`, {
     method: 'PATCH',
     body: JSON.stringify(data),
   })
+  return groceryListResponseSchema.parse(res)
 }
 
-export function deleteListItem({ listId, itemId }: DeleteListItemParams) {
-  return api<GroceryList>(`/lists/${listId}/items/${itemId}`, {
+export async function deleteListItem({
+  listId,
+  itemId,
+}: DeleteListItemParams): Promise<GroceryList> {
+  const res = await api<unknown>(`/lists/${listId}/items/${itemId}`, {
     method: 'DELETE',
   })
+  return groceryListResponseSchema.parse(res)
 }

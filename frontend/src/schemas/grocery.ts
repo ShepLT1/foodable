@@ -33,7 +33,7 @@ export const tagSchema = z
   .min(1, 'Tag cannot be empty')
   .max(30, 'Tag name is too long')
 
-// 2. Composed API / Form Schemas
+// 2. Composed Form / Input Schemas
 export const groceryItemSchema = z.object({
   id: z.string().uuid().optional(),
   name: ingredientNameSchema,
@@ -47,6 +47,32 @@ export const groceryListSchema = z.object({
   tags: z.array(tagSchema).default([]),
 })
 
-// 3. Types
+// 3. API Response Schemas (Matching FastAPI backend shape)
+export const groceryListItemResponseSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  quantity: quantitySchema,
+  unit: z.string().nullable().optional(),
+  checked: z.boolean().default(false),
+  created_at: z.string().optional(),
+})
+
+export const groceryListResponseSchema = z.object({
+  id: z.string(),
+  user_id: z.string().optional(),
+  title: z.string(),
+  // Handles lists with null/undefined items and defaults them safely to []
+  items: z
+    .array(groceryListItemResponseSchema)
+    .nullable()
+    .optional()
+    .transform((items) => items ?? []),
+  created_at: z.string().optional(),
+  updated_at: z.string().nullable().optional(),
+})
+// 4. Inferred TypeScript Types
 export type GroceryItemInput = z.infer<typeof groceryItemSchema>
 export type GroceryListInput = z.infer<typeof groceryListSchema>
+
+export type GroceryListItem = z.infer<typeof groceryListItemResponseSchema>
+export type GroceryList = z.infer<typeof groceryListResponseSchema>
