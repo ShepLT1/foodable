@@ -259,7 +259,10 @@ export const UserPage: React.FC = () => {
   }, [queryStartDate, queryEndDate])
 
   useEffect(() => {
-    fetchDashboardData()
+    const loadData = async () => {
+      await fetchDashboardData()
+    }
+    void loadData()
   }, [fetchDashboardData])
 
   // --- Fetch Grocery Preview ---
@@ -280,7 +283,7 @@ export const UserPage: React.FC = () => {
       }
     }
 
-    fetchListDetails()
+    void fetchListDetails()
 
     return () => {
       isMounted = false
