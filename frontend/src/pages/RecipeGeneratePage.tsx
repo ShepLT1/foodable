@@ -4,7 +4,8 @@ import { TagInput } from '../components/TagInput'
 import { SingleChipSelect } from '../components/SingleChipSelect'
 import { useGenerateRecipe } from '../hooks/useRecipes'
 
-const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'dessert', 'snack']
+const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'dessert', 'snack'] as const
+type MealType = (typeof MEAL_TYPES)[number]
 const CUISINE_TYPES = [
   'Italian',
   'Mexican',
@@ -19,7 +20,7 @@ const CUISINE_TYPES = [
 export function RecipeGeneratePage() {
   const navigate = useNavigate()
   const [ingredients, setIngredients] = useState<string[]>([])
-  const [mealType, setMealType] = useState<string | null>(null)
+  const [mealType, setMealType] = useState<MealType | null>(null)
   const [cuisineType, setCuisineType] = useState<string | null>(null)
 
   const { mutate, isPending } = useGenerateRecipe()
@@ -28,8 +29,7 @@ export function RecipeGeneratePage() {
     mutate(
       {
         ingredients,
-        meal_type: (mealType ?? undefined) as
-          'breakfast' | 'lunch' | 'dinner' | 'dessert' | 'snack' | undefined,
+        meal_type: mealType ?? undefined,
         cuisine_type: cuisineType ?? undefined,
       },
       {
