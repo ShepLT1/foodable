@@ -36,6 +36,9 @@ export function RecipeGeneratePage() {
         onSuccess: (recipe) => {
           navigate(`/recipes/${recipe.id}`, { state: { recipe } })
         },
+        onError: () => {
+          alert('Something went wrong, please try again')
+        },
       },
     )
   }
