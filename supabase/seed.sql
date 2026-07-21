@@ -34,3 +34,47 @@ insert into public.grocery_list_items (list_id, name, quantity, unit, checked)
 values
   ('bbbbbbbb-0000-0000-0000-000000000001', 'broccoli', 1, 'head', false),
   ('bbbbbbbb-0000-0000-0000-000000000001', 'soy sauce', 2, 'tbsp', true);
+
+
+-- Seed Meal Plans across a 9-day window (-4 days to +4 days)
+INSERT INTO public.meal_plans (user_id, recipe_id, custom_name, date, slot)
+VALUES
+  -- 4 Days Ago (Past)
+  ('11111111-1111-1111-1111-111111111111', null, 'Smoothie Bowl', CURRENT_DATE - INTERVAL '4 days', 'breakfast'),
+  ('11111111-1111-1111-1111-111111111111', null, 'Quinoa & Avocado Salad', CURRENT_DATE - INTERVAL '4 days', 'lunch'),
+  ('11111111-1111-1111-1111-111111111111', 'aaaaaaaa-0000-0000-0000-000000000002', null, CURRENT_DATE - INTERVAL '4 days', 'dinner'),
+
+  -- 3 Days Ago (Past)
+  ('11111111-1111-1111-1111-111111111111', null, 'Avocado Toast with Poached Egg', CURRENT_DATE - INTERVAL '3 days', 'breakfast'),
+  ('11111111-1111-1111-1111-111111111111', 'aaaaaaaa-0000-0000-0000-000000000001', null, CURRENT_DATE - INTERVAL '3 days', 'lunch'),
+
+  -- 2 Days Ago (Past)
+  ('11111111-1111-1111-1111-111111111111', null, 'Oatmeal & Fresh Berries', CURRENT_DATE - INTERVAL '2 days', 'breakfast'),
+  ('11111111-1111-1111-1111-111111111111', 'aaaaaaaa-0000-0000-0000-000000000002', null, CURRENT_DATE - INTERVAL '2 days', 'dinner'),
+
+  -- 1 Day Ago (Yesterday)
+  ('11111111-1111-1111-1111-111111111111', null, 'Avocado Toast & Scrambled Eggs', CURRENT_DATE - INTERVAL '1 day', 'breakfast'),
+  ('11111111-1111-1111-1111-111111111111', null, 'Grilled Chicken Caesar Salad', CURRENT_DATE - INTERVAL '1 day', 'lunch'),
+  ('11111111-1111-1111-1111-111111111111', 'aaaaaaaa-0000-0000-0000-000000000001', null, CURRENT_DATE - INTERVAL '1 day', 'dinner'),
+
+  -- TODAY
+  ('11111111-1111-1111-1111-111111111111', null, 'Greek Yogurt & Granola Parfait', CURRENT_DATE, 'breakfast'),
+  ('11111111-1111-1111-1111-111111111111', 'aaaaaaaa-0000-0000-0000-000000000001', null, CURRENT_DATE, 'lunch'),
+  ('11111111-1111-1111-1111-111111111111', 'aaaaaaaa-0000-0000-0000-000000000002', null, CURRENT_DATE, 'dinner'),
+  ('11111111-1111-1111-1111-111111111111', null, 'Protein Shake & Almonds', CURRENT_DATE, 'snack'),
+
+  -- 1 Day From Now (Tomorrow - Future)
+  ('11111111-1111-1111-1111-111111111111', null, 'Protein Pancakes', CURRENT_DATE + INTERVAL '1 day', 'breakfast'),
+  ('11111111-1111-1111-1111-111111111111', 'aaaaaaaa-0000-0000-0000-000000000002', null, CURRENT_DATE + INTERVAL '1 day', 'dinner'),
+
+  -- 2 Days From Now (Future)
+  ('11111111-1111-1111-1111-111111111111', null, 'Loaded Breakfast Burrito', CURRENT_DATE + INTERVAL '2 days', 'breakfast'),
+  ('11111111-1111-1111-1111-111111111111', null, 'Meal Prepped Chicken & Rice', CURRENT_DATE + INTERVAL '2 days', 'lunch'),
+
+  -- 3 Days From Now (Future)
+  ('11111111-1111-1111-1111-111111111111', null, 'Overnight Chia Oats', CURRENT_DATE + INTERVAL '3 days', 'breakfast'),
+  ('11111111-1111-1111-1111-111111111111', 'aaaaaaaa-0000-0000-0000-000000000001', null, CURRENT_DATE + INTERVAL '3 days', 'dinner'),
+
+  -- 4 Days From Now (Future)
+  ('11111111-1111-1111-1111-111111111111', null, 'Mango Protein Smoothie', CURRENT_DATE + INTERVAL '4 days', 'breakfast'),
+  ('11111111-1111-1111-1111-111111111111', null, 'Turkey & Swiss Sandwich', CURRENT_DATE + INTERVAL '4 days', 'lunch');
