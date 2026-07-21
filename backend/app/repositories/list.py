@@ -1,10 +1,10 @@
+from datetime import datetime, timezone
 from uuid import UUID
 
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from sqlalchemy.exc import SQLAlchemyError
-from datetime import datetime, timezone
 
 from app.models.list import GroceryList
 from app.models.list_item import GroceryListItem

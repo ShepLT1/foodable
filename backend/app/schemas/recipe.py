@@ -15,12 +15,18 @@ missing nutrition data, truncated responses, and unrealistic
 metric units for US kitchens).
 """
 
-from uuid import UUID
 from datetime import datetime
+from typing import TYPE_CHECKING, Literal, Optional
+from uuid import UUID
 
-from typing import Literal, Optional, TYPE_CHECKING
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.models.recipe import (
+    CUISINE_TYPE_MAX_LENGTH,
+    DESCRIPTION_MAX_LENGTH,
+    MEAL_TYPE_MAX_LENGTH,
+    TITLE_MAX_LENGTH,
+)
 from app.schemas.prompts_recipe_gen import (
     CARBS_DESCRIPTION,
     STEP_DURATION_DESCRIPTION,
@@ -30,12 +36,8 @@ from app.schemas.prompts_recipe_gen import (
     UNIT_DESCRIPTION,
 )
 
-from app.models.recipe import (
-    CUISINE_TYPE_MAX_LENGTH,
-    DESCRIPTION_MAX_LENGTH,
-    MEAL_TYPE_MAX_LENGTH,
-    TITLE_MAX_LENGTH,
-)
+if TYPE_CHECKING:
+    from app.models.recipe import Recipe as DBRecipe
 
 
 class StrictBaseModel(BaseModel):
@@ -120,19 +122,16 @@ class RecipeResponse(StrictBaseModel):
     id: UUID
     user_id: UUID
     title: str
-    description: str | None
-    meal_type: str | None
-    cuisine_type: str | None
-    servings: int
-    tools_needed: list[str]
+    description: str | None = None
+    meal_type: str | None = None
+    cuisine_type: str | None = None
+    servings: int = 1
+    tools_needed: list[str] = Field(default_factory=list)
     steps: list[Step]
     ingredients: list[Ingredient]
     nutrition: NutritionInfo
     is_public: bool
     created_at: datetime
-
-    if TYPE_CHECKING:
-        from app.models.recipe import Recipe as DBRecipe
 
     @classmethod
     def from_db_recipe(cls, recipe: "DBRecipe") -> "RecipeResponse":
@@ -143,11 +142,21 @@ class RecipeResponse(StrictBaseModel):
             description=recipe.description,
             meal_type=recipe.meal_type,
             cuisine_type=recipe.cuisine_type,
-            servings=recipe.steps_json["servings"],
-            tools_needed=recipe.steps_json["tools_needed"],
-            steps=[Step.model_validate(s) for s in recipe.steps_json["steps"]],
-            ingredients=[Ingredient.model_validate(i) for i in recipe.ingredients_json],
-            nutrition=NutritionInfo.model_validate(recipe.nutrition_json),
+            servings=getattr(recipe, "servings", 1),
+            tools_needed=getattr(recipe, "tools_needed", []),
+            steps=[
+                Step.model_validate(s) if isinstance(s, dict) else s
+                for s in recipe.steps
+            ],
+            ingredients=[
+                Ingredient.model_validate(i) if isinstance(i, dict) else i
+                for i in recipe.ingredients
+            ],
+            nutrition=(
+                NutritionInfo.model_validate(recipe.nutrition)
+                if isinstance(recipe.nutrition, dict)
+                else recipe.nutrition
+            ),
             is_public=recipe.is_public,
             created_at=recipe.created_at,
         )
