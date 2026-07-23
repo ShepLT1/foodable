@@ -1,6 +1,7 @@
+from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import String
+from sqlalchemy import DateTime, String
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -16,3 +17,5 @@ class Profile(Base):
     dietary_restrictions: Mapped[list[str]] = mapped_column(ARRAY(String))
     allergies: Mapped[list[str]] = mapped_column(ARRAY(String))
     preferences: Mapped[list[str]] = mapped_column(ARRAY(String))
+
+    onboarded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

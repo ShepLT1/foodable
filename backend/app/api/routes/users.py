@@ -23,6 +23,7 @@ def _to_user_me(profile: Profile, auth_user: AuthUser) -> UserMe:
         dietary_restrictions=profile.dietary_restrictions,
         allergies=profile.allergies,
         preferences=profile.preferences,
+        onboarded_at=profile.onboarded_at,
     )
 
 
