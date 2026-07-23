@@ -4,13 +4,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.list import GroceryList
 from app.repositories.list import lists_repository
+from app.repositories.recipe import recipe_repository
 from app.schemas.list import (
     GroceryListCreate,
     GroceryListUpdate,
     GroceryListItemCreate,
     GroceryListItemUpdate,
 )
+from app.schemas.list_ai import GroceryListGenerateRequest
+from app.services.list_ai import generate_grocery_list
 
+class RecipeSelectionError(Exception):
+    """Raised when one or more requested recipes cannot be found."""
 
 class ListService:
     async def create(
@@ -20,6 +25,33 @@ class ListService:
         data: GroceryListCreate,
     ) -> GroceryList:
         return await lists_repository.create(db, user_id, data)
+
+    async def generate_from_recipes(
+        self,
+        db: AsyncSession,
+        user_id: UUID,
+        data: GroceryListGenerateRequest,
+    ) -> GroceryList:
+        recipes = await recipe_repository.get_by_ids(
+            db=db,
+            recipe_ids=data.recipe_ids,
+            user_id=user_id,
+        )
+
+        if len(recipes) != len(data.recipe_ids):
+            raise RecipeSelectionError(
+                "One or more recipes could not be found."
+            )
+
+        generated_list = await generate_grocery_list(
+            recipes,
+        )
+
+        return await lists_repository.create_with_items(
+            db=db,
+            user_id=user_id,
+            grocery_list=generated_list,
+        )
 
     async def get_all(
         self,
