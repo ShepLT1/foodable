@@ -4,19 +4,7 @@ import { useUpdateCurrentUser } from '../hooks/useUpdateCurrentUser'
 import { TagInput } from './TagInput'
 import { ChipSelect } from './ChipSelect'
 import { UserAvatar } from './UserAvatar'
-
-const DIETARY_OPTIONS = [
-  'Vegetarian',
-  'Vegan',
-  'Pescatarian',
-  'Gluten-Free',
-  'Dairy-Free',
-  'Keto',
-  'Paleo',
-  'Halal',
-  'Kosher',
-  'Low-Carb',
-]
+import { DIETARY_OPTIONS } from '../constants'
 
 // order-insensitive comparison of two string lists (values are unique)
 function sameItems(a: string[], b: string[]) {
