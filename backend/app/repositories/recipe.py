@@ -55,5 +55,20 @@ class RecipeRepository:
         )
         return result.scalar_one_or_none()
 
+    async def get_by_ids(
+        self,
+        db: AsyncSession,
+        recipe_ids: list[UUID],
+        user_id: UUID,
+    ) -> list[Recipe]:
+        result = await db.execute(
+            select(Recipe).where(
+                Recipe.user_id == user_id,
+                Recipe.id.in_(recipe_ids),
+            )
+        )
+
+        return list(result.scalars().all())
+
 
 recipe_repository = RecipeRepository()
