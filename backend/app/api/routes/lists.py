@@ -13,10 +13,31 @@ from app.schemas.list import (
     GroceryListItemUpdate,
     DeleteGroceryListResponse,
 )
-from app.services.list import list_service
+from app.schemas.list_ai import GroceryListGenerateRequest
+from app.services.list import (
+    list_service,
+    RecipeSelectionError,
+)
+from app.services.list_ai import GroceryListGenerationError
 
 router = APIRouter(prefix="/lists", tags=["lists"])
 
+def _map_list_generation_error(e: Exception) -> HTTPException:
+    """Map a service-layer exception to the appropriate HTTP error."""
+
+    if isinstance(e, RecipeSelectionError):
+        return HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        )
+
+    if isinstance(e, GroceryListGenerationError):
+        return HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=str(e),
+        )
+
+    raise e
 
 @router.get("", response_model=list[GroceryListResponse])
 async def get_grocery_lists(
@@ -62,6 +83,29 @@ async def create_grocery_list(
         user_id=UUID(user.id),
         data=payload,
     )
+
+    return GroceryListResponse.model_validate(grocery_list)
+
+@router.post(
+    "/generate",
+    response_model=GroceryListResponse,
+)
+async def generate_grocery_list(
+    payload: GroceryListGenerateRequest,
+    user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> GroceryListResponse:
+    try:
+        grocery_list = await list_service.generate_from_recipes(
+            db=db,
+            user_id=UUID(user.id),
+            data=payload,
+        )
+    except (
+        RecipeSelectionError,
+        GroceryListGenerationError,
+    ) as e:
+        raise _map_list_generation_error(e) from e
 
     return GroceryListResponse.model_validate(grocery_list)
 
