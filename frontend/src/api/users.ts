@@ -16,6 +16,7 @@ export type UserMe = {
   dietary_restrictions: string[]
   allergies: string[]
   preferences: string[]
+  onboarded_at: string | null
 }
 
 // partial update — only provided fields are changed (PATCH /users/me)
