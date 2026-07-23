@@ -7,14 +7,25 @@ import { Modal } from './Modal'
 import { ChipSelect } from './ChipSelect'
 import { TagInput } from './TagInput'
 
-const LAST_STEP = 3
-
 const TITLES = [
-  'Welcome to Foodable',
-  'Dietary preferences',
-  'Allergies & tastes',
-  "You're all set!",
+  'Welcome to Foodable!',
+  "Let's get you set up",
+  'Any dietary preferences?',
+  'Anything we should avoid?',
+  'Any foods you love?',
+  "Let's cook!",
 ]
+
+const BLURBS = [
+  '',
+  "This is how you'll show up to other users on Foodable.",
+  "We'll tailor recipes to your dietary needs.",
+  "We'll avoid these in recipes.",
+  "Tell us the foods, seasonings, and cuisines you love - we'll try to incorporate these more often into recipes.",
+  "That's everything we need.",
+]
+
+const LAST_STEP = TITLES.length - 1
 
 export function OnboardingModal() {
   const { data: user } = useCurrentUser()
@@ -39,7 +50,7 @@ export function OnboardingModal() {
 
   const open = !!user && user.onboarded_at == null
 
-  // saving stamps onboarded_at → the gate closes and this modal unmounts
+  // saving stamps onboarded_at, closing the gate so this modal unmounts
   async function finish() {
     await update.mutateAsync({
       display_name: displayName.trim(),
@@ -52,9 +63,22 @@ export function OnboardingModal() {
 
   return (
     <Modal open={open} title={TITLES[step]}>
+      <p className="-mt-2 text-sm text-gray-500">{BLURBS[step]}</p>
+
       {step === 0 && (
+        <>
+          <p className="text-gray-600">
+            Let's get your profile setup! It'll only take a minute
+          </p>
+          <p className="mt-2 text-gray-600">
+            (You can change these setting at any time from your profile page.)
+          </p>
+        </>
+      )}
+
+      {step === 1 && (
         <label className="flex flex-col gap-1.5 text-sm font-medium">
-          What should we call you?
+          Display name
           <input
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
@@ -66,38 +90,36 @@ export function OnboardingModal() {
         </label>
       )}
 
-      {step === 1 && (
+      {step === 2 && (
         <ChipSelect
-          label="Dietary Restrictions"
-          sublabel="Select all that apply — you can change these later."
+          label="Dietary restrictions"
           options={DIETARY_OPTIONS}
           value={dietaryRestrictions}
           onChange={setDietaryRestrictions}
         />
       )}
 
-      {step === 2 && (
-        <>
-          <TagInput
-            label="Allergies"
-            sublabel="Add any ingredients you need to avoid."
-            placeholder="e.g. peanuts"
-            value={allergies}
-            onChange={setAllergies}
-          />
-          <TagInput
-            label="Preferences"
-            sublabel="Add foods or cuisines you enjoy."
-            placeholder="e.g. spicy food"
-            value={preferences}
-            onChange={setPreferences}
-          />
-        </>
+      {step === 3 && (
+        <TagInput
+          label="Allergies"
+          placeholder="e.g. peanuts"
+          value={allergies}
+          onChange={setAllergies}
+        />
       )}
 
-      {step === 3 && (
+      {step === 4 && (
+        <TagInput
+          label="Preferences"
+          placeholder="e.g. spicy food"
+          value={preferences}
+          onChange={setPreferences}
+        />
+      )}
+
+      {step === 5 && (
         <p className="text-gray-600">
-          Now you're ready to{' '}
+          {"Now you're ready to "}
           <button
             type="button"
             onClick={finish}
@@ -106,7 +128,7 @@ export function OnboardingModal() {
           >
             create a recipe
           </button>
-          !
+          {'!'}
         </p>
       )}
 
@@ -117,7 +139,9 @@ export function OnboardingModal() {
       )}
 
       <div className="mt-2 flex items-center justify-between">
-        <span className="text-xs text-gray-400">Step {step + 1} of 4</span>
+        <span className="text-xs text-gray-400">
+          Step {step + 1} of {TITLES.length}
+        </span>
 
         <div className="flex gap-2">
           {step > 0 && (
@@ -134,7 +158,7 @@ export function OnboardingModal() {
             <button
               type="button"
               onClick={() => setStep((s) => s + 1)}
-              disabled={step === 0 && displayName.trim().length === 0}
+              disabled={step === 1 && displayName.trim().length === 0}
               className="cursor-pointer rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white disabled:cursor-default disabled:opacity-60"
             >
               Next

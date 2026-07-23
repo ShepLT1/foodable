@@ -8,6 +8,7 @@ import { GroceryListsPage } from './pages/GroceryListsPage'
 import { GroceryListPage } from './pages/GroceryListPage'
 import { RecipeGeneratePage } from './pages/RecipeGeneratePage'
 import { RecipeDetailPage } from './pages/RecipeDetailPage'
+import { OnboardingModal } from './components/OnboardingModal'
 
 function App() {
   const { session, loading } = useSession()
@@ -24,6 +25,7 @@ function App() {
   return (
     <BrowserRouter>
       <div className="flex min-h-screen flex-col text-left bg-slate-50">
+        <OnboardingModal />
         <NavBar />
 
         {/* Dynamic SPA Page Views */}
