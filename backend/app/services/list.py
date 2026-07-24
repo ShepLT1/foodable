@@ -6,9 +6,9 @@ from app.models.list import GroceryList
 from app.repositories.list import lists_repository
 from app.schemas.list import (
     GroceryListCreate,
-    GroceryListUpdate,
     GroceryListItemCreate,
     GroceryListItemUpdate,
+    GroceryListUpdate,
 )
 
 

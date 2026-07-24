@@ -47,7 +47,7 @@ class GroceryList(Base):
         nullable=False,
     )
 
-    items: Mapped[list["GroceryListItem"]] = relationship(
+    items: Mapped[list[GroceryListItem]] = relationship(
         back_populates="grocery_list",
         cascade="all, delete-orphan",
         passive_deletes=True,

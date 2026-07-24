@@ -10,7 +10,7 @@ from app.db.base import Base
 # read-only view of Supabase's auth.users — only the columns we surface
 class AuthUser(Base):
     __tablename__ = "users"
-    __table_args__ = {"schema": "auth"}
+    __table_args__ = {"schema": "auth"}  # noqa: RUF012
 
     id: Mapped[UUID] = mapped_column(primary_key=True)
     email: Mapped[str] = mapped_column(String)
