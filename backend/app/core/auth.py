@@ -1,30 +1,27 @@
 import jwt
 from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi.security import OAuth2PasswordBearer
 from jwt import PyJWKClient
 
 from app.core.config import settings
 from app.schemas import CurrentUser
 
-# jwks client will cache the JWK set for 5m by default (`lifespan` param),
-# which prevents us needing to fetch it on each request to validate every call
 _jwks_client = PyJWKClient(f"{settings.supabase_url}/auth/v1/.well-known/jwks.json")
 
-_bearer = HTTPBearer(auto_error=False)
+# Points Swagger UI to our new /token login route
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token", auto_error=False)
 
 
-# verifies the Authorization header and returns the decoded JWT payload
-# reference: https://fastapi.tiangolo.com/tutorial/security/get-current-user/
 def get_current_user(
-    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
+    token: str | None = Depends(oauth2_scheme),
 ) -> CurrentUser:
-    if credentials is None:
+    if token is None:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "missing bearer token")
 
     try:
-        signing_key = _jwks_client.get_signing_key_from_jwt(credentials.credentials)
+        signing_key = _jwks_client.get_signing_key_from_jwt(token)
         claims = jwt.decode(
-            credentials.credentials,
+            token,
             signing_key.key,
             algorithms=["ES256", "RS256"],
             audience="authenticated",

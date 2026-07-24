@@ -3,11 +3,17 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.auth import get_current_user
+from app.core.auth import CurrentUser, get_current_user
 from app.db.dependencies import get_db
 from app.models.auth_user import AuthUser
 from app.models.profile import Profile
-from app.schemas import CurrentUser, ProfileUpdate, UserMe, UserPublic
+from app.repositories.user_follow import user_follow_repository
+from app.schemas import ProfileUpdate, UserMe, UserPublic
+from app.schemas.user_follow import (
+    FollowActionResponse,
+    FollowStatsResponse,
+    FollowUserSummary,
+)
 from app.services.profile import profile_service
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -72,3 +78,76 @@ async def get_user(
         display_name=profile.display_name,
         created_at=auth_user.created_at,
     )
+
+
+# --- Follower Endpoints ---
+
+
+@router.post("/{user_id}/follow", response_model=FollowActionResponse)
+async def follow_user(
+    user_id: UUID,
+    current_user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> FollowActionResponse:
+    follower_id = UUID(current_user.id)
+    if follower_id == user_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You cannot follow yourself.",
+        )
+
+    target_profile = await profile_service.get_by_id(db, user_id)
+    if not target_profile:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
+
+    await user_follow_repository.follow(db, follower_id, user_id)
+    return FollowActionResponse(
+        success=True, message=f"Now following {target_profile.display_name}"
+    )
+
+
+@router.delete("/{user_id}/follow", response_model=FollowActionResponse)
+async def unfollow_user(
+    user_id: UUID,
+    current_user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> FollowActionResponse:
+    follower_id = UUID(current_user.id)
+    unfollowed = await user_follow_repository.unfollow(db, follower_id, user_id)
+
+    if not unfollowed:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You are not following this user.",
+        )
+
+    return FollowActionResponse(success=True, message="Successfully unfollowed user")
+
+
+@router.get("/{user_id}/followers", response_model=list[FollowUserSummary])
+async def get_followers(
+    user_id: UUID,
+    _: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> list[FollowUserSummary]:
+    return await user_follow_repository.get_followers(db, user_id)
+
+
+@router.get("/{user_id}/following", response_model=list[FollowUserSummary])
+async def get_following(
+    user_id: UUID,
+    _: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> list[FollowUserSummary]:
+    return await user_follow_repository.get_following(db, user_id)
+
+
+@router.get("/{user_id}/stats", response_model=FollowStatsResponse)
+async def get_follow_stats(
+    user_id: UUID,
+    current_user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> FollowStatsResponse:
+    return await user_follow_repository.get_stats(db, UUID(current_user.id), user_id)
