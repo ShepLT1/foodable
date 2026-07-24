@@ -36,6 +36,12 @@ create table public.meal_plan_meals (
     created_at timestamptz not null default now()
 );
 
+-- Enable RLS on meal plan tables (backend-only lockdown).
+-- No policies: only the secret key (bypasses RLS) can read/write, so all
+-- access goes through the backend.
+alter table public.meal_plans           enable row level security;
+alter table public.meal_plan_meals      enable row level security;
+
 -- indexes
 create index idx_meal_plans_user_id
 on public.meal_plans(user_id);
