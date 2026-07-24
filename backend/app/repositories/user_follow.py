@@ -1,5 +1,5 @@
-from uuid import UUID
 from typing import Any
+from uuid import UUID
 
 from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
