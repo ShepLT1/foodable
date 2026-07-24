@@ -6,9 +6,9 @@ from app.models.meal_plan import MealPlan
 from app.repositories.meal_plan import meal_plan_repository
 from app.schemas.meal_plan import (
     MealPlanCreate,
-    MealPlanUpdate,
     MealPlanMealCreate,
     MealPlanMealUpdate,
+    MealPlanUpdate,
 )
 
 

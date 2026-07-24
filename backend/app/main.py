@@ -2,9 +2,9 @@ from fastapi import FastAPI
 
 from app.api.routes.health import router as health_router
 from app.api.routes.lists import router as lists_router
+from app.api.routes.meal_plans import router as meal_plans_router
 from app.api.routes.recipes import router as recipes_router
 from app.api.routes.users import router as users_router
-from app.api.routes.meal_plans import router as meal_plans_router
 from app.middleware.cors import add_cors
 
 app = FastAPI(
