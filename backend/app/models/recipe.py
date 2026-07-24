@@ -1,12 +1,16 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, String, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+
+if TYPE_CHECKING:
+    from app.models.meal_plan_meal import MealPlanMeal
 
 TITLE_MAX_LENGTH = 200
 DESCRIPTION_MAX_LENGTH = 1000
@@ -54,6 +58,10 @@ class Recipe(Base):
     ingredients_json: Mapped[list[dict]] = mapped_column(JSONB, nullable=False)
 
     nutrition_json: Mapped[dict] = mapped_column(JSONB, nullable=False)
+
+    meal_plan_meals: Mapped[list["MealPlanMeal"]] = relationship(
+        back_populates="recipe",
+    )
 
     is_public: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
