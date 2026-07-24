@@ -23,3 +23,4 @@ class UserMe(UserPublic):
     dietary_restrictions: list[str]
     allergies: list[str]
     preferences: list[str]
+    onboarded_at: datetime | None
