@@ -4,16 +4,13 @@ from uuid import UUID
 from anthropic import AsyncAnthropic
 from anthropic.types import ToolUseBlock
 from pydantic import ValidationError
-
-from app.schemas.recipe import Recipe, RecipeGenerateRequest, RecipeCreate
-
-from app.repositories.recipe import recipe_repository
-from app.repositories.profile import profile_repository
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.profile import Profile
 from app.models.recipe import Recipe as DBRecipe
-
-from sqlalchemy.ext.asyncio import AsyncSession
+from app.repositories.profile import profile_repository
+from app.repositories.recipe import recipe_repository
+from app.schemas.recipe import Recipe, RecipeCreate, RecipeGenerateRequest
 
 client = AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
