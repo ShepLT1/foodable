@@ -137,7 +137,7 @@ async def generate_grocery_list(
         tools=[LIST_TOOL],
         tool_choice={
             "type": "tool",
-            "name": "create_grocery_list",
+            "name": "generate_grocery_list",
         },
         messages=[
             {
