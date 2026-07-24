@@ -38,13 +38,17 @@ RECIPE_TOOL = {
 }
 
 TEST_PROMPTS = [
-    "Give me a recipe with a spice blend that uses small "
-    "amounts of many different spices.",
-    "Give me a recipe that uses vanilla extract and baking soda in small quantities.",
-    "Give me a recipe with fresh herbs like thyme, rosemary, "
-    "and basil in small amounts.",
-    "Give me a recipe using a pinch of salt and a small amount of cinnamon.",
-    "Give me a complex breakfast recipe with at least 10 ingredients.",
+    (
+        "Give me a recipe with a spice blend that uses small "
+        "amounts of many different spices."
+    ),
+    ("Give me a recipe that uses vanilla extract and baking soda in small quantities."),
+    (
+        "Give me a recipe with fresh herbs like thyme, rosemary, "
+        "and basil in small amounts."
+    ),
+    ("Give me a recipe using a pinch of salt and a small amount of cinnamon."),
+    ("Give me a complex breakfast recipe with at least 10 ingredients."),
 ]
 
 

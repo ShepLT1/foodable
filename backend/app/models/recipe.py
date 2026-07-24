@@ -1,10 +1,10 @@
-from uuid import UUID, uuid4
 from datetime import datetime
+from uuid import UUID, uuid4
 
-from sqlalchemy import ForeignKey, String, Boolean, DateTime, func, CheckConstraint
+from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, String, func
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.dialects.postgresql import JSONB
 
 from app.db.base import Base
 

@@ -15,12 +15,18 @@ missing nutrition data, truncated responses, and unrealistic
 metric units for US kitchens).
 """
 
-from uuid import UUID
 from datetime import datetime
+from typing import TYPE_CHECKING, Literal
+from uuid import UUID
 
-from typing import Literal, Optional, TYPE_CHECKING
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.models.recipe import (
+    CUISINE_TYPE_MAX_LENGTH,
+    DESCRIPTION_MAX_LENGTH,
+    MEAL_TYPE_MAX_LENGTH,
+    TITLE_MAX_LENGTH,
+)
 from app.schemas.prompts_recipe_gen import (
     CARBS_DESCRIPTION,
     STEP_DURATION_DESCRIPTION,
@@ -28,13 +34,6 @@ from app.schemas.prompts_recipe_gen import (
     STEP_INSTRUCTION_DESCRIPTION,
     TOOLS_NEEDED_DESCRIPTION,
     UNIT_DESCRIPTION,
-)
-
-from app.models.recipe import (
-    CUISINE_TYPE_MAX_LENGTH,
-    DESCRIPTION_MAX_LENGTH,
-    MEAL_TYPE_MAX_LENGTH,
-    TITLE_MAX_LENGTH,
 )
 
 
@@ -64,7 +63,7 @@ class RecipeGenerateRequest(StrictBaseModel):
 class Ingredient(StrictBaseModel):
     name: str
     quantity: float = Field(description="The quantity of the ingredient.")
-    unit: Optional[str] = Field(
+    unit: str | None = Field(
         default=None,
         description=UNIT_DESCRIPTION,
     )
@@ -73,7 +72,7 @@ class Ingredient(StrictBaseModel):
 class Step(StrictBaseModel):
     instruction: str = Field(description=STEP_INSTRUCTION_DESCRIPTION)
     ingredients: list[str] = Field(description=STEP_INGREDIENTS_DESCRIPTION)
-    estimated_duration_minutes: Optional[int] = Field(
+    estimated_duration_minutes: int | None = Field(
         default=None, description=STEP_DURATION_DESCRIPTION
     )
 
@@ -94,7 +93,7 @@ class NutritionInfo(StrictBaseModel):
 class Recipe(StrictBaseModel):
     title: str = Field(description="The name of the recipe.")
     servings: int = Field(description="The number of servings this recipe makes.")
-    description: Optional[str] = Field(
+    description: str | None = Field(
         default=None, description="A brief description of the recipe."
     )
     ingredients: list[Ingredient] = Field(
@@ -107,7 +106,7 @@ class Recipe(StrictBaseModel):
     nutrition: NutritionInfo = Field(
         description="Nutritional information for the recipe."
     )
-    cuisine_type: Optional[str] = Field(
+    cuisine_type: str | None = Field(
         default=None,
         description="The type of cuisine the recipe belongs to.",
     )
