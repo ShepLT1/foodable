@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from decimal import Decimal
 from uuid import UUID
 
 from sqlalchemy import select
@@ -58,7 +59,7 @@ class ListsRepository:
                 GroceryListItem(
                     list_id=db_list.id,
                     name=item.name,
-                    quantity=item.quantity,
+                    quantity=Decimal(str(item.quantity)),
                     unit=item.unit,
                     checked=False,
                 )

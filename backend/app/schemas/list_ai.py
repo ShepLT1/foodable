@@ -28,12 +28,11 @@ class GeneratedGroceryListItem(StrictBaseModel):
         max_length=200,
     )
 
-    quantity: Decimal = Field(
+    quantity: float = Field(
         description=(
             "The merged quantity of the ingredient. Preserve decimal "
             "quantities when necessary."
         ),
-        gt=0,
     )
 
     unit: str | None = Field(
