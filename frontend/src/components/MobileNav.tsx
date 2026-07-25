@@ -3,12 +3,7 @@ import { Menu as MenuIcon, X } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-
-const NAV_LINKS = [
-  { to: '/', label: 'Dashboard' },
-  { to: '/recipes', label: 'Recipes' },
-  { to: '/lists', label: 'Grocery Lists' },
-]
+import { NAV_LINKS } from './navLinks'
 
 // drawer based on the tailwind plus slide-over: https://tailwindcss.com/plus/ui-blocks/application-ui/overlays/drawers
 export function MobileNav() {
@@ -31,10 +26,10 @@ export function MobileNav() {
         />
 
         <div className="fixed inset-0 overflow-hidden">
-          <div className="absolute inset-y-0 left-0 flex max-w-full">
+          <div className="absolute inset-y-0 right-0 flex max-w-full">
             <DialogPanel
               transition
-              className="flex w-64 transform flex-col bg-white shadow-xl transition duration-300 ease-in-out data-[closed]:-translate-x-full"
+              className="flex w-64 transform flex-col bg-white shadow-xl transition duration-300 ease-in-out data-[closed]:translate-x-full"
             >
               <div className="flex items-center justify-between px-6 py-4">
                 <span className="text-xl font-bold text-blue-600">Foodable</span>
@@ -60,15 +55,25 @@ export function MobileNav() {
                 ))}
               </nav>
 
-              <button
-                onClick={() => {
-                  setOpen(false)
-                  supabase.auth.signOut()
-                }}
-                className="mx-4 mb-4 mt-auto cursor-pointer rounded-lg bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300"
-              >
-                Sign Out
-              </button>
+              <div className="mt-auto flex flex-col gap-1 border-t border-gray-100 px-4 py-4 font-medium text-gray-700">
+                <Link
+                  to="/profile"
+                  onClick={() => setOpen(false)}
+                  className="rounded-lg px-3 py-2 hover:bg-gray-100"
+                >
+                  Profile
+                </Link>
+
+                <button
+                  onClick={() => {
+                    setOpen(false)
+                    supabase.auth.signOut()
+                  }}
+                  className="cursor-pointer rounded-lg px-3 py-2 text-left hover:bg-gray-100"
+                >
+                  Sign Out
+                </button>
+              </div>
             </DialogPanel>
           </div>
         </div>
