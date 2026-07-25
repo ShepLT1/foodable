@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
 import { useCurrentUser } from '../hooks/useCurrentUser'
-import { UserAvatar } from './UserAvatar'
+import { HeaderUserMenu } from './HeaderUserMenu'
 
 export function NavBar() {
   const { data: user } = useCurrentUser()
@@ -23,18 +22,7 @@ export function NavBar() {
         </nav>
       </div>
 
-      <div className="flex items-center gap-4">
-        <button
-          onClick={() => supabase.auth.signOut()}
-          className="cursor-pointer rounded-lg bg-gray-200 px-4 py-1.5 text-sm font-semibold text-gray-700 hover:bg-gray-300"
-        >
-          Sign Out
-        </button>
-
-        <Link to="/profile" aria-label="Profile">
-          <UserAvatar name={user?.display_name} />
-        </Link>
-      </div>
+      <HeaderUserMenu name={user?.display_name} email={user?.email} />
     </header>
   )
 }
