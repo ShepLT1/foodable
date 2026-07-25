@@ -1,0 +1,78 @@
+import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react'
+import { Menu as MenuIcon, X } from 'lucide-react'
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
+
+const NAV_LINKS = [
+  { to: '/', label: 'Dashboard' },
+  { to: '/recipes', label: 'Recipes' },
+  { to: '/lists', label: 'Grocery Lists' },
+]
+
+// drawer based on the tailwind plus slide-over: https://tailwindcss.com/plus/ui-blocks/application-ui/overlays/drawers
+export function MobileNav() {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        aria-label="Open menu"
+        className="cursor-pointer text-gray-600 md:hidden"
+      >
+        <MenuIcon size={24} />
+      </button>
+
+      <Dialog open={open} onClose={setOpen} className="relative z-50 md:hidden">
+        <DialogBackdrop
+          transition
+          className="fixed inset-0 bg-gray-900/40 transition-opacity duration-300 ease-in-out data-[closed]:opacity-0"
+        />
+
+        <div className="fixed inset-0 overflow-hidden">
+          <div className="absolute inset-y-0 left-0 flex max-w-full">
+            <DialogPanel
+              transition
+              className="flex w-64 transform flex-col bg-white shadow-xl transition duration-300 ease-in-out data-[closed]:-translate-x-full"
+            >
+              <div className="flex items-center justify-between px-6 py-4">
+                <span className="text-xl font-bold text-blue-600">Foodable</span>
+                <button
+                  onClick={() => setOpen(false)}
+                  aria-label="Close menu"
+                  className="cursor-pointer text-gray-500 hover:text-gray-900"
+                >
+                  <X size={22} />
+                </button>
+              </div>
+
+              <nav className="flex flex-col gap-1 px-4 font-medium text-gray-700">
+                {NAV_LINKS.map((link) => (
+                  <Link
+                    key={link.to}
+                    to={link.to}
+                    onClick={() => setOpen(false)}
+                    className="rounded-lg px-3 py-2 hover:bg-gray-100"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </nav>
+
+              <button
+                onClick={() => {
+                  setOpen(false)
+                  supabase.auth.signOut()
+                }}
+                className="mx-4 mb-4 mt-auto cursor-pointer rounded-lg bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300"
+              >
+                Sign Out
+              </button>
+            </DialogPanel>
+          </div>
+        </div>
+      </Dialog>
+    </>
+  )
+}
