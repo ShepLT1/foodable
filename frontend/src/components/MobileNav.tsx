@@ -31,7 +31,7 @@ export function MobileNav() {
               transition
               className="flex w-64 transform flex-col bg-white shadow-xl transition duration-300 ease-in-out data-[closed]:translate-x-full"
             >
-              <div className="flex items-center justify-between px-6 py-4">
+              <div className="flex items-center justify-between px-4 py-4">
                 <span className="text-xl font-bold text-blue-600">Foodable</span>
                 <button
                   onClick={() => setOpen(false)}
@@ -42,7 +42,7 @@ export function MobileNav() {
                 </button>
               </div>
 
-              <nav className="flex flex-col gap-1 px-4 font-medium text-gray-700">
+              <nav className="flex flex-col gap-1 px-4 py-2 font-medium text-gray-700">
                 {NAV_LINKS.map((link) => (
                   <Link
                     key={link.to}
@@ -55,7 +55,7 @@ export function MobileNav() {
                 ))}
               </nav>
 
-              <div className="mt-auto flex flex-col gap-1 border-t border-gray-100 px-4 py-4 font-medium text-gray-700">
+              <div className="flex flex-col gap-1 border-t border-gray-100 px-4 py-2 font-medium text-gray-500">
                 <Link
                   to="/profile"
                   onClick={() => setOpen(false)}
