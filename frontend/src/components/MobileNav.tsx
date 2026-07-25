@@ -32,7 +32,9 @@ export function MobileNav() {
               className="flex w-64 transform flex-col bg-white shadow-xl transition duration-300 ease-in-out data-[closed]:translate-x-full"
             >
               <div className="flex items-center justify-between px-4 py-4">
-                <span className="text-xl font-bold text-blue-600">Foodable</span>
+                <span className="text-xl font-bold text-blue-600">
+                  Foodable
+                </span>
                 <button
                   onClick={() => setOpen(false)}
                   aria-label="Close menu"
