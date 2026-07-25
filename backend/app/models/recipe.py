@@ -2,8 +2,16 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
-from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, String, func
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    func,
+)
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -52,6 +60,10 @@ class Recipe(Base):
     cuisine_type: Mapped[str | None] = mapped_column(
         String(CUISINE_TYPE_MAX_LENGTH), nullable=True
     )
+
+    servings: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    tools_needed: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=False)
 
     steps_json: Mapped[dict] = mapped_column(JSONB, nullable=False)
 
