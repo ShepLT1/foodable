@@ -1,5 +1,10 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { generateRecipe, getRecipe } from '../api/recipes'
+import {
+  generateRecipe,
+  getRecipe,
+  searchRecipes,
+  RecipeSearchParams,
+} from '../api/recipes'
 
 export function useGenerateRecipe() {
   return useMutation({
@@ -12,5 +17,12 @@ export function useRecipe(recipeId: string) {
     queryKey: ['recipes', recipeId],
     queryFn: () => getRecipe(recipeId),
     enabled: !!recipeId,
+  })
+}
+
+export function useSearchRecipes(params: RecipeSearchParams) {
+  return useQuery({
+    queryKey: ['recipes', 'search', params],
+    queryFn: () => searchRecipes(params),
   })
 }
