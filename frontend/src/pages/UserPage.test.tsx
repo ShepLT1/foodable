@@ -1,76 +1,118 @@
-// @vitest-environment jsdom
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { BrowserRouter } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { UserPage } from './UserPage'
-import { useCurrentUser } from '../hooks/useCurrentUser'
+import { api } from '../api/client'
 
-// 1. Tell Vitest to mock the useCurrentUser hook file
-vi.mock('../hooks/useCurrentUser', () => ({
-  useCurrentUser: vi.fn(),
+vi.mock('../api/client', () => ({
+  api: vi.fn(),
+  ApiError: class ApiError extends Error {
+    status: number
+    detail: string
+    constructor(detail: string, status = 400) {
+      super(detail)
+      this.status = status
+      this.detail = detail
+    }
+  },
 }))
 
-const mockUseCurrentUser = (v: Partial<ReturnType<typeof useCurrentUser>>) =>
-  vi
-    .mocked(useCurrentUser)
-    .mockReturnValue(v as unknown as ReturnType<typeof useCurrentUser>)
-
 describe('UserPage Component', () => {
+  let queryClient: QueryClient
+
   beforeEach(() => {
     vi.clearAllMocks()
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: false,
+        },
+      },
+    })
   })
 
-  it('renders the loading state correctly', () => {
-    // Look how clean this is now! No manual casting required inside the test blocks.
-    mockUseCurrentUser({
-      data: undefined,
-      isPending: true,
-      error: null,
+  it('renders live profile data, grocery lists, and coming soon previews', async () => {
+    vi.mocked(api).mockImplementation((endpoint: string) => {
+      // 1. Check for lists/groceries FIRST
+      if (endpoint.includes('list') || endpoint.includes('grocer')) {
+        return Promise.resolve([
+          {
+            id: 'list-1',
+            title: 'Weekly Groceries',
+            created_at: '2026-07-20T12:00:00Z',
+            items: [
+              {
+                id: 'item-1',
+                name: 'Almond Milk',
+                quantity: 1,
+                checked: false,
+              },
+            ],
+          },
+        ])
+      }
+
+      // 2. Check for user profile second
+      if (endpoint === '/users/me' || endpoint.includes('user')) {
+        return Promise.resolve({
+          id: '11111111-1111-1111-1111-111111111111',
+          display_name: 'Test Chef',
+          email: 'chef@foodable.com',
+          created_at: '2026-07-20T12:00:00Z',
+          dietary_restrictions: ['Vegan'],
+          allergies: ['Peanuts'],
+          preferences: [],
+        })
+      }
+
+      return Promise.resolve([])
     })
 
-    render(<UserPage />)
-    expect(screen.getByText('Loading...')).toBeInTheDocument()
-  })
+    render(
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <UserPage />
+        </BrowserRouter>
+      </QueryClientProvider>,
+    )
 
-  it('renders the error state cleanly if user fetch breaks', () => {
-    mockUseCurrentUser({
-      data: undefined,
-      isPending: false,
-      error: new Error('Failed to fetch user profiles'),
-    })
-
-    render(<UserPage />)
+    // 1. Verify Live Profile Header
     expect(
-      screen.getByText('Error: Failed to fetch user profiles'),
+      await screen.findByText(/Welcome back, Test Chef!/i),
     ).toBeInTheDocument()
-  })
+    expect(screen.getByText(/chef@foodable.com/i)).toBeInTheDocument()
+    expect(screen.getByText('Vegan')).toBeInTheDocument()
+    expect(screen.getByText('Avoids Peanuts')).toBeInTheDocument()
 
-  it('renders a fallback message when no user object is found', () => {
-    mockUseCurrentUser({
-      data: undefined,
-      isPending: false,
-      error: null,
-    })
-
-    render(<UserPage />)
-    expect(screen.getByText('No user found.')).toBeInTheDocument()
-  })
-
-  it('renders user details successfully when data populates', () => {
-    mockUseCurrentUser({
-      data: {
-        id: 'user-123',
-        email: 'test@example.com',
-        display_name: 'Test User',
-      } as unknown as ReturnType<typeof useCurrentUser>['data'],
-    })
-
-    render(<UserPage />)
-
+    // 2. Verify Live Grocery Lists Widget
     expect(
-      screen.getByRole('heading', { name: 'Current User' }),
+      screen.getByRole('heading', { name: /Grocery Lists/i }),
     ).toBeInTheDocument()
-    expect(screen.getByText('user-123')).toBeInTheDocument()
-    expect(screen.getByText('test@example.com')).toBeInTheDocument()
-    expect(screen.getByText('Test User')).toBeInTheDocument()
+    expect(await screen.findByText('Weekly Groceries')).toBeInTheDocument()
+    expect(screen.getByText('0/1 items')).toBeInTheDocument()
+
+    // 3. Verify "Coming Soon" / Preview Cards
+    expect(
+      screen.getByRole('heading', { name: /Recent AI Recipes/i }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: /Community/i }),
+    ).toBeInTheDocument()
+    expect(screen.getAllByText(/Coming Soon/i).length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('handles API fetch errors gracefully without crashing', async () => {
+    vi.mocked(api).mockRejectedValue(new Error('Network error'))
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <UserPage />
+        </BrowserRouter>
+      </QueryClientProvider>,
+    )
+
+    expect(await screen.findByText(/Welcome back!/i)).toBeInTheDocument()
   })
 })

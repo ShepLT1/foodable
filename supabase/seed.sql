@@ -5,7 +5,7 @@
 -- Shared Test Password for all accounts: password
 --
 -- Quick Account Reference:
--- 1. user@foodable.com         (Foodable Admin - Main Test User)
+-- 1. user@foodable.com          (Foodable Admin - Main Test User)
 -- 2. chef.mario@foodable.com    (Chef Mario - Italian Cuisine Specialist)
 -- 3. sarah.baker@foodable.com   (Sarah Baker - Vegetarian / Baking)
 -- 4. alex.green@foodable.com    (Alex Green - Gluten-Free / Meal Prep)
@@ -37,6 +37,7 @@ values
 -- ------------------------------------------------------------------------------
 update public.profiles
 set display_name = 'Foodable Admin',
+    onboarded_at = now(),
     dietary_restrictions = '{}',
     allergies = '{}',
     preferences = '{"Quick Meals", "High Protein"}'
@@ -44,6 +45,7 @@ where id = '11111111-1111-1111-1111-111111111111';
 
 update public.profiles
 set display_name = 'Chef Mario',
+    onboarded_at = now(),
     dietary_restrictions = '{}',
     allergies = '{}',
     preferences = '{"Italian", "Pasta"}'
@@ -51,6 +53,7 @@ where id = '22222222-2222-2222-2222-222222222222';
 
 update public.profiles
 set display_name = 'Sarah Baker',
+    onboarded_at = now(),
     dietary_restrictions = '{"Vegetarian"}',
     allergies = '{"Peanuts"}',
     preferences = '{"Baking", "Desserts"}'
@@ -58,6 +61,7 @@ where id = '33333333-3333-3333-3333-333333333333';
 
 update public.profiles
 set display_name = 'Alex Green',
+    onboarded_at = now(),
     dietary_restrictions = '{"Gluten-Free"}',
     allergies = '{"Dairy"}',
     preferences = '{"Salads", "Meal Prep"}'
@@ -65,6 +69,7 @@ where id = '44444444-4444-4444-4444-444444444444';
 
 update public.profiles
 set display_name = 'Ken Chen',
+    onboarded_at = now(),
     dietary_restrictions = '{}',
     allergies = '{}',
     preferences = '{"Asian", "Spicy"}'
@@ -137,3 +142,38 @@ values
   ('bbbbbbbb-0000-0000-0000-000000000001', 'soy sauce', 2, 'tbsp', true),
   ('bbbbbbbb-0000-0000-0000-000000000002', 'rolled oats', 2, 'bags', false),
   ('bbbbbbbb-0000-0000-0000-000000000002', 'maple syrup', 1, 'bottle', false);
+
+-- Meal plan + meals
+insert into public.meal_plans (
+    id,
+    user_id,
+    title
+)
+values (
+    'cccccccc-0000-0000-0000-000000000001',
+    '11111111-1111-1111-1111-111111111111',
+    'Weekly Meal Plan'
+);
+
+insert into public.meal_plan_meals (
+    meal_plan_id,
+    recipe_id,
+    servings,
+    scheduled_date,
+    meal_type
+)
+values
+(
+    'cccccccc-0000-0000-0000-000000000001',
+    'aaaaaaaa-0000-0000-0000-000000000001',
+    2,
+    current_date,
+    'dinner'
+),
+(
+    'cccccccc-0000-0000-0000-000000000001',
+    'aaaaaaaa-0000-0000-0000-000000000002',
+    4,
+    null,
+    null
+);
