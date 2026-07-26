@@ -44,15 +44,18 @@ export function RecipeGeneratePage() {
   }
 
   return (
-    <div className="rounded-xl bg-white p-8 shadow-sm border border-gray-100">
-      <h2 className="text-3xl font-bold text-gray-900">Generate a Recipe</h2>
+    <div className="mx-auto max-w-xl rounded-2xl border border-gray-100 bg-white p-8 shadow-sm">
+      <h2 className="text-2xl font-bold text-gray-900">Generate a Recipe</h2>
+      <p className="mt-1 text-sm text-gray-500">
+        {"Add what you have on hand and we'll build a recipe around it."}
+      </p>
 
-      <div className="mt-6 max-w-md">
+      <div className="mt-8 flex flex-col gap-5">
         <TagInput
           label="Ingredients"
           value={ingredients}
           onChange={setIngredients}
-          placeholder="Type an Ingredient and press Enter"
+          placeholder="Type an ingredient and press Enter"
         />
 
         <SingleChipSelect
@@ -74,7 +77,7 @@ export function RecipeGeneratePage() {
           type="button"
           onClick={handleSubmit}
           disabled={isPending || ingredients.length === 0}
-          className="cursor-pointer rounded-lg bg-blue-600 px-4 py-2 text-white disabled:cursor-not-allowed disabled:opacity-50"
+          className="mt-2 w-full cursor-pointer rounded-lg bg-blue-600 px-4 py-2.5 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isPending ? 'Generating...' : 'Generate Recipe'}
         </button>
