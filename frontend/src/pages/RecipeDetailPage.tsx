@@ -72,7 +72,7 @@ export function RecipeDetailPage() {
         )}
       </div>
       {recipe.tools_needed.length > 0 && (
-        <div className="mt-8">
+        <div className="mt-8 border-t border-gray-200 pt-8">
           <h3 className="text-xl font-semibold text-gray-900">Tools Needed</h3>
           <div className="mt-3 flex flex-wrap gap-2">
             {recipe.tools_needed.map((tool) => (
@@ -86,7 +86,7 @@ export function RecipeDetailPage() {
           </div>
         </div>
       )}
-      <div className="mt-8 grid gap-8 sm:grid-cols-3">
+      <div className="mt-8 grid gap-8 border-t border-gray-200 pt-8 sm:grid-cols-3">
         <div>
           <h3 className="text-xl font-semibold text-gray-900">Ingredients</h3>
           <ul className="mt-3 space-y-1.5 text-sm">
@@ -101,7 +101,7 @@ export function RecipeDetailPage() {
 
         <div className="sm:col-span-2">
           <h3 className="text-xl font-semibold text-gray-900">Steps</h3>
-          <ol className="mt-3 space-y-3">
+          <ol className="mt-3 space-y-4">
             {recipe.steps.map((step, i) => (
               <li key={i} className="text-gray-700">
                 <span className="font-medium">{i + 1}.</span> {step.instruction}
