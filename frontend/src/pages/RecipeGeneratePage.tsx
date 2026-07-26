@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Loader2 } from 'lucide-react'
 import { TagInput } from '../components/TagInput'
 import { SingleChipSelect } from '../components/SingleChipSelect'
 import { ComboboxSelect } from '../components/ComboboxSelect'
@@ -79,9 +80,16 @@ export function RecipeGeneratePage() {
           type="button"
           onClick={handleSubmit}
           disabled={isPending || ingredients.length === 0}
-          className="mt-2 w-full cursor-pointer rounded-lg bg-blue-600 px-4 py-2.5 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="mt-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {isPending ? 'Generating...' : 'Generate Recipe'}
+          {isPending ? (
+            <>
+              <Loader2 size={18} className="animate-spin" />
+              Generating...
+            </>
+          ) : (
+            'Generate Recipe'
+          )}
         </button>
       </div>
     </div>
