@@ -66,6 +66,7 @@ class RecipeRepository:
         )
 
         return list(result.scalars().all())
+
     async def search(
         self,
         db: AsyncSession,
