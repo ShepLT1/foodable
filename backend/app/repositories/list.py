@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from decimal import Decimal
 from uuid import UUID
 
 from sqlalchemy import select
@@ -12,6 +13,7 @@ from app.schemas.list import (
     GroceryListCreate,
     GroceryListItemCreate,
 )
+from app.schemas.list_ai import GeneratedGroceryList
 
 
 class ListsRepository:
@@ -36,6 +38,49 @@ class ListsRepository:
             raise
 
         return grocery_list
+
+    async def create_with_items(
+        self,
+        db: AsyncSession,
+        user_id: UUID,
+        grocery_list: GeneratedGroceryList,
+    ) -> GroceryList:
+        db_list = GroceryList(
+            user_id=user_id,
+            title=grocery_list.title,
+        )
+
+        db.add(db_list)
+
+        await db.flush()
+
+        for item in grocery_list.items:
+            db.add(
+                GroceryListItem(
+                    list_id=db_list.id,
+                    name=item.name,
+                    quantity=Decimal(str(item.quantity)),
+                    unit=item.unit,
+                    checked=False,
+                )
+            )
+
+        try:
+            await db.commit()
+            await db.refresh(db_list)
+        except SQLAlchemyError:
+            await db.rollback()
+            raise
+
+        db_grocery_list = await self.get_by_id(
+            db,
+            db_list.id,
+            user_id,
+        )
+
+        assert db_grocery_list is not None
+
+        return db_grocery_list
 
     async def get_all(
         self,
