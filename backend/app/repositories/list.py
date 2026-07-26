@@ -72,11 +72,15 @@ class ListsRepository:
             await db.rollback()
             raise
 
-        return await self.get_by_id(
+        db_grocery_list = await self.get_by_id(
             db,
             db_list.id,
             user_id,
         )
+
+        assert db_grocery_list is not None
+
+        return db_grocery_list
 
     async def get_all(
         self,

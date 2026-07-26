@@ -31,9 +31,9 @@ MAX_TOKENS = 2500
 
 
 TEST_PROMPTS = [
-  {
-    "name": "Overlapping ingredients",
-    "prompt": """
+    {
+        "name": "Overlapping ingredients",
+        "prompt": """
       Generate a merged grocery list from the following recipes.
 
       Recipe: Chicken Tacos
@@ -54,10 +54,10 @@ TEST_PROMPTS = [
 
       Return the merged grocery list using the provided tool.
     """,
-  },
-  {
-    "name": "No overlapping ingredients",
-    "prompt": """
+    },
+    {
+        "name": "No overlapping ingredients",
+        "prompt": """
       Generate a merged grocery list from the following recipes.
 
       Recipe: Pancakes
@@ -76,10 +76,10 @@ TEST_PROMPTS = [
 
       Return the merged grocery list using the provided tool.
     """,
-  },
-  {
-    "name": "Do not merge distinct ingredients",
-    "prompt": """
+    },
+    {
+        "name": "Do not merge distinct ingredients",
+        "prompt": """
       Generate a merged grocery list from the following recipes.
 
       Recipe: Pasta
@@ -96,7 +96,7 @@ TEST_PROMPTS = [
 
       Return the merged grocery list using the provided tool.
     """,
-  },
+    },
 ]
 
 

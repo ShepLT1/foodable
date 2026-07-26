@@ -1,10 +1,10 @@
 import os
 
 from anthropic import AsyncAnthropic
-from anthropic.types import ToolUseBlock
+from anthropic.types import ToolChoiceToolParam, ToolParam, ToolUseBlock
 from pydantic import ValidationError
 
-from app.schemas.list_ai import (GeneratedGroceryList, GroceryListRecipe)
+from app.schemas.list_ai import GeneratedGroceryList, GroceryListRecipe
 from app.schemas.prompts_list_gen import MERGE_RULES
 
 client = AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
@@ -39,11 +39,16 @@ Rules:
 {MERGE_RULES}
 """.strip()
 
-LIST_TOOL = {
+LIST_TOOL: ToolParam = {
     "name": "generate_grocery_list",
     "description": "Generate a structured merged grocery list.",
     "strict": True,
     "input_schema": GeneratedGroceryList.model_json_schema(),
+}
+
+TOOL_CHOICE: ToolChoiceToolParam = {
+    "type": "tool",
+    "name": "generate_grocery_list",
 }
 
 
@@ -109,9 +114,7 @@ def _build_prompt_from_recipes(recipes: list[GroceryListRecipe]) -> str:
                     f"- {ingredient.quantity} {ingredient.unit} {ingredient.name}"
                 )
             else:
-                parts.append(
-                    f"- {ingredient.quantity} {ingredient.name}"
-                )
+                parts.append(f"- {ingredient.quantity} {ingredient.name}")
 
         parts.append("")
 
@@ -134,10 +137,7 @@ async def generate_grocery_list(
         system=SYSTEM_PROMPT,
         max_tokens=MAX_TOKENS,
         tools=[LIST_TOOL],
-        tool_choice={
-            "type": "tool",
-            "name": "generate_grocery_list",
-        },
+        tool_choice=TOOL_CHOICE,
         messages=[
             {
                 "role": "user",

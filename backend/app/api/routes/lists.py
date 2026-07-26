@@ -15,13 +15,14 @@ from app.schemas.list import (
 )
 from app.schemas.list_ai import GroceryListGenerateRequest
 from app.services.list import (
-    list_service,
     MealPlanNotFoundError,
-    MealPlanValidationError
+    MealPlanValidationError,
+    list_service,
 )
 from app.services.list_ai import GroceryListGenerationError
 
 router = APIRouter(prefix="/lists", tags=["lists"])
+
 
 def _map_list_generation_error(e: Exception) -> HTTPException:
     """Map a service-layer exception to the appropriate HTTP error."""
@@ -45,6 +46,7 @@ def _map_list_generation_error(e: Exception) -> HTTPException:
         )
 
     raise e
+
 
 @router.get("", response_model=list[GroceryListResponse])
 async def get_grocery_lists(
@@ -92,6 +94,7 @@ async def create_grocery_list(
     )
 
     return GroceryListResponse.model_validate(grocery_list)
+
 
 @router.post(
     "/generate",

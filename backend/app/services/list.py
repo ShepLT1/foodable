@@ -12,14 +12,21 @@ from app.schemas.list import (
     GroceryListItemUpdate,
     GroceryListUpdate,
 )
-from app.schemas.list_ai import (GroceryListGenerateRequest, GroceryListRecipe, GroceryListRecipeIngredient)
+from app.schemas.list_ai import (
+    GroceryListGenerateRequest,
+    GroceryListRecipe,
+    GroceryListRecipeIngredient,
+)
 from app.services.list_ai import generate_grocery_list
+
 
 class MealPlanNotFoundError(Exception):
     """Raised when a requested meal plan cannot be found."""
 
+
 class MealPlanValidationError(Exception):
     """Raised when a meal plan cannot be used to generate a grocery list."""
+
 
 class ListService:
     def _build_scaled_recipes(
@@ -53,7 +60,6 @@ class ListService:
 
         return scaled_recipes
 
-
     async def create(
         self,
         db: AsyncSession,
@@ -80,9 +86,7 @@ class ListService:
             )
 
         if not meal_plan.meals:
-            raise MealPlanValidationError(
-                "Meal plan must contain at least one meal."
-            )
+            raise MealPlanValidationError("Meal plan must contain at least one meal.")
 
         scaled_recipes = self._build_scaled_recipes(meal_plan)
 

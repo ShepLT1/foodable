@@ -8,7 +8,6 @@ These schemas represent the AI contract only. They intentionally do
 not include database fields such as IDs, timestamps, or checked status.
 """
 
-from decimal import Decimal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -69,6 +68,7 @@ class GroceryListGenerateRequest(StrictBaseModel):
     meal_plan_id: UUID = Field(
         description=("The ID of the meal plan used to generate a grocery list."),
     )
+
 
 class GroceryListRecipeIngredient(StrictBaseModel):
     name: str
