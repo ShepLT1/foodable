@@ -41,7 +41,12 @@ export function ComboboxSelect({
     !options.some((o) => o.toLowerCase() === trimmed.toLowerCase())
 
   return (
-    <Combobox value={value} onChange={onChange} onClose={() => setQuery('')}>
+    <Combobox
+      immediate
+      value={value}
+      onChange={onChange}
+      onClose={() => setQuery('')}
+    >
       <label className="flex flex-col gap-1.5 text-sm font-medium">
         {label}
         <div className="relative">

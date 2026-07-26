@@ -2,19 +2,20 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { TagInput } from '../components/TagInput'
 import { SingleChipSelect } from '../components/SingleChipSelect'
+import { ComboboxSelect } from '../components/ComboboxSelect'
 import { useGenerateRecipe } from '../hooks/useRecipes'
 
 const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'dessert', 'snack'] as const
 type MealType = (typeof MEAL_TYPES)[number]
 const CUISINE_TYPES = [
+  'American',
+  'Chinese',
+  'French',
+  'Indian',
   'Italian',
+  'Mediterranean',
   'Mexican',
   'Thai',
-  'Chinese',
-  'Indian',
-  'Mediterranean',
-  'American',
-  'French',
 ]
 
 export function RecipeGeneratePage() {
@@ -65,11 +66,12 @@ export function RecipeGeneratePage() {
           onChange={setMealType}
         />
 
-        <SingleChipSelect
+        <ComboboxSelect
           label="Cuisine Type"
           options={CUISINE_TYPES}
           value={cuisineType}
           onChange={setCuisineType}
+          placeholder="Search or type a cuisine"
           allowCustom
         />
 
