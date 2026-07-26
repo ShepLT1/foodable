@@ -6,11 +6,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.auth import CurrentUser, get_current_user
 from app.db.dependencies import get_db
 from app.repositories.recipe import recipe_repository
-from app.schemas.recipe import RecipeGenerateRequest, RecipeResponse
+from app.schemas.recipe import (
+    RecipeGenerateRequest,
+    RecipeResponse,
+    RecipeSearchParams,
+    RecipeSearchResponse,
+)
 from app.services.recipe import (
     ProfileNotFoundError,
     RecipeGenerationError,
     create_recipe_for_user,
+    search_recipes,
 )
 
 router = APIRouter(prefix="/recipes", tags=["recipes"])
@@ -23,6 +29,15 @@ def _map_recipe_error(e: Exception) -> HTTPException:
     if isinstance(e, RecipeGenerationError):
         return HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(e))
     raise e
+
+
+@router.get("", response_model=RecipeSearchResponse)
+async def search_recipes_endpoint(
+    params: RecipeSearchParams = Depends(),
+    user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> RecipeSearchResponse:
+    return await search_recipes(db, params, UUID(user.id))
 
 
 @router.post("/generate", response_model=RecipeResponse)

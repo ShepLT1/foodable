@@ -10,7 +10,14 @@ from app.models.profile import Profile
 from app.models.recipe import Recipe as DBRecipe
 from app.repositories.profile import profile_repository
 from app.repositories.recipe import recipe_repository
-from app.schemas.recipe import Recipe, RecipeCreate, RecipeGenerateRequest
+from app.schemas.recipe import (
+    Recipe,
+    RecipeCreate,
+    RecipeGenerateRequest,
+    RecipeResponse,
+    RecipeSearchParams,
+    RecipeSearchResponse,
+)
 
 client = AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
@@ -126,3 +133,18 @@ async def create_recipe_for_user(
     )
 
     return await recipe_repository.create(db, data)
+
+
+async def search_recipes(
+    db: AsyncSession,
+    params: RecipeSearchParams,
+    current_user_id: UUID,
+) -> RecipeSearchResponse:
+    recipes, total = await recipe_repository.search(db, params, current_user_id)
+
+    return RecipeSearchResponse(
+        items=[RecipeResponse.from_db_recipe(r) for r in recipes],
+        total=total,
+        page=params.page,
+        limit=params.limit,
+    )
