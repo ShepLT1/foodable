@@ -42,6 +42,24 @@ export interface GenerateRecipeRequest {
   cuisine_type?: string
 }
 
+export interface RecipeSearchParams {
+  q?: string
+  cuisine_type?: string
+  meal_type?: 'breakfast' | 'lunch' | 'dinner' | 'dessert' | 'snack'
+  exclude_own?: boolean
+  page?: number
+  limit?: number
+  sort_by?: 'created_at' | 'title'
+  order?: 'asc' | 'desc'
+}
+
+export interface RecipeSearchResponse {
+  items: Recipe[]
+  total: number
+  page: number
+  limit: number
+}
+
 export function getRecipe(recipeId: string) {
   return api<Recipe>(`/recipes/${recipeId}`)
 }
@@ -52,4 +70,22 @@ export function generateRecipe(data: GenerateRecipeRequest) {
     method: 'POST',
     body: JSON.stringify(data),
   })
+}
+
+export function searchRecipes(params: RecipeSearchParams = {}) {
+  const query = new URLSearchParams()
+
+  if (params.q) query.set('q', params.q)
+  if (params.cuisine_type) query.set('cuisine_type', params.cuisine_type)
+  if (params.meal_type) query.set('meal_type', params.meal_type)
+  if (params.exclude_own) query.set('exclude_own', String(params.exclude_own))
+  if (params.page) query.set('page', String(params.page))
+  if (params.limit) query.set('limit', String(params.limit))
+  if (params.sort_by) query.set('sort_by', params.sort_by)
+  if (params.order) query.set('order', params.order)
+
+  const queryString = query.toString()
+  return api<RecipeSearchResponse>(
+    `/recipes${queryString ? `?${queryString}` : ''}`,
+  )
 }
