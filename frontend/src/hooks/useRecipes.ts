@@ -1,10 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
-import {
-  generateRecipe,
-  getRecipe,
-  searchRecipes,
-  RecipeSearchParams,
-} from '../api/recipes'
+import { generateRecipe, getRecipe, searchRecipes, } from '../api/recipes'
+import type { RecipeSearchParams } from '../api/recipes'
 
 export function useGenerateRecipe() {
   return useMutation({
