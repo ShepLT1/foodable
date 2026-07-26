@@ -6,9 +6,12 @@ insert into auth.users (instance_id, id, aud, role, email, encrypted_password, e
 values
   ('00000000-0000-0000-0000-000000000000', '11111111-1111-1111-1111-111111111111', 'authenticated', 'authenticated', 'user@foodable.com', crypt('password', gen_salt('bf')), now(), now(), now(), '{"provider":"email","providers":["email"]}', '{}', '', '', '', '');
 
--- Profile (row auto-created by the on_auth_user_created trigger; override the derived display_name)
+-- Profile (row auto-created by the on_auth_user_created trigger; override the derived
+-- display_name and mark the seed user as already onboarded so they skip the modal)
 update public.profiles
-set display_name = 'Foodable'
+set
+  display_name = 'Foodable',
+  onboarded_at = now()
 where id = '11111111-1111-1111-1111-111111111111';
 
 -- Recipes
@@ -34,3 +37,38 @@ insert into public.grocery_list_items (list_id, name, quantity, unit, checked)
 values
   ('bbbbbbbb-0000-0000-0000-000000000001', 'broccoli', 1, 'head', false),
   ('bbbbbbbb-0000-0000-0000-000000000001', 'soy sauce', 2, 'tbsp', true);
+
+-- Meal plan + meals
+insert into public.meal_plans (
+    id,
+    user_id,
+    title
+)
+values (
+    'cccccccc-0000-0000-0000-000000000001',
+    '11111111-1111-1111-1111-111111111111',
+    'Weekly Meal Plan'
+);
+
+insert into public.meal_plan_meals (
+    meal_plan_id,
+    recipe_id,
+    servings,
+    scheduled_date,
+    meal_type
+)
+values
+(
+    'cccccccc-0000-0000-0000-000000000001',
+    'aaaaaaaa-0000-0000-0000-000000000001',
+    2,
+    current_date,
+    'dinner'
+),
+(
+    'cccccccc-0000-0000-0000-000000000001',
+    'aaaaaaaa-0000-0000-0000-000000000002',
+    4,
+    null,
+    null
+);
