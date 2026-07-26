@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.auth_user import AuthUser
@@ -40,6 +40,10 @@ class ProfileRepository:
 
         for field, value in changes.items():
             setattr(profile, field, value)
+
+        # first profile write marks onboarding complete; later writes leave it
+        if profile.onboarded_at is None:
+            profile.onboarded_at = func.now()
 
         await db.commit()
         await db.refresh(profile)
