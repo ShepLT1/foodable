@@ -78,7 +78,7 @@ def _validate_generated_list(
     seen_items: set[tuple[str, str | None]] = set()
 
     for item in grocery_list.items:
-        key = (item.name.casefold(), item.unit)
+        key = (item.name.casefold(), item.unit.casefold())
 
         if key in seen_items:
             raise GroceryListGenerationError(
