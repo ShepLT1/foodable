@@ -11,3 +11,23 @@ export const DIETARY_OPTIONS = [
   'Kosher',
   'Low-Carb',
 ]
+
+// Recipe meal and cuisine types, use by recipe generation and search/browse
+export const MEAL_TYPES = [
+  'breakfast',
+  'lunch',
+  'dinner',
+  'dessert',
+  'snack',
+] as const
+
+export const CUISINE_TYPES = [
+  'American',
+  'Chinese',
+  'French',
+  'Indian',
+  'Italian',
+  'Mediterranean',
+  'Mexican',
+  'Thai',
+]

@@ -5,9 +5,10 @@ import { TagInput } from '../components/TagInput'
 import { SingleChipSelect } from '../components/SingleChipSelect'
 import { ComboboxSelect } from '../components/ComboboxSelect'
 import { useGenerateRecipe } from '../hooks/useRecipes'
+import { MEAL_TYPES, CUISINE_TYPES } from '../constants'
 
-const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'dessert', 'snack'] as const
 type MealType = (typeof MEAL_TYPES)[number]
+<<<<<<< HEAD
 const CUISINE_TYPES = [
   'American',
   'Chinese',
@@ -18,6 +19,8 @@ const CUISINE_TYPES = [
   'Mexican',
   'Thai',
 ]
+=======
+>>>>>>> 9700c79 (Move MEAL_TYPES/CUISINE_TYPES to shared constants)
 
 export function RecipeGeneratePage() {
   const navigate = useNavigate()
