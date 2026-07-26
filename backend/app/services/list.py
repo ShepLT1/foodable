@@ -3,21 +3,57 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.list import GroceryList
+from app.models.meal_plan import MealPlan
 from app.repositories.list import lists_repository
-from app.repositories.recipe import recipe_repository
+from app.repositories.meal_plan import meal_plan_repository
 from app.schemas.list import (
     GroceryListCreate,
     GroceryListItemCreate,
     GroceryListItemUpdate,
     GroceryListUpdate,
 )
-from app.schemas.list_ai import GroceryListGenerateRequest
+from app.schemas.list_ai import (GroceryListGenerateRequest, GroceryListRecipe, GroceryListRecipeIngredient)
 from app.services.list_ai import generate_grocery_list
 
-class RecipeSelectionError(Exception):
-    """Raised when one or more requested recipes cannot be found."""
+class MealPlanNotFoundError(Exception):
+    """Raised when a requested meal plan cannot be found."""
+
+class MealPlanValidationError(Exception):
+    """Raised when a meal plan cannot be used to generate a grocery list."""
 
 class ListService:
+    def _build_scaled_recipes(
+        self,
+        meal_plan: MealPlan,
+    ) -> list[GroceryListRecipe]:
+        scaled_recipes = []
+
+        for meal in meal_plan.meals:
+            recipe = meal.recipe
+
+            multiplier = meal.servings / recipe.servings
+
+            ingredients = []
+
+            for ingredient in recipe.ingredients_json:
+                ingredients.append(
+                    GroceryListRecipeIngredient(
+                        name=ingredient["name"],
+                        quantity=round(ingredient["quantity"] * multiplier, 3),
+                        unit=ingredient.get("unit"),
+                    )
+                )
+
+            scaled_recipes.append(
+                GroceryListRecipe(
+                    title=recipe.title,
+                    ingredients=ingredients,
+                )
+            )
+
+        return scaled_recipes
+
+
     async def create(
         self,
         db: AsyncSession,
@@ -26,25 +62,32 @@ class ListService:
     ) -> GroceryList:
         return await lists_repository.create(db, user_id, data)
 
-    async def generate_from_recipes(
+    async def generate_from_meal_plan(
         self,
         db: AsyncSession,
         user_id: UUID,
         data: GroceryListGenerateRequest,
     ) -> GroceryList:
-        recipes = await recipe_repository.get_by_ids(
+        meal_plan = await meal_plan_repository.get_by_id(
             db=db,
-            recipe_ids=data.recipe_ids,
+            meal_plan_id=data.meal_plan_id,
             user_id=user_id,
         )
 
-        if len(recipes) != len(data.recipe_ids):
-            raise RecipeSelectionError(
-                "One or more recipes could not be found."
+        if meal_plan is None:
+            raise MealPlanNotFoundError(
+                f"No meal plan found with id={data.meal_plan_id} for user_id={user_id}"
             )
 
+        if not meal_plan.meals:
+            raise MealPlanValidationError(
+                "Meal plan must contain at least one meal."
+            )
+
+        scaled_recipes = self._build_scaled_recipes(meal_plan)
+
         generated_list = await generate_grocery_list(
-            recipes,
+            scaled_recipes,
         )
 
         return await lists_repository.create_with_items(

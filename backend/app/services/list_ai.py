@@ -4,9 +4,8 @@ from anthropic import AsyncAnthropic
 from anthropic.types import ToolUseBlock
 from pydantic import ValidationError
 
-from app.schemas.list_ai import GeneratedGroceryList
+from app.schemas.list_ai import (GeneratedGroceryList, GroceryListRecipe)
 from app.schemas.prompts_list_gen import MERGE_RULES
-from app.models.recipe import Recipe
 
 client = AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
@@ -64,7 +63,7 @@ def _validate_list_response(raw_input: dict) -> GeneratedGroceryList:
 
 def _validate_generated_list(
     grocery_list: GeneratedGroceryList,
-    recipes: list[Recipe],
+    recipes: list[GroceryListRecipe],
 ) -> None:
     """
     Perform sanity checks that go beyond schema validation.
@@ -90,7 +89,7 @@ def _validate_generated_list(
                 )
 
 
-def _build_prompt_from_recipes(recipes: list[Recipe]) -> str:
+def _build_prompt_from_recipes(recipes: list[GroceryListRecipe]) -> str:
     """
     Build the Claude prompt from a collection of recipes.
     """
@@ -104,15 +103,15 @@ def _build_prompt_from_recipes(recipes: list[Recipe]) -> str:
         parts.append(f"Recipe: {recipe.title}")
         parts.append("Ingredients:")
 
-        for ingredient in recipe.ingredients_json:
-            quantity = ingredient["quantity"]
-            unit = ingredient.get("unit")
-            name = ingredient["name"]
-
-            if unit:
-                parts.append(f"- {quantity} {unit} {name}")
+        for ingredient in recipe.ingredients:
+            if ingredient.unit:
+                parts.append(
+                    f"- {ingredient.quantity} {ingredient.unit} {ingredient.name}"
+                )
             else:
-                parts.append(f"- {quantity} {name}")
+                parts.append(
+                    f"- {ingredient.quantity} {ingredient.name}"
+                )
 
         parts.append("")
 
@@ -122,7 +121,7 @@ def _build_prompt_from_recipes(recipes: list[Recipe]) -> str:
 
 
 async def generate_grocery_list(
-    recipes: list[Recipe],
+    recipes: list[GroceryListRecipe],
 ) -> GeneratedGroceryList:
     """
     Generate a merged grocery list using Claude and validate the result.

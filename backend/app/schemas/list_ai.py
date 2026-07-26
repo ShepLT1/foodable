@@ -66,9 +66,16 @@ class GeneratedGroceryList(StrictBaseModel):
 
 
 class GroceryListGenerateRequest(StrictBaseModel):
-    recipe_ids: list[UUID] = Field(
-        description=(
-            "The IDs of two or more recipes to merge into a single grocery list."
-        ),
-        min_length=2,
+    meal_plan_id: UUID = Field(
+        description=("The ID of the meal plan used to generate a grocery list."),
     )
+
+class GroceryListRecipeIngredient(StrictBaseModel):
+    name: str
+    quantity: float
+    unit: str | None = None
+
+
+class GroceryListRecipe(StrictBaseModel):
+    title: str
+    ingredients: list[GroceryListRecipeIngredient]
