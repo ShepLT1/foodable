@@ -8,19 +8,6 @@ import { useGenerateRecipe } from '../hooks/useRecipes'
 import { MEAL_TYPES, CUISINE_TYPES } from '../constants'
 
 type MealType = (typeof MEAL_TYPES)[number]
-<<<<<<< HEAD
-const CUISINE_TYPES = [
-  'American',
-  'Chinese',
-  'French',
-  'Indian',
-  'Italian',
-  'Mediterranean',
-  'Mexican',
-  'Thai',
-]
-=======
->>>>>>> 9700c79 (Move MEAL_TYPES/CUISINE_TYPES to shared constants)
 
 export function RecipeGeneratePage() {
   const navigate = useNavigate()
