@@ -82,10 +82,10 @@ class RecipeRepository:
             query = query.where(Recipe.title.ilike(f"%{params.q}%"))
 
         if params.cuisine_type:
-            query = query.where(Recipe.cuisine_type == params.cuisine_type)
+            query = query.where(Recipe.cuisine_type.ilike(params.cuisine_type))
 
         if params.meal_type:
-            query = query.where(Recipe.meal_type == params.meal_type)
+            query = query.where(Recipe.meal_type.ilike(params.meal_type))
 
         count_query = select(func.count()).select_from(query.subquery())
         total = (await db.execute(count_query)).scalar_one()
