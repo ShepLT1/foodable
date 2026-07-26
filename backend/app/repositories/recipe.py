@@ -14,18 +14,15 @@ class RecipeRepository:
         db: AsyncSession,
         data: RecipeCreate,
     ) -> Recipe:
-        steps_json = {
-            "steps": data.steps,
-            "servings": data.servings,
-            "tools_needed": data.tools_needed,
-        }
         recipe = Recipe(
             user_id=data.user_id,
             title=data.title,
             description=data.description,
             meal_type=data.meal_type,
             cuisine_type=data.cuisine_type,
-            steps_json=steps_json,
+            servings=data.servings,
+            tools_needed=data.tools_needed,
+            steps_json=data.steps,
             ingredients_json=data.ingredients_json,
             nutrition_json=data.nutrition_json,
         )
@@ -54,6 +51,21 @@ class RecipeRepository:
             )
         )
         return result.scalar_one_or_none()
+
+    async def get_by_ids(
+        self,
+        db: AsyncSession,
+        recipe_ids: list[UUID],
+        user_id: UUID,
+    ) -> list[Recipe]:
+        result = await db.execute(
+            select(Recipe).where(
+                Recipe.user_id == user_id,
+                Recipe.id.in_(recipe_ids),
+            )
+        )
+
+        return list(result.scalars().all())
 
 
 recipe_repository = RecipeRepository()
