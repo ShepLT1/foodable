@@ -20,6 +20,9 @@ class RecipeNotFoundError(Exception):
 
 
 class MealPlanRepository:
+    def _default_meal_plan_title(self) -> str:
+        return f"Meal Plan - {datetime.now(timezone.utc).strftime('%b %-d, %Y')}"
+
     async def _get_recipe(
         self,
         db: AsyncSession,
@@ -35,6 +38,34 @@ class MealPlanRepository:
 
         return result.scalar_one_or_none()
 
+    async def _build_meal(
+        self,
+        db: AsyncSession,
+        meal_plan_id: UUID,
+        user_id: UUID,
+        data: MealPlanMealCreate,
+    ) -> MealPlanMeal:
+        recipe = await self._get_recipe(
+            db,
+            data.recipe_id,
+            user_id,
+        )
+
+        if recipe is None:
+            raise RecipeNotFoundError(
+                f"No recipe found with id={data.recipe_id} for user_id={user_id}"
+            )
+
+        return MealPlanMeal(
+            meal_plan_id=meal_plan_id,
+            recipe_id=recipe.id,
+            servings=(data.servings if data.servings is not None else recipe.servings),
+            scheduled_date=data.scheduled_date,
+            meal_type=(
+                data.meal_type if data.meal_type is not None else recipe.meal_type
+            ),
+        )
+
     async def create(
         self,
         db: AsyncSession,
@@ -43,31 +74,57 @@ class MealPlanRepository:
     ) -> MealPlan:
         meal_plan = MealPlan(
             user_id=user_id,
-            title=data.title,
+            title=data.title or self._default_meal_plan_title(),
         )
 
         db.add(meal_plan)
+        await db.flush()
+
+        if data.initial_recipe_id is not None:
+            meal = await self._build_meal(
+                db=db,
+                meal_plan_id=meal_plan.id,
+                user_id=user_id,
+                data=MealPlanMealCreate(
+                    recipe_id=data.initial_recipe_id,
+                ),
+            )
+
+            db.add(meal)
 
         try:
             await db.commit()
-            await db.refresh(meal_plan)
         except SQLAlchemyError:
             await db.rollback()
             raise
 
-        return meal_plan
+        db_meal_plan = await self.get_by_id(
+            db,
+            meal_plan.id,
+            user_id,
+        )
+
+        assert db_meal_plan is not None
+
+        return db_meal_plan
 
     async def get_all(
         self,
         db: AsyncSession,
         user_id: UUID,
+        limit: int | None = None,
     ) -> list[MealPlan]:
-        result = await db.execute(
+        query = (
             select(MealPlan)
             .options(selectinload(MealPlan.meals).selectinload(MealPlanMeal.recipe))
             .where(MealPlan.user_id == user_id)
-            .order_by(MealPlan.created_at.desc())
+            .order_by(MealPlan.updated_at.desc())
         )
+
+        if limit is not None:
+            query = query.limit(limit)
+
+        result = await db.execute(query)
 
         return list(result.scalars().all())
 
@@ -163,23 +220,11 @@ class MealPlanRepository:
         if meal_plan is None:
             return None
 
-        recipe = await self._get_recipe(
+        meal = await self._build_meal(
             db,
-            data.recipe_id,
+            meal_plan_id,
             user_id,
-        )
-
-        if recipe is None:
-            raise RecipeNotFoundError(
-                f"No recipe found with id={data.recipe_id} for user_id={user_id}"
-            )
-
-        meal = MealPlanMeal(
-            meal_plan_id=meal_plan_id,
-            recipe_id=data.recipe_id,
-            servings=data.servings,
-            scheduled_date=data.scheduled_date,
-            meal_type=data.meal_type,
+            data,
         )
 
         db.add(meal)
