@@ -29,11 +29,9 @@ class MealPlanService:
         self,
         db: AsyncSession,
         user_id: UUID,
+        limit: int | None = None,
     ) -> list[MealPlan]:
-        return await meal_plan_repository.get_all(
-            db,
-            user_id,
-        )
+        return await meal_plan_repository.get_all(db, user_id, limit)
 
     async def get_by_id(
         self,

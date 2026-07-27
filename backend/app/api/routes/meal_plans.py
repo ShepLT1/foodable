@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import CurrentUser, get_current_user
@@ -23,10 +23,13 @@ router = APIRouter(prefix="/meal-plans", tags=["meal-plans"])
 async def get_meal_plans(
     user: CurrentUser = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
+    limit: int | None = Query(
+        default=None,
+        ge=1,
+    ),
 ) -> list[MealPlanResponse]:
     meal_plans = await meal_plan_service.get_all(
-        db=db,
-        user_id=UUID(user.id),
+        db=db, user_id=UUID(user.id), limit=limit
     )
 
     return [MealPlanResponse.from_db_meal_plan(meal_plan) for meal_plan in meal_plans]
@@ -59,13 +62,19 @@ async def create_meal_plan(
     user: CurrentUser = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> MealPlanResponse:
-    meal_plan = await meal_plan_service.create(
-        db=db,
-        user_id=UUID(user.id),
-        data=payload,
-    )
+    try:
+        meal_plan = await meal_plan_service.create(
+            db=db,
+            user_id=UUID(user.id),
+            data=payload,
+        )
 
-    return MealPlanResponse.from_db_meal_plan(meal_plan)
+        return MealPlanResponse.from_db_meal_plan(meal_plan)
+    except RecipeNotFoundError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        ) from e
 
 
 @router.patch("/{meal_plan_id}", response_model=MealPlanResponse)
