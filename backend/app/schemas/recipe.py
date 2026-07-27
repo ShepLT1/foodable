@@ -25,8 +25,8 @@ from app.models.recipe import (
     CUISINE_TYPE_MAX_LENGTH,
     DESCRIPTION_MAX_LENGTH,
     MEAL_TYPE_MAX_LENGTH,
-    MealType,
     TITLE_MAX_LENGTH,
+    MealType,
 )
 from app.schemas.prompts_recipe_gen import (
     CARBS_DESCRIPTION,
