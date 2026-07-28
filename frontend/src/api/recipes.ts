@@ -33,6 +33,7 @@ export interface Recipe {
   ingredients: Ingredient[]
   nutrition: NutritionInfo
   is_public: boolean
+  creator_display_name: string | null
   created_at: string
 }
 
