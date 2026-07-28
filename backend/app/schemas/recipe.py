@@ -173,8 +173,8 @@ class RecipeSearchParams(StrictBaseModel):
     order: Literal["asc", "desc"] = "desc"
 
 
-class RecipeSearchResponse(StrictBaseModel):
+class PaginatedRecipes(StrictBaseModel):
     items: list[RecipeResponse]
     total: int
-    page: int
     limit: int
+    offset: int

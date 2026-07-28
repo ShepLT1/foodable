@@ -57,7 +57,7 @@ export interface RecipeSearchParams {
   order?: 'asc' | 'desc'
 }
 
-export interface RecipeSearchResponse {
+export interface PaginatedRecipes {
   items: Recipe[]
   total: number
   page: number
@@ -86,7 +86,7 @@ export function searchRecipes(params: RecipeSearchParams = {}) {
   })
 
   const queryString = query.toString()
-  return api<RecipeSearchResponse>(
+  return api<PaginatedRecipes>(
     `/recipes${queryString ? `?${queryString}` : ''}`,
   )
 }

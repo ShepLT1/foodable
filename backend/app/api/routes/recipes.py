@@ -10,7 +10,7 @@ from app.schemas.recipe import (
     RecipeGenerateRequest,
     RecipeResponse,
     RecipeSearchParams,
-    RecipeSearchResponse,
+    PaginatedRecipes,
 )
 from app.services.recipe import (
     ProfileNotFoundError,
@@ -31,12 +31,12 @@ def _map_recipe_error(e: Exception) -> HTTPException:
     raise e
 
 
-@router.get("", response_model=RecipeSearchResponse)
+@router.get("", response_model=PaginatedRecipes)
 async def search_recipes_endpoint(
     params: RecipeSearchParams = Depends(),
     user: CurrentUser = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-) -> RecipeSearchResponse:
+) -> PaginatedRecipes:
     return await search_recipes(db, params, UUID(user.id))
 
 

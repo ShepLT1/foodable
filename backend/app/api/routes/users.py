@@ -1,14 +1,16 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import CurrentUser, get_current_user
 from app.db.dependencies import get_db
 from app.models.auth_user import AuthUser
 from app.models.profile import Profile
+from app.repositories.recipe import recipe_repository
 from app.repositories.user_follow import user_follow_repository
 from app.schemas import ProfileUpdate, UserMe, UserPublic
+from app.schemas.recipe import PaginatedRecipes, RecipeResponse
 from app.schemas.user_follow import (
     FollowActionResponse,
     FollowStatsResponse,
@@ -78,6 +80,26 @@ async def get_user(
         id=profile.id,
         display_name=profile.display_name,
         created_at=auth_user.created_at,
+    )
+
+
+@router.get("/{user_id}/recipes", response_model=PaginatedRecipes)
+async def get_user_recipes(
+    user_id: UUID,
+    _: CurrentUser = Depends(get_current_user),  # any authenticated user may view
+    db: AsyncSession = Depends(get_db),
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+) -> PaginatedRecipes:
+    recipes = await recipe_repository.get_public_by_user_id(
+        db, user_id, limit=limit, offset=offset
+    )
+    total = await recipe_repository.count_public_by_user_id(db, user_id)
+    return PaginatedRecipes(
+        items=[RecipeResponse.from_db_recipe(r) for r in recipes],
+        total=total,
+        limit=limit,
+        offset=offset,
     )
 
 
