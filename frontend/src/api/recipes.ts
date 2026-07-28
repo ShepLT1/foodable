@@ -76,11 +76,11 @@ export function generateRecipe(data: GenerateRecipeRequest) {
 export function searchRecipes(params: RecipeSearchParams = {}) {
   const query = new URLSearchParams()
 
-Object.entries(params).forEach(([key, value]) => {
-  if (value !== undefined && value !== null && value !== '') {
-    query.set(key, String(value))
-  }
-})
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      query.set(key, String(value))
+    }
+  })
 
   const queryString = query.toString()
   return api<RecipeSearchResponse>(
