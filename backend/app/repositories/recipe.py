@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -48,7 +48,7 @@ class RecipeRepository:
         result = await db.execute(
             select(Recipe).where(
                 Recipe.id == recipe_id,
-                Recipe.user_id == user_id,
+                or_(Recipe.user_id == user_id, Recipe.is_public.is_(True)),
             )
         )
         return result.scalar_one_or_none()
