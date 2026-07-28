@@ -4,6 +4,7 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.profile import Profile
 from app.models.recipe import Recipe
 from app.schemas.recipe import RecipeCreate, RecipeSearchParams
 
@@ -72,8 +73,12 @@ class RecipeRepository:
         db: AsyncSession,
         params: RecipeSearchParams,
         current_user_id: UUID,
-    ) -> tuple[list[Recipe], int]:
-        query = select(Recipe).where(Recipe.is_public.is_(True))
+    ) -> tuple[list[tuple[Recipe, str]], int]:
+        query = (
+            select(Recipe, Profile.display_name)
+            .join(Profile, Recipe.user_id == Profile.id)
+            .where(Recipe.is_public.is_(True))
+        )
 
         if params.exclude_own:
             query = query.where(Recipe.user_id != current_user_id)
@@ -98,7 +103,7 @@ class RecipeRepository:
         query = query.offset(offset).limit(params.limit)
 
         result = await db.execute(query)
-        return list(result.scalars().all()), total
+        return [(row[0], row[1]) for row in result.all()], total
 
 
 recipe_repository = RecipeRepository()

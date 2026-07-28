@@ -140,10 +140,13 @@ async def search_recipes(
     params: RecipeSearchParams,
     current_user_id: UUID,
 ) -> RecipeSearchResponse:
-    recipes, total = await recipe_repository.search(db, params, current_user_id)
+    results, total = await recipe_repository.search(db, params, current_user_id)
 
     return RecipeSearchResponse(
-        items=[RecipeResponse.from_db_recipe(r) for r in recipes],
+        items=[
+            RecipeResponse.from_db_recipe(recipe, display_name)
+            for recipe, display_name in results
+        ],
         total=total,
         page=params.page,
         limit=params.limit,

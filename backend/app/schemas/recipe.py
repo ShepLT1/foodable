@@ -129,13 +129,16 @@ class RecipeResponse(StrictBaseModel):
     ingredients: list[Ingredient]
     nutrition: NutritionInfo
     is_public: bool
+    creator_display_name: str | None = None
     created_at: datetime
 
     if TYPE_CHECKING:
         from app.models.recipe import Recipe as DBRecipe
 
     @classmethod
-    def from_db_recipe(cls, recipe: "DBRecipe") -> "RecipeResponse":
+    def from_db_recipe(
+        cls, recipe: "DBRecipe", creator_display_name: str | None = None
+    ) -> "RecipeResponse":
         return cls(
             id=recipe.id,
             user_id=recipe.user_id,
@@ -149,6 +152,7 @@ class RecipeResponse(StrictBaseModel):
             ingredients=[Ingredient.model_validate(i) for i in recipe.ingredients_json],
             nutrition=NutritionInfo.model_validate(recipe.nutrition_json),
             is_public=recipe.is_public,
+            creator_display_name=creator_display_name,
             created_at=recipe.created_at,
         )
 
