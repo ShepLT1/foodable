@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { SingleChipSelect } from '../components/SingleChipSelect'
 import { useSearchRecipes } from '../hooks/useRecipes'
-import { MEAL_TYPES, CUISINE_TYPES } from '../constants'
+import { MEAL_TYPES, CUISINE_TYPES, MealType } from '../constants'
 import { ComboboxSelect } from '../components/ComboboxSelect'
 
 export function RecipeSearchPage() {
@@ -14,8 +14,7 @@ export function RecipeSearchPage() {
 
   const { data, isLoading, isError } = useSearchRecipes({
     q: query || undefined,
-    meal_type: (mealType ?? undefined) as
-      'breakfast' | 'lunch' | 'dinner' | 'dessert' | 'snack' | undefined,
+    meal_type: (mealType ?? undefined) as MealType | undefined,
     cuisine_type: cuisineType ?? undefined,
     page,
   })
