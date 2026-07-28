@@ -9,10 +9,7 @@ type MealPlanDialogProps = {
   onClose: () => void
 }
 
-export function MealPlanDialog({
-  open,
-  onClose,
-}: MealPlanDialogProps) {
+export function MealPlanDialog({ open, onClose }: MealPlanDialogProps) {
   const [title, setTitle] = useState('')
 
   const navigate = useNavigate()
@@ -48,15 +45,8 @@ export function MealPlanDialog({
   }
 
   return (
-    <Dialog
-      open={open}
-      onClose={handleClose}
-      className="relative z-50"
-    >
-      <div
-        className="fixed inset-0 bg-black/25"
-        aria-hidden="true"
-      />
+    <Dialog open={open} onClose={handleClose} className="relative z-50">
+      <div className="fixed inset-0 bg-black/25" aria-hidden="true" />
 
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <DialogPanel className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
@@ -64,14 +54,9 @@ export function MealPlanDialog({
             Create Meal Plan
           </DialogTitle>
 
-          <form
-            onSubmit={handleSubmit}
-            className="mt-6"
-          >
+          <form onSubmit={handleSubmit} className="mt-6">
             <label className="block">
-              <span className="text-sm font-medium text-gray-700">
-                Title
-              </span>
+              <span className="text-sm font-medium text-gray-700">Title</span>
 
               <input
                 autoFocus

@@ -15,7 +15,7 @@ import {
   getLists,
   updateList,
   updateListItem,
-  generateGroceryList
+  generateGroceryList,
 } from '../api/lists'
 
 export const groceryListKeys = {
