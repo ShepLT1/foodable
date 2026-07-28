@@ -36,6 +36,7 @@ function App() {
         <main className="flex-1 p-8">
           <Routes>
             <Route path="/" element={<UserPage />} />
+            <Route path="/user/:id" element={<PublicUserPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/recipes" element={<RecipeSearchPage />} />
             <Route path="/recipes/new" element={<RecipeGeneratePage />} />
