@@ -12,18 +12,13 @@ export function RecipeSearchPage() {
   const [cuisineType, setCuisineType] = useState<string | null>(null)
   const [page, setPage] = useState(1)
 
-  const hasActiveSearch = !!(query || mealType || cuisineType)
-
-  const { data, isLoading, isError } = useSearchRecipes(
-    {
-      q: query || undefined,
-      meal_type: (mealType ?? undefined) as
-        'breakfast' | 'lunch' | 'dinner' | 'dessert' | 'snack' | undefined,
-      cuisine_type: cuisineType ?? undefined,
-      page,
-    },
-    hasActiveSearch,
-  )
+  const { data, isLoading, isError } = useSearchRecipes({
+    q: query || undefined,
+    meal_type: (mealType ?? undefined) as
+      'breakfast' | 'lunch' | 'dinner' | 'dessert' | 'snack' | undefined,
+    cuisine_type: cuisineType ?? undefined,
+    page,
+  })
 
   return (
     <div className="rounded-xl bg-white p-8 shadow-sm border border-gray-100">
@@ -64,29 +59,21 @@ export function RecipeSearchPage() {
       </div>
 
       <div className="mt-8">
-        {!hasActiveSearch && (
-          <p className="text-gray-500">
-            Search or filter above to browse recipes.
-          </p>
-        )}
+        {isLoading && <p className="text-gray-500">Loading...</p>}
 
-        {hasActiveSearch && isLoading && (
-          <p className="text-gray-500">Loading...</p>
-        )}
-
-        {hasActiveSearch && isError && (
+        {isError && (
           <p className="text-red-600">
             Something went wrong. Please try again.
           </p>
         )}
 
-        {hasActiveSearch && data && data.items.length === 0 && (
+        {data && data.items.length === 0 && (
           <p className="text-gray-500">
             No recipes found. Try adjusting your search.
           </p>
         )}
 
-        {hasActiveSearch && data && data.items.length > 0 && (
+        {data && data.items.length > 0 && (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {data.items.map((recipe) => (
               <button
@@ -117,7 +104,7 @@ export function RecipeSearchPage() {
         )}
       </div>
 
-      {hasActiveSearch && data && data.total > data.limit && (
+      {data && data.total > data.limit && (
         <div className="mt-6 flex items-center justify-center gap-4">
           <button
             type="button"
