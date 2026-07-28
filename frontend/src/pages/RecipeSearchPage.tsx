@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { SingleChipSelect } from '../components/SingleChipSelect'
 import { useSearchRecipes } from '../hooks/useRecipes'
 import { MEAL_TYPES, CUISINE_TYPES } from '../constants'
@@ -85,13 +85,11 @@ export function RecipeSearchPage() {
         {data && data.items.length > 0 && (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {data.items.map((recipe) => (
-              <button
+              <Link
                 key={recipe.id}
-                type="button"
-                onClick={() =>
-                  navigate(`/recipes/${recipe.id}`, { state: { recipe } })
-                }
-                className="cursor-pointer rounded-lg border border-gray-200 p-4 text-left hover:border-blue-300 hover:shadow-sm"
+                to={`/recipes/${recipe.id}`}
+                state={{ recipe }}
+                className="block rounded-lg border border-gray-200 p-4 text-left hover:border-blue-300 hover:shadow-sm"
               >
                 <h3 className="font-semibold text-gray-900">{recipe.title}</h3>
                 {recipe.description && (
@@ -107,7 +105,7 @@ export function RecipeSearchPage() {
                     by {recipe.creator_display_name}
                   </p>
                 )}
-              </button>
+              </Link>
             ))}
           </div>
         )}
