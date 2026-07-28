@@ -1,7 +1,7 @@
+import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useRecipe } from '../hooks/useRecipes'
-
-import { useState } from 'react'
+import { RecipeMealPlanMenu } from '../components/RecipeMealPlanMenu'
 
 export function RecipeDetailPage() {
   const { id } = useParams()
@@ -46,6 +46,11 @@ export function RecipeDetailPage() {
       {recipe.description && (
         <p className="mt-3 text-gray-600">{recipe.description}</p>
       )}
+
+      <div className="mt-6">
+        <RecipeMealPlanMenu recipeId={recipe.id} />
+      </div>
+
       <div className="mt-8">
         <h3 className="text-xl font-semibold text-gray-900">
           Nutrition (per serving)
