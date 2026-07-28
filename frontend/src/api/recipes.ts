@@ -76,14 +76,11 @@ export function generateRecipe(data: GenerateRecipeRequest) {
 export function searchRecipes(params: RecipeSearchParams = {}) {
   const query = new URLSearchParams()
 
-  if (params.q) query.set('q', params.q)
-  if (params.cuisine_type) query.set('cuisine_type', params.cuisine_type)
-  if (params.meal_type) query.set('meal_type', params.meal_type)
-  if (params.exclude_own) query.set('exclude_own', String(params.exclude_own))
-  if (params.page) query.set('page', String(params.page))
-  if (params.limit) query.set('limit', String(params.limit))
-  if (params.sort_by) query.set('sort_by', params.sort_by)
-  if (params.order) query.set('order', params.order)
+Object.entries(params).forEach(([key, value]) => {
+  if (value !== undefined && value !== null && value !== '') {
+    query.set(key, String(value))
+  }
+})
 
   const queryString = query.toString()
   return api<RecipeSearchResponse>(
