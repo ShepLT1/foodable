@@ -56,6 +56,10 @@ interface UpdateMealParams {
   data: UpdateMealRequest
 }
 
+export interface DeleteMealPlanResponse {
+  id: string
+}
+
 interface DeleteMealParams {
   mealPlanId: string
   mealId: string
@@ -80,6 +84,12 @@ export function updateMealPlan({ mealPlanId, data }: UpdateMealPlanParams) {
   return api<MealPlan>(`/meal-plans/${mealPlanId}`, {
     method: 'PATCH',
     body: JSON.stringify(data),
+  })
+}
+
+export function deleteMealPlan(mealPlanId: string) {
+  return api<DeleteMealPlanResponse>(`/meal-plans/${mealPlanId}`, {
+    method: 'DELETE',
   })
 }
 

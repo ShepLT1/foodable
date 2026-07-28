@@ -13,6 +13,7 @@ import {
   getMealPlans,
   getMealPlan,
   updateMealPlan,
+  deleteMealPlan,
   updateMeal,
   deleteMeal,
 } from '../api/mealPlans'
@@ -36,17 +37,24 @@ function updateMealPlanInCache(
   ]
 }
 
+function removeMealPlanFromCache(
+  mealPlans: MealPlan[] | undefined,
+  mealPlanId: string,
+) {
+  return mealPlans?.filter((mealPlan) => mealPlan.id !== mealPlanId)
+}
+
 function updateMealPlanCaches(
   queryClient: QueryClient,
   updatedMealPlan: MealPlan,
 ) {
-  queryClient.setQueryData<MealPlan[]>(mealPlanKeys.all, (mealPlans) =>
-    updateMealPlanInCache(mealPlans, updatedMealPlan),
-  )
-
   queryClient.setQueryData(
     mealPlanKeys.detail(updatedMealPlan.id),
     updatedMealPlan,
+  )
+
+  queryClient.setQueryData<MealPlan[]>(mealPlanKeys.all, (mealPlans) =>
+    updateMealPlanInCache(mealPlans, updatedMealPlan),
   )
 }
 
@@ -85,6 +93,24 @@ export function useUpdateMealPlan() {
 
     onSuccess: (updatedMealPlan) => {
       updateMealPlanCaches(queryClient, updatedMealPlan)
+    },
+  })
+}
+
+export function useDeleteMealPlan() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: deleteMealPlan,
+
+    onSuccess: ({ id }) => {
+      queryClient.setQueryData<MealPlan[]>(mealPlanKeys.all, (mealPlans) =>
+        removeMealPlanFromCache(mealPlans, id),
+      )
+
+      queryClient.removeQueries({
+        queryKey: mealPlanKeys.detail(id),
+      })
     },
   })
 }
