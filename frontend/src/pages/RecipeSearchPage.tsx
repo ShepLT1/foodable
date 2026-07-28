@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { SingleChipSelect } from '../components/SingleChipSelect'
 import { useSearchRecipes } from '../hooks/useRecipes'
-import { MEAL_TYPES, CUISINE_TYPES, MealType } from '../constants'
+import { MEAL_TYPES, CUISINE_TYPES, type MealType } from '../constants'
 import { ComboboxSelect } from '../components/ComboboxSelect'
 
 export function RecipeSearchPage() {

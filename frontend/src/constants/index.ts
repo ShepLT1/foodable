@@ -20,6 +20,7 @@ export const MEAL_TYPES = [
   'dessert',
   'snack',
 ] as const
+export type MealType = (typeof MEAL_TYPES)[number]
 
 export const CUISINE_TYPES = [
   'American',
