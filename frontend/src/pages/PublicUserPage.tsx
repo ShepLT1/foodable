@@ -13,10 +13,13 @@ export function PublicUserPage() {
   const [page, setPage] = useState(0)
 
   const { data: user, isPending: userLoading, error: userError } = useUser(id)
-  const { data: recipesPage, isPending: recipesLoading } = useRecipesByUser(id, {
-    limit: PAGE_SIZE,
-    offset: page * PAGE_SIZE,
-  })
+  const { data: recipesPage, isPending: recipesLoading } = useRecipesByUser(
+    id,
+    {
+      limit: PAGE_SIZE,
+      offset: page * PAGE_SIZE,
+    },
+  )
 
   const memberSince = user?.created_at
     ? new Date(user.created_at).toLocaleDateString('en-US', {
