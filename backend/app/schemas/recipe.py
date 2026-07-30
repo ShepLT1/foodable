@@ -21,13 +21,14 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.models.common import MealType
 from app.models.recipe import (
     CUISINE_TYPE_MAX_LENGTH,
     DESCRIPTION_MAX_LENGTH,
     MEAL_TYPE_MAX_LENGTH,
     TITLE_MAX_LENGTH,
-    MealType,
 )
+
 from app.schemas.prompts_recipe_gen import (
     CARBS_DESCRIPTION,
     STEP_DURATION_DESCRIPTION,

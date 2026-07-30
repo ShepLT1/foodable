@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 from sqlalchemy import (
@@ -24,7 +24,6 @@ TITLE_MAX_LENGTH = 200
 DESCRIPTION_MAX_LENGTH = 1000
 MEAL_TYPE_MAX_LENGTH = 50
 CUISINE_TYPE_MAX_LENGTH = 100
-MealType = Literal["breakfast", "lunch", "dinner", "dessert", "snack"]
 
 
 class Recipe(Base):
