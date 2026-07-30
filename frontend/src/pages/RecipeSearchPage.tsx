@@ -99,9 +99,9 @@ export function RecipeSearchPage() {
                 <p className="mt-2 text-xs text-gray-400">
                   {recipe.cuisine_type} · {recipe.meal_type}
                 </p>
-                {recipe.creator_display_name && (
-                  <p className="mt-1 text-xs text gray-400">
-                    by {recipe.creator_display_name}
+                {recipe.creator && (
+                  <p className="mt-1 text-xs text-gray-400">
+                    by {recipe.creator.display_name}
                   </p>
                 )}
               </Link>
