@@ -8,9 +8,7 @@ from app.models.recipe_favorite import RecipeFavorite
 
 
 class RecipeFavoriteRepository:
-    async def favorite(
-        self, db: AsyncSession, user_id: UUID, recipe_id: UUID
-    ) -> bool:
+    async def favorite(self, db: AsyncSession, user_id: UUID, recipe_id: UUID) -> bool:
         existing = await db.execute(
             select(RecipeFavorite).where(
                 RecipeFavorite.user_id == user_id,
