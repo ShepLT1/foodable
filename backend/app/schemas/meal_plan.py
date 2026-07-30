@@ -52,7 +52,10 @@ class MealPlanMeal(BaseModel):
 class MealPlanMealCreate(BaseModel):
     recipe_id: UUID
 
-    servings: int = Field(gt=0)
+    servings: int | None = Field(
+        default=None,
+        gt=0,
+    )
 
     scheduled_date: date | None = None
 
@@ -68,10 +71,13 @@ class MealPlanMealUpdate(BaseModel):
 
 
 class MealPlanCreate(BaseModel):
-    title: str = Field(
+    title: str | None = Field(
+        default=None,
         min_length=1,
         max_length=100,
     )
+
+    initial_recipe_id: UUID | None = None
 
 
 class MealPlanUpdate(BaseModel):

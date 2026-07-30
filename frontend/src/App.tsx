@@ -10,6 +10,8 @@ import { RecipeGeneratePage } from './pages/RecipeGeneratePage'
 import { RecipeDetailPage } from './pages/RecipeDetailPage'
 import { RecipeSearchPage } from './pages/RecipeSearchPage'
 import { OnboardingModal } from './components/OnboardingModal'
+import { MealPlansPage } from './pages/MealPlansPage'
+import { MealPlanPage } from './pages/MealPlanPage'
 
 function App() {
   const { session, loading } = useSession()
@@ -39,6 +41,8 @@ function App() {
             <Route path="/recipes/:id" element={<RecipeDetailPage />} />
             <Route path="/lists" element={<GroceryListsPage />} />
             <Route path="/lists/:listId" element={<GroceryListPage />} />
+            <Route path="/meal-plans" element={<MealPlansPage />} />
+            <Route path="/meal-plans/:id" element={<MealPlanPage />} />
           </Routes>
         </main>
       </div>
