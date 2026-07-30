@@ -64,6 +64,10 @@ interface DeleteListItemParams {
   itemId: string
 }
 
+export interface GenerateGroceryListRequest {
+  meal_plan_id: string
+}
+
 // Grocery List API request handlers
 export function getLists() {
   return api<GroceryList[]>('/lists')
@@ -90,6 +94,14 @@ export function updateList({ listId, data }: UpdateListParams) {
 export function deleteList(listId: string) {
   return api<DeleteListResponse>(`/lists/${listId}`, {
     method: 'DELETE',
+  })
+}
+
+// Grocery List AI API handlers
+export function generateGroceryList(data: GenerateGroceryListRequest) {
+  return api<GroceryList>('/lists/generate', {
+    method: 'POST',
+    body: JSON.stringify(data),
   })
 }
 

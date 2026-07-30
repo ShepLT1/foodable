@@ -15,6 +15,7 @@ import {
   getLists,
   updateList,
   updateListItem,
+  generateGroceryList,
 } from '../api/lists'
 
 export const groceryListKeys = {
@@ -68,6 +69,22 @@ export function useCreateGroceryList() {
     onSuccess: (newList) => {
       queryClient.setQueryData<GroceryList[]>(groceryListKeys.all, (lists) =>
         lists ? [newList, ...lists] : lists,
+      )
+
+      queryClient.setQueryData(groceryListKeys.detail(newList.id), newList)
+    },
+  })
+}
+
+export function useGenerateGroceryList() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: generateGroceryList,
+
+    onSuccess: (newList) => {
+      queryClient.setQueryData<GroceryList[]>(groceryListKeys.all, (lists) =>
+        lists ? [newList, ...lists] : [newList],
       )
 
       queryClient.setQueryData(groceryListKeys.detail(newList.id), newList)
