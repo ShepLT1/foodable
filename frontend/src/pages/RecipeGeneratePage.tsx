@@ -5,19 +5,9 @@ import { TagInput } from '../components/TagInput'
 import { SingleChipSelect } from '../components/SingleChipSelect'
 import { ComboboxSelect } from '../components/ComboboxSelect'
 import { useGenerateRecipe } from '../hooks/useRecipes'
+import { MEAL_TYPES, CUISINE_TYPES } from '../constants'
 
-const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'dessert', 'snack'] as const
 type MealType = (typeof MEAL_TYPES)[number]
-const CUISINE_TYPES = [
-  'American',
-  'Chinese',
-  'French',
-  'Indian',
-  'Italian',
-  'Mediterranean',
-  'Mexican',
-  'Thai',
-]
 
 export function RecipeGeneratePage() {
   const navigate = useNavigate()

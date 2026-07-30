@@ -33,6 +33,10 @@ export interface Recipe {
   ingredients: Ingredient[]
   nutrition: NutritionInfo
   is_public: boolean
+  creator: {
+    id: string
+    display_name: string | null
+  } | null
   created_at: string
 }
 
@@ -40,6 +44,24 @@ export interface GenerateRecipeRequest {
   ingredients: string[]
   meal_type?: 'breakfast' | 'lunch' | 'dinner' | 'dessert' | 'snack'
   cuisine_type?: string
+}
+
+export interface RecipeSearchParams {
+  q?: string
+  cuisine_type?: string
+  meal_type?: 'breakfast' | 'lunch' | 'dinner' | 'dessert' | 'snack'
+  exclude_own?: boolean
+  page?: number
+  limit?: number
+  sort_by?: 'created_at' | 'title'
+  order?: 'asc' | 'desc'
+}
+
+export interface RecipeSearchResponse {
+  items: Recipe[]
+  total: number
+  page: number
+  limit: number
 }
 
 export function getRecipe(recipeId: string) {
@@ -52,4 +74,19 @@ export function generateRecipe(data: GenerateRecipeRequest) {
     method: 'POST',
     body: JSON.stringify(data),
   })
+}
+
+export function searchRecipes(params: RecipeSearchParams = {}) {
+  const query = new URLSearchParams()
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      query.set(key, String(value))
+    }
+  })
+
+  const queryString = query.toString()
+  return api<RecipeSearchResponse>(
+    `/recipes${queryString ? `?${queryString}` : ''}`,
+  )
 }

@@ -8,6 +8,7 @@ import { GroceryListsPage } from './pages/GroceryListsPage'
 import { GroceryListPage } from './pages/GroceryListPage'
 import { RecipeGeneratePage } from './pages/RecipeGeneratePage'
 import { RecipeDetailPage } from './pages/RecipeDetailPage'
+import { RecipeSearchPage } from './pages/RecipeSearchPage'
 import { OnboardingModal } from './components/OnboardingModal'
 import { MealPlansPage } from './pages/MealPlansPage'
 import { MealPlanPage } from './pages/MealPlanPage'
@@ -35,19 +36,7 @@ function App() {
           <Routes>
             <Route path="/" element={<UserPage />} />
             <Route path="/profile" element={<ProfilePage />} />
-            <Route
-              path="/recipes"
-              element={
-                <div className="rounded-xl bg-white p-8 shadow-sm border border-gray-100">
-                  <h2 className="text-3xl font-bold text-gray-900">
-                    Your Recipes
-                  </h2>
-                  <p className="mt-2 text-gray-600">
-                    AI Meal plans and shared recipes will list out here.
-                  </p>
-                </div>
-              }
-            />
+            <Route path="/recipes" element={<RecipeSearchPage />} />
             <Route path="/recipes/new" element={<RecipeGeneratePage />} />
             <Route path="/recipes/:id" element={<RecipeDetailPage />} />
             <Route path="/lists" element={<GroceryListsPage />} />
