@@ -21,6 +21,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.models.common import MealType
 from app.models.recipe import (
     CUISINE_TYPE_MAX_LENGTH,
     DESCRIPTION_MAX_LENGTH,
@@ -56,7 +57,7 @@ class RecipeCreate(StrictBaseModel):
 
 class RecipeGenerateRequest(StrictBaseModel):
     ingredients: list[str] = Field(min_length=1)
-    meal_type: Literal["breakfast", "lunch", "dinner", "dessert", "snack"] | None = None
+    meal_type: MealType | None = None
     cuisine_type: str | None = None
 
 
@@ -110,9 +111,14 @@ class Recipe(StrictBaseModel):
         default=None,
         description="The type of cuisine the recipe belongs to.",
     )
-    meal_type: Literal["breakfast", "lunch", "dinner", "dessert", "snack"] = Field(
+    meal_type: MealType = Field(
         description="The type of meal this recipe is intended for."
     )
+
+
+class RecipeCreator(StrictBaseModel):
+    id: UUID
+    display_name: str | None
 
 
 class RecipeResponse(StrictBaseModel):
@@ -128,13 +134,16 @@ class RecipeResponse(StrictBaseModel):
     ingredients: list[Ingredient]
     nutrition: NutritionInfo
     is_public: bool
+    creator: RecipeCreator | None = None
     created_at: datetime
 
     if TYPE_CHECKING:
         from app.models.recipe import Recipe as DBRecipe
 
     @classmethod
-    def from_db_recipe(cls, recipe: "DBRecipe") -> "RecipeResponse":
+    def from_db_recipe(
+        cls, recipe: "DBRecipe", creator: "RecipeCreator | None" = None
+    ) -> "RecipeResponse":
         return cls(
             id=recipe.id,
             user_id=recipe.user_id,
@@ -148,5 +157,24 @@ class RecipeResponse(StrictBaseModel):
             ingredients=[Ingredient.model_validate(i) for i in recipe.ingredients_json],
             nutrition=NutritionInfo.model_validate(recipe.nutrition_json),
             is_public=recipe.is_public,
+            creator=creator,
             created_at=recipe.created_at,
         )
+
+
+class RecipeSearchParams(StrictBaseModel):
+    q: str | None = None
+    cuisine_type: str | None = None
+    meal_type: MealType | None = None
+    exclude_own: bool = False
+    page: int = Field(default=1, ge=1)
+    limit: int = Field(default=20, ge=1, le=100)
+    sort_by: Literal["title", "created_at"] = "created_at"
+    order: Literal["asc", "desc"] = "desc"
+
+
+class RecipeSearchResponse(StrictBaseModel):
+    items: list[RecipeResponse]
+    total: int
+    page: int
+    limit: int

@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 from sqlalchemy import Date, DateTime, ForeignKey, Integer, Text
@@ -13,13 +13,7 @@ if TYPE_CHECKING:
     from app.models.meal_plan import MealPlan
     from app.models.recipe import Recipe
 
-MealType = Literal[
-    "breakfast",
-    "lunch",
-    "dinner",
-    "dessert",
-    "snack",
-]
+from app.models.common import MealType
 
 
 class MealPlanMeal(Base):
