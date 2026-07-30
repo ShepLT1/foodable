@@ -116,6 +116,11 @@ class Recipe(StrictBaseModel):
     )
 
 
+class RecipeCreator(StrictBaseModel):
+    id: UUID
+    display_name: str | None
+
+
 class RecipeResponse(StrictBaseModel):
     id: UUID
     user_id: UUID
@@ -129,7 +134,7 @@ class RecipeResponse(StrictBaseModel):
     ingredients: list[Ingredient]
     nutrition: NutritionInfo
     is_public: bool
-    creator_display_name: str | None = None
+    creator: RecipeCreator | None = None
     created_at: datetime
 
     if TYPE_CHECKING:
@@ -137,7 +142,7 @@ class RecipeResponse(StrictBaseModel):
 
     @classmethod
     def from_db_recipe(
-        cls, recipe: "DBRecipe", creator_display_name: str | None = None
+        cls, recipe: "DBRecipe", creator: "RecipeCreator | None" = None
     ) -> "RecipeResponse":
         return cls(
             id=recipe.id,
@@ -152,7 +157,7 @@ class RecipeResponse(StrictBaseModel):
             ingredients=[Ingredient.model_validate(i) for i in recipe.ingredients_json],
             nutrition=NutritionInfo.model_validate(recipe.nutrition_json),
             is_public=recipe.is_public,
-            creator_display_name=creator_display_name,
+            creator=creator,
             created_at=recipe.created_at,
         )
 

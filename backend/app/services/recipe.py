@@ -13,6 +13,7 @@ from app.repositories.recipe import recipe_repository
 from app.schemas.recipe import (
     Recipe,
     RecipeCreate,
+    RecipeCreator,
     RecipeGenerateRequest,
     RecipeResponse,
     RecipeSearchParams,
@@ -144,7 +145,9 @@ async def search_recipes(
 
     return RecipeSearchResponse(
         items=[
-            RecipeResponse.from_db_recipe(recipe, display_name)
+            RecipeResponse.from_db_recipe(
+                recipe, RecipeCreator(id=recipe.user_id, display_name=display_name)
+            )
             for recipe, display_name in results
         ],
         total=total,
