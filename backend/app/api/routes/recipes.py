@@ -7,10 +7,10 @@ from app.core.auth import CurrentUser, get_current_user
 from app.db.dependencies import get_db
 from app.repositories.recipe import recipe_repository
 from app.schemas.recipe import (
+    PaginatedRecipes,
     RecipeGenerateRequest,
     RecipeResponse,
     RecipeSearchParams,
-    PaginatedRecipes,
 )
 from app.services.recipe import (
     ProfileNotFoundError,

@@ -176,5 +176,5 @@ class RecipeSearchParams(StrictBaseModel):
 class PaginatedRecipes(StrictBaseModel):
     items: list[RecipeResponse]
     total: int
+    page: int
     limit: int
-    offset: int

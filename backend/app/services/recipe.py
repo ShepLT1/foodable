@@ -11,13 +11,13 @@ from app.models.recipe import Recipe as DBRecipe
 from app.repositories.profile import profile_repository
 from app.repositories.recipe import recipe_repository
 from app.schemas.recipe import (
+    PaginatedRecipes,
     Recipe,
     RecipeCreate,
     RecipeCreator,
     RecipeGenerateRequest,
     RecipeResponse,
     RecipeSearchParams,
-    PaginatedRecipes,
 )
 
 client = AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
@@ -145,7 +145,7 @@ async def search_recipes(
 
     return PaginatedRecipes(
         items=[
-            PaginatedRecipes.from_db_recipe(
+            RecipeResponse.from_db_recipe(
                 recipe, RecipeCreator(id=recipe.user_id, display_name=display_name)
             )
             for recipe, display_name in results
