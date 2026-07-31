@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.auth import CurrentUser, get_current_user
 from app.db.dependencies import get_db
 from app.repositories.recipe import recipe_repository
+from app.repositories.recipe_favorite import recipe_favorite_repository
 from app.schemas.recipe import (
     PaginatedRecipes,
     RecipeGenerateRequest,
@@ -13,7 +14,6 @@ from app.schemas.recipe import (
     RecipeSearchParams,
 )
 from app.schemas.recipe_favorite import FavoriteActionResponse
-
 from app.services.recipe import (
     ProfileNotFoundError,
     RecipeGenerationError,
