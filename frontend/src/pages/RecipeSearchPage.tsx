@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { SingleChipSelect } from '../components/SingleChipSelect'
 import { useSearchRecipes } from '../hooks/useRecipes'
 import { MEAL_TYPES, CUISINE_TYPES, type MealType } from '../constants'
 import { ComboboxSelect } from '../components/ComboboxSelect'
+import { RecipeCard } from '../components/RecipeCard'
 
 export function RecipeSearchPage() {
   const navigate = useNavigate()
@@ -84,27 +85,7 @@ export function RecipeSearchPage() {
         {data && data.items.length > 0 && (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {data.items.map((recipe) => (
-              <Link
-                key={recipe.id}
-                to={`/recipes/${recipe.id}`}
-                state={{ recipe }}
-                className="block rounded-lg border border-gray-200 p-4 text-left hover:border-blue-300 hover:shadow-sm"
-              >
-                <h3 className="font-semibold text-gray-900">{recipe.title}</h3>
-                {recipe.description && (
-                  <p className="mt-1 text-sm text-gray-500 line-clamp-2">
-                    {recipe.description}
-                  </p>
-                )}
-                <p className="mt-2 text-xs text-gray-400">
-                  {recipe.cuisine_type} · {recipe.meal_type}
-                </p>
-                {recipe.creator && (
-                  <p className="mt-1 text-xs text-gray-400">
-                    by {recipe.creator.display_name}
-                  </p>
-                )}
-              </Link>
+              <RecipeCard key={recipe.id} recipe={recipe} />
             ))}
           </div>
         )}
