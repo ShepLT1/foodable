@@ -37,3 +37,43 @@ export function updateCurrentUser(payload: ProfileUpdate) {
     body: JSON.stringify(payload),
   })
 }
+export type FollowUserSummary = {
+  id: string
+  display_name: string
+  created_at: string
+}
+
+export type FollowStatsResponse = {
+  follower_count: number
+  following_count: number
+  is_following: boolean
+}
+
+export type FollowActionResponse = {
+  success: boolean
+  message: string
+}
+
+export function getFollowStats(userId: string) {
+  return api<FollowStatsResponse>(`/users/${userId}/stats`)
+}
+
+export function getFollowers(userId: string) {
+  return api<FollowUserSummary[]>(`/users/${userId}/followers`)
+}
+
+export function getFollowing(userId: string) {
+  return api<FollowUserSummary[]>(`/users/${userId}/following`)
+}
+
+export function followUser(userId: string) {
+  return api<FollowActionResponse>(`/users/${userId}/follow`, {
+    method: 'POST',
+  })
+}
+
+export function unfollowUser(userId: string) {
+  return api<FollowActionResponse>(`/users/${userId}/follow`, {
+    method: 'DELETE',
+  })
+}
