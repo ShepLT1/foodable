@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { SingleChipSelect } from '../components/SingleChipSelect'
-import { useSearchRecipes } from '../hooks/useRecipes'
+import { useSearchRecipes, useMyRecipes } from '../hooks/useRecipes'
 import { MEAL_TYPES, CUISINE_TYPES, type MealType } from '../constants'
 import { ComboboxSelect } from '../components/ComboboxSelect'
 import { RecipeCard } from '../components/RecipeCard'
@@ -15,12 +15,22 @@ export function RecipeSearchPage() {
   const [cuisineType, setCuisineType] = useState<string | null>(null)
   const [page, setPage] = useState(1)
 
-  const { data, isLoading, isError } = useSearchRecipes({
+  const isCommunity = tab === 'community'
+
+  const communityResult = useSearchRecipes({
     q: query || undefined,
     meal_type: (mealType ?? undefined) as MealType | undefined,
     cuisine_type: cuisineType ?? undefined,
     page,
-  })
+  },
+  isCommunity,
+)
+
+  const myRecipesResult = useMyRecipes({ page }, !isCommunity)
+
+  const { data, isLoading, isError } = isCommunity
+    ? communityResult
+    : myRecipesResult
 
   return (
     <div className="rounded-xl bg-white p-8 shadow-sm border border-gray-100">
