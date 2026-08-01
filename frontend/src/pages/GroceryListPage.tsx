@@ -52,25 +52,25 @@ export function GroceryListPage() {
     <main className="mx-auto max-w-5xl space-y-8 px-4 py-6">
       <GroceryListHeader
         title={groceryList.title}
-        onRename={(title) =>
-          updateListMutation.mutateAsync({
+        onRename={async (title) => {
+          await updateListMutation.mutateAsync({
             listId,
             data: { title },
           })
-        }
+        }}
       />
 
       <GroceryListTable
         items={groceryList.items}
-        onAddItem={(data: CreateListItemRequest) =>
-          createItemMutation.mutateAsync({ listId, data })
-        }
-        onUpdateItem={(itemId: string, data: UpdateListItemRequest) =>
-          updateItemMutation.mutateAsync({ listId, itemId, data })
-        }
-        onDeleteItem={(itemId: string) =>
-          deleteItemMutation.mutateAsync({ listId, itemId })
-        }
+        onAddItem={async (data: CreateListItemRequest) => {
+          await createItemMutation.mutateAsync({ listId, data })
+        }}
+        onUpdateItem={async (itemId: string, data: UpdateListItemRequest) => {
+          await updateItemMutation.mutateAsync({ listId, itemId, data })
+        }}
+        onDeleteItem={async (itemId: string) => {
+          await deleteItemMutation.mutateAsync({ listId, itemId })
+        }}
       />
     </main>
   )
