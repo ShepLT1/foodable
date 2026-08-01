@@ -77,6 +77,14 @@ def _build_prompt(request: RecipeGenerateRequest, profile: Profile) -> str:
     """Build the base Claude prompt from the user's generation request."""
     parts = [f"Create a recipe using: {', '.join(request.ingredients)}."]
 
+    if request.title:
+        parts.append(
+            f"Create a recipe titled '{request.title}'."
+        )
+
+    if request.description:
+        parts.append(request.description)
+
     if request.meal_type:
         parts.append(f"This should be a {request.meal_type} recipe.")
 
@@ -134,6 +142,41 @@ async def create_recipe_for_user(
     )
 
     return await recipe_repository.create(db, data)
+
+async def create_recipe_for_user_without_commit(
+    db: AsyncSession,
+    user_id: UUID,
+    request: RecipeGenerateRequest,
+) -> DBRecipe:
+    profile = await profile_repository.get_by_id(
+        db,
+        profile_id=user_id,
+    )
+
+    if profile is None:
+        raise ProfileNotFoundError(f"No profile found for user_id={user_id}")
+
+    prompt = _build_prompt(request, profile)
+
+    recipe = await generate_recipe(prompt)
+
+    data = RecipeCreate(
+        user_id=user_id,
+        title=recipe.title,
+        description=recipe.description,
+        meal_type=recipe.meal_type,
+        cuisine_type=recipe.cuisine_type,
+        servings=recipe.servings,
+        tools_needed=recipe.tools_needed,
+        steps=[step.model_dump() for step in recipe.steps],
+        ingredients_json=[ingredient.model_dump() for ingredient in recipe.ingredients],
+        nutrition_json=recipe.nutrition.model_dump(),
+    )
+
+    return await recipe_repository.create_without_commit(
+        db,
+        data,
+    )
 
 
 async def search_recipes(
