@@ -94,17 +94,36 @@ export function generateRecipe(data: GenerateRecipeRequest) {
   })
 }
 
-export function searchRecipes(params: RecipeSearchParams = {}) {
+// Helper func, builds a URL query string from params
+function buildQueryString<T extends object>(params: T): string {
   const query = new URLSearchParams()
 
-  Object.entries(params).forEach(([key, value]) => {
+  Object.entries(params as Record<string, unknown>).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
       query.set(key, String(value))
     }
   })
 
-  const queryString = query.toString()
+  return query.toString()
+}
+
+export function searchRecipes(params: RecipeSearchParams = {}) {
+  const queryString = buildQueryString(params)
+
   return api<PaginatedRecipes>(
     `/recipes${queryString ? `?${queryString}` : ''}`,
+  )
+}
+
+export interface MyRecipesParams {
+  page?: number
+  limit?: number
+}
+
+export function getMyRecipes(params: MyRecipesParams = {}) {
+  const queryString = buildQueryString(params)
+
+  return api<PaginatedRecipes>(
+    `/recipes/me${queryString ? `?${queryString}` : ''}`,
   )
 }
