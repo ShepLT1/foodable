@@ -8,11 +8,6 @@ interface NewGroceryListItemRowProps {
   onCancel: () => void
 }
 
-interface ValidationErrors {
-  name?: string
-  quantity?: string
-}
-
 export function NewGroceryListItemRow({
   onSave,
   onCancel,
@@ -20,10 +15,8 @@ export function NewGroceryListItemRow({
   const [name, setName] = useState('')
   const [quantity, setQuantity] = useState('1')
   const [unit, setUnit] = useState('')
-
   const [saving, setSaving] = useState(false)
-
-  const [errors, setErrors] = useState<ValidationErrors>({})
+  const [error, setError] = useState<string | null>(null)
 
   const nameInputRef = useRef<HTMLInputElement>(null)
 
@@ -31,39 +24,28 @@ export function NewGroceryListItemRow({
     nameInputRef.current?.focus()
   }, [])
 
-  function validate(): boolean {
-    const nextErrors: ValidationErrors = {}
-
-    if (!name.trim()) {
-      nextErrors.name = 'Ingredient name is required.'
-    }
-
-    const parsedQuantity = Number(quantity)
-
-    if (Number.isNaN(parsedQuantity) || parsedQuantity <= 0) {
-      nextErrors.quantity = 'Quantity must be greater than 0.'
-    }
-
-    setErrors(nextErrors)
-
-    return Object.keys(nextErrors).length === 0
-  }
-
   async function handleSave() {
-    if (saving) {
+    if (saving) return
+
+    const trimmedName = name.trim()
+    if (!trimmedName) {
+      setError('Item name is required.')
       return
     }
 
-    if (!validate()) {
+    const parsedQty = Number(quantity)
+    if (Number.isNaN(parsedQty) || parsedQty <= 0) {
+      setError('Quantity must be greater than 0.')
       return
     }
 
     setSaving(true)
+    setError(null)
 
     try {
       await onSave({
-        name: name.trim(),
-        quantity: Number(quantity),
+        name: trimmedName,
+        quantity: parsedQty,
         unit: unit.trim() || null,
       })
     } finally {
@@ -71,198 +53,73 @@ export function NewGroceryListItemRow({
     }
   }
 
-  function handleNameChange(value: string) {
-    setName(value)
-
-    if (errors.name) {
-      setErrors((previous) => ({
-        ...previous,
-        name: undefined,
-      }))
-    }
-  }
-
-  function handleQuantityChange(value: string) {
-    setQuantity(value)
-
-    if (errors.quantity) {
-      setErrors((previous) => ({
-        ...previous,
-        quantity: undefined,
-      }))
-    }
-  }
-
-  {
-    /* Desktop */
-  }
-
   return (
-    <>
-      <div className="hidden grid-cols-[10rem_7rem_7rem_7rem_7rem] items-center gap-4 border-b border-slate-200 py-3 md:grid">
-        <div>
+    <div className="rounded-xl border border-emerald-300 bg-emerald-50/30 p-4 shadow-2xs space-y-2">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <input
+          ref={nameInputRef}
+          type="text"
+          value={name}
+          placeholder="Item name (e.g., Organic Milk)"
+          onChange={(e) => {
+            setName(e.target.value)
+            if (error) setError(null)
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') void handleSave()
+            if (e.key === 'Escape') onCancel()
+          }}
+          className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+        />
+
+        <div className="flex items-center gap-2">
           <input
-            type="text"
-            value={name}
-            maxLength={200}
-            placeholder="Item name"
-            onChange={(e) => handleNameChange(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                void handleSave()
-              }
+            type="number"
+            step="0.125"
+            min="0.1"
+            value={quantity}
+            onChange={(e) => {
+              setQuantity(e.target.value)
+              if (error) setError(null)
             }}
-            className={`w-full rounded border px-2 py-1 ${
-              errors.name
-                ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                : 'border-slate-300'
-            }`}
-            ref={nameInputRef}
+            placeholder="Qty"
+            className="w-20 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-center text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
           />
-        </div>
 
-        <div className="flex justify-center">
-          <div>
-            <input
-              type="number"
-              min={0}
-              step={0.125}
-              value={quantity}
-              onChange={(e) => handleQuantityChange(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  void handleSave()
-                }
-              }}
-              className={`w-20 rounded border px-2 py-1 text-center ${
-                errors.quantity
-                  ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                  : 'border-slate-300'
-              }`}
-            />
-          </div>
-        </div>
-
-        <div className="flex justify-center">
           <input
             type="text"
-            maxLength={50}
             value={unit}
-            placeholder="Unit"
+            placeholder="Unit (e.g. carton)"
             onChange={(e) => setUnit(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                void handleSave()
-              }
+              if (e.key === 'Enter') void handleSave()
+              if (e.key === 'Escape') onCancel()
             }}
-            className="w-30 rounded border border-slate-300 px-2 py-1"
+            className="w-28 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
           />
-        </div>
 
-        <div />
-
-        <div className="flex justify-center gap-2">
           <button
             type="button"
             disabled={saving}
             onClick={() => void handleSave()}
-            className="rounded p-1 text-green-600 hover:bg-green-50 disabled:opacity-50"
-            title="Save"
+            className="flex cursor-pointer items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
           >
-            <Save size={18} />
+            <Save size={14} />
+            Save
           </button>
 
           <button
             type="button"
             disabled={saving}
             onClick={onCancel}
-            className="rounded p-1 text-slate-500 hover:bg-slate-100"
-            title="Cancel"
+            className="cursor-pointer rounded-lg border border-slate-300 bg-white p-1.5 text-slate-500 transition hover:bg-slate-100"
           >
-            <X size={18} />
+            <X size={16} />
           </button>
         </div>
       </div>
 
-      {/* Mobile */}
-
-      <div className="rounded-lg border border-slate-200 p-4 md:hidden">
-        <div className="mb-3 flex items-start justify-between">
-          <div className="flex items-center gap-4">
-            <input
-              type="text"
-              value={name}
-              maxLength={100}
-              placeholder="Item name"
-              onChange={(e) => handleNameChange(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  void handleSave()
-                }
-              }}
-              className={`w-42 rounded border px-2 py-1 ${
-                errors.name
-                  ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                  : 'border-slate-300'
-              }`}
-              ref={nameInputRef}
-            />
-
-            <button
-              type="button"
-              disabled={saving}
-              onClick={onCancel}
-              className="rounded h-5 w-5 text-slate-500 hover:bg-slate-100"
-            >
-              <X size={18} />
-            </button>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex gap-2">
-            <input
-              type="number"
-              min={0}
-              step={0.125}
-              value={quantity}
-              onChange={(e) => handleQuantityChange(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  void handleSave()
-                }
-              }}
-              className={`w-20 rounded border px-2 py-1 text-center ${
-                errors.quantity
-                  ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                  : 'border-slate-300'
-              }`}
-            />
-
-            <input
-              type="text"
-              maxLength={50}
-              value={unit}
-              placeholder="Unit"
-              onChange={(e) => setUnit(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  void handleSave()
-                }
-              }}
-              className="w-20 rounded border border-slate-300 px-2 py-1"
-            />
-          </div>
-          <button
-            type="button"
-            disabled={saving}
-            onClick={() => void handleSave()}
-            className="rounded h-5 w-5 text-green-600 hover:bg-green-50 disabled:opacity-50"
-          >
-            <Save size={18} />
-          </button>
-        </div>
-      </div>
-    </>
+      {error && <p className="text-xs font-medium text-rose-600">{error}</p>}
+    </div>
   )
 }

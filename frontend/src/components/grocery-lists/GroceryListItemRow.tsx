@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Trash2 } from 'lucide-react'
+import { Checkbox } from '@headlessui/react'
+import { Check, Trash2 } from 'lucide-react'
 
 import type { GroceryListItem, UpdateListItemRequest } from '../../api/lists'
 
@@ -19,38 +20,24 @@ export function GroceryListItemRow({
 
   async function saveQuantity() {
     const trimmed = quantity.trim()
-
     if (trimmed === '') {
       setQuantity(Number(item.quantity).toString())
       return
     }
 
     const value = Number(trimmed)
-
-    if (!Number.isFinite(value)) {
+    if (!Number.isFinite(value) || value === item.quantity) {
       setQuantity(Number(item.quantity).toString())
       return
     }
 
-    if (value === item.quantity) {
-      return
-    }
-
-    await onUpdate(item.id, {
-      quantity: value,
-    })
+    await onUpdate(item.id, { quantity: value })
   }
 
   async function saveUnit() {
     const trimmed = unit.trim()
-
-    if (trimmed === item.unit) {
-      return
-    }
-
-    await onUpdate(item.id, {
-      unit: trimmed,
-    })
+    if (trimmed === (item.unit ?? '')) return
+    await onUpdate(item.id, { unit: trimmed || null })
   }
 
   function cancelQuantity() {
@@ -62,134 +49,122 @@ export function GroceryListItemRow({
   }
 
   return (
-    <>
-      {/* Desktop */}
-      <div className="hidden grid-cols-[10rem_7rem_7rem_7rem_7rem] items-center gap-4 border-b border-slate-200 py-3 md:grid">
-        <div className="truncate">{item.name}</div>
-        <div className="flex justify-center">
+    <div
+      className={`group rounded-xl border p-3.5 transition ${
+        item.checked
+          ? 'border-slate-200 bg-slate-50/70 text-slate-400'
+          : 'border-slate-200 bg-white text-slate-800 shadow-2xs hover:border-slate-300'
+      }`}
+    >
+      {/* Desktop View */}
+      <div className="hidden md:flex md:items-center md:justify-between md:gap-4">
+        <div className="flex flex-1 items-center gap-3 min-w-0">
+          <Checkbox
+            checked={item.checked}
+            onChange={(checked) => void onUpdate(item.id, { checked })}
+            className="group/cb flex h-5 w-5 cursor-pointer items-center justify-center rounded-md border border-slate-300 bg-white transition data-checked:border-emerald-600 data-checked:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+          >
+            <Check className="hidden h-3.5 w-3.5 text-white group-data-checked/cb:block" />
+          </Checkbox>
+
+          <span
+            className={`truncate text-sm font-medium ${
+              item.checked ? 'line-through text-slate-400' : 'text-slate-900'
+            }`}
+          >
+            {item.name}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-3">
           <input
             type="number"
             step="0.125"
+            min="0"
             value={quantity}
             onChange={(e) => setQuantity(e.target.value)}
             onBlur={saveQuantity}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                void saveQuantity()
-              }
-
-              if (e.key === 'Escape') {
-                cancelQuantity()
-              }
+              if (e.key === 'Enter') void saveQuantity()
+              if (e.key === 'Escape') cancelQuantity()
             }}
-            className="w-20 rounded border border-slate-300 px-2 py-1"
+            className="w-20 rounded-lg border border-slate-200 px-2.5 py-1 text-center text-sm font-medium focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
           />
-        </div>
-        <div className="flex justify-center">
+
           <input
+            type="text"
             value={unit}
+            placeholder="Unit"
             onChange={(e) => setUnit(e.target.value)}
             onBlur={saveUnit}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                void saveUnit()
-              }
-
-              if (e.key === 'Escape') {
-                cancelUnit()
-              }
+              if (e.key === 'Enter') void saveUnit()
+              if (e.key === 'Escape') cancelUnit()
             }}
-            className="w-30 rounded border border-slate-300 px-2 py-1"
+            className="w-24 rounded-lg border border-slate-200 px-2.5 py-1 text-sm font-medium focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
           />
-        </div>
-        <div className="flex justify-center">
-          <input
-            type="checkbox"
-            checked={item.checked}
-            onChange={(e) =>
-              void onUpdate(item.id, {
-                checked: e.target.checked,
-              })
-            }
-            className="h-5 w-5 cursor-pointer"
-          />
-        </div>
-        <div className="flex justify-center">
+
           <button
             type="button"
             onClick={() => void onDelete(item.id)}
-            className="cursor-pointer rounded p-2 text-red-600 hover:bg-red-50"
+            className="cursor-pointer rounded-lg p-1.5 text-slate-400 opacity-0 transition hover:bg-rose-50 hover:text-rose-600 group-hover:opacity-100 focus:opacity-100"
+            title="Delete item"
           >
-            <Trash2 size={18} />
+            <Trash2 size={16} />
           </button>
         </div>
       </div>
 
-      {/* Mobile */}
-      <div className="rounded-lg border border-slate-200 p-4 md:hidden">
-        <div className="mb-3 flex items-start justify-between">
-          <div className="flex items-center gap-1">
-            <h2 className="font-medium truncate">{item.name}</h2>
-          </div>
+      {/* Mobile View */}
+      <div className="flex flex-col gap-3 md:hidden">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <Checkbox
+              checked={item.checked}
+              onChange={(checked) => void onUpdate(item.id, { checked })}
+              className="group/cb flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded-md border border-slate-300 bg-white transition data-checked:border-emerald-600 data-checked:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+            >
+              <Check className="hidden h-3.5 w-3.5 text-white group-data-checked/cb:block" />
+            </Checkbox>
 
-          <input
-            type="checkbox"
-            checked={item.checked}
-            onChange={(e) =>
-              void onUpdate(item.id, {
-                checked: e.target.checked,
-              })
-            }
-            className="mt-1 h-5 w-5 cursor-pointer"
-          />
-        </div>
-
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex gap-2">
-            <input
-              type="number"
-              step="0.125"
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-              onBlur={saveQuantity}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  void saveQuantity()
-                }
-
-                if (e.key === 'Escape') {
-                  cancelQuantity()
-                }
-              }}
-              className="w-20 rounded border border-slate-300 px-2 py-1"
-            />
-
-            <input
-              value={unit}
-              onChange={(e) => setUnit(e.target.value)}
-              onBlur={saveUnit}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  void saveUnit()
-                }
-
-                if (e.key === 'Escape') {
-                  cancelUnit()
-                }
-              }}
-              className="w-20 flex-1 rounded border border-slate-300 px-2 py-1"
-            />
+            <span
+              className={`truncate text-sm font-medium ${
+                item.checked ? 'line-through text-slate-400' : 'text-slate-900'
+              }`}
+            >
+              {item.name}
+            </span>
           </div>
 
           <button
             type="button"
             onClick={() => void onDelete(item.id)}
-            className="cursor-pointer flex justify-center rounded h-5 w-5 text-red-600 hover:bg-red-50"
+            className="cursor-pointer rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
           >
-            <Trash2 size={18} />
+            <Trash2 size={16} />
           </button>
         </div>
+
+        <div className="flex items-center gap-2 pl-8">
+          <input
+            type="number"
+            step="0.125"
+            min="0"
+            value={quantity}
+            onChange={(e) => setQuantity(e.target.value)}
+            onBlur={saveQuantity}
+            className="w-20 rounded-lg border border-slate-200 px-2 py-1 text-center text-xs font-medium"
+          />
+          <input
+            type="text"
+            value={unit}
+            placeholder="Unit"
+            onChange={(e) => setUnit(e.target.value)}
+            onBlur={saveUnit}
+            className="w-24 rounded-lg border border-slate-200 px-2 py-1 text-xs font-medium"
+          />
+        </div>
       </div>
-    </>
+    </div>
   )
 }
