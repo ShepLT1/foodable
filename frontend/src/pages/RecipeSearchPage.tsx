@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { SingleChipSelect } from '../components/SingleChipSelect'
 import { useSearchRecipes } from '../hooks/useRecipes'
 import { MEAL_TYPES, CUISINE_TYPES, type MealType } from '../constants'
@@ -7,7 +7,6 @@ import { ComboboxSelect } from '../components/ComboboxSelect'
 import { RecipeCard } from '../components/RecipeCard'
 
 export function RecipeSearchPage() {
-  const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [mealType, setMealType] = useState<string | null>(null)
   const [cuisineType, setCuisineType] = useState<string | null>(null)
@@ -24,13 +23,12 @@ export function RecipeSearchPage() {
     <div className="rounded-xl bg-white p-8 shadow-sm border border-gray-100">
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold text-gray-900">Browse Recipes</h2>
-        <button
-          type="button"
-          onClick={() => navigate('/recipes/new')}
+        <Link
+          to="/recipes/new"
           className="cursor-pointer rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white transition hover:bg-blue-700"
         >
           Generate Recipe
-        </button>
+        </Link>
       </div>
 
       <div className="mt-6 flex max-w-md flex-col gap-5">
