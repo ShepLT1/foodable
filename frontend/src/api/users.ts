@@ -1,8 +1,8 @@
 import { api } from './client'
 
+// public view of another user — matches GET /users/{id} (UserPublic)
 export type UserPublic = {
   id: string
-  email: string
   display_name: string
   created_at: string
 }
@@ -29,6 +29,10 @@ export type ProfileUpdate = {
 
 export function getCurrentUser() {
   return api<UserMe>('/users/me')
+}
+
+export function getUser(userId: string) {
+  return api<UserPublic>(`/users/${userId}`)
 }
 
 export function updateCurrentUser(payload: ProfileUpdate) {
