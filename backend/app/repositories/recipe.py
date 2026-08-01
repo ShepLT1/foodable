@@ -77,6 +77,30 @@ class RecipeRepository:
         )
         return result.scalar_one_or_none()
 
+    async def get_by_user_id(
+        self,
+        db: AsyncSession,
+        user_id: UUID,
+        limit: int,
+        offset: int,
+    ) -> list[Recipe]:
+        result = await db.execute(
+            select(Recipe)
+            .where(Recipe.user_id == user_id)
+            .order_by(Recipe.created_at.desc())
+            .limit(limit)
+            .offset(offset)
+        )
+        return list(result.scalars().all())
+
+    async def count_by_user_id(self, db: AsyncSession, user_id: UUID) -> int:
+        result = await db.execute(
+            select(func.count())
+            .select_from(Recipe)
+            .where(Recipe.user_id == user_id)
+        )
+        return result.scalar() or 0
+
     async def get_public_by_user_id(
         self,
         db: AsyncSession,
