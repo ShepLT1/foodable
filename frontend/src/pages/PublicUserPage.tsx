@@ -113,5 +113,3 @@ export function PublicUserPage() {
     </div>
   )
 }
-
-export default PublicUserPage
