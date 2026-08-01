@@ -8,13 +8,18 @@ import { RecipeCard } from '../components/RecipeCard'
 
 const PAGE_SIZE = 12
 
-export function PublicUserPage() {
-  const { id = '' } = useParams()
+// Page state resets naturally: PublicUserPage keys this by userId, so a new
+// profile remounts fresh instead of resetting page in an effect.
+function PublicUserPageView({ userId }: { userId: string }) {
   const [page, setPage] = useState(0)
 
-  const { data: user, isPending: userLoading, error: userError } = useUser(id)
+  const {
+    data: user,
+    isPending: userLoading,
+    error: userError,
+  } = useUser(userId)
   const { data: recipesPage, isPending: recipesLoading } = useRecipesByUser(
-    id,
+    userId,
     {
       limit: PAGE_SIZE,
       offset: page * PAGE_SIZE,
@@ -112,4 +117,10 @@ export function PublicUserPage() {
       </section>
     </div>
   )
+}
+
+// keyed wrapper, so whenever id changes the component state reloads
+export function PublicUserPage() {
+  const { id = '' } = useParams()
+  return <PublicUserPageView key={id} userId={id} />
 }
