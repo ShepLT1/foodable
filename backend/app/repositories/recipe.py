@@ -38,7 +38,6 @@ class RecipeRepository:
             raise
 
         return recipe
-    
 
     async def create_without_commit(
         self,
@@ -133,9 +132,7 @@ class RecipeRepository:
         user_id: UUID,
     ) -> list[Recipe]:
         result = await db.execute(
-            select(Recipe)
-            .where(Recipe.user_id == user_id)
-            .order_by(Recipe.title.asc())
+            select(Recipe).where(Recipe.user_id == user_id).order_by(Recipe.title.asc())
         )
 
         return list(result.scalars().all())

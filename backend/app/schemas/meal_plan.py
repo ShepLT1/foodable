@@ -121,6 +121,7 @@ class MealPlanResponse(BaseModel):
 class DeleteMealPlanResponse(BaseModel):
     id: UUID
 
+
 class MealPlanOptimization(BaseModel):
     lower_cost: bool = False
     minimize_food_waste: bool = False

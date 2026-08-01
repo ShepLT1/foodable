@@ -5,8 +5,9 @@ from anthropic import AsyncAnthropic
 from anthropic.types import ToolChoiceToolParam, ToolParam, ToolUseBlock
 from pydantic import ValidationError
 
+from app.models.common import MealType
 from app.models.profile import Profile
-from app.schemas.meal_plan import (MealPlanGenerateRequest, MealPlanOptimization)
+from app.schemas.meal_plan import MealPlanGenerateRequest, MealPlanOptimization
 from app.schemas.meal_plan_ai import (
     ExistingMealPlan,
     ExistingRecipe,
@@ -16,7 +17,6 @@ from app.schemas.prompts_meal_plan_gen import (
     MEAL_PLAN_SYSTEM_PROMPT,
     PLANNING_RULES,
 )
-from app.models.common import MealType
 
 client = AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
@@ -217,6 +217,7 @@ def _build_optimization_section(
 
     return parts
 
+
 def _build_prompt_from_meal_plan(
     profile: Profile,
     recipes: list[ExistingRecipe],
@@ -288,14 +289,10 @@ def _build_prompt_from_meal_plan(
                 f"Meal plan references unknown recipe {meal.recipe_id}"
             )
 
-        parts.append(
-            f"{meal.meal_type.title()}: {recipe.title}"
-        )
+        parts.append(f"{meal.meal_type.title()}: {recipe.title}")
 
     parts.append("")
-    parts.append(
-        "The above meals already exist and MUST NOT be modified or returned."
-    )
+    parts.append("The above meals already exist and MUST NOT be modified or returned.")
 
     parts.append("")
     parts.append("Meal Slots To Generate")
@@ -319,22 +316,14 @@ def _build_prompt_from_meal_plan(
         parts.append(slot.meal_type.title())
 
     parts.append("")
-    parts.append(
-        "Generate exactly one meal for each meal slot listed above."
-    )
+    parts.append("Generate exactly one meal for each meal slot listed above.")
 
     parts.append("Recipe Selection Strategy")
     parts.append("")
 
-    parts.append(
-        "You may satisfy each requested meal by either:"
-    )
-    parts.append(
-        "- Referencing an existing recipe from the recipe catalog."
-    )
-    parts.append(
-        "- Creating a new recipe concept."
-    )
+    parts.append("You may satisfy each requested meal by either:")
+    parts.append("- Referencing an existing recipe from the recipe catalog.")
+    parts.append("- Creating a new recipe concept.")
     parts.append("")
 
     parts.append("Available Recipe Catalog")

@@ -1,34 +1,36 @@
+from datetime import datetime, timedelta, timezone
 from uuid import UUID
-from datetime import timedelta, datetime, timezone
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.common import MealType
 from app.models.meal_plan import MealPlan
 from app.models.meal_plan_meal import MealPlanMeal
 from app.models.recipe import Recipe
-from app.models.common import MealType
 from app.repositories.meal_plan import meal_plan_repository
 from app.repositories.profile import profile_repository
 from app.repositories.recipe import recipe_repository
-from app.schemas.recipe import RecipeGenerateRequest
 from app.schemas.meal_plan import (
     MealPlanCreate,
+    MealPlanGenerateRequest,
     MealPlanMealCreate,
     MealPlanMealUpdate,
     MealPlanUpdate,
-    MealPlanGenerateRequest,
 )
 from app.schemas.meal_plan_ai import (
+    EmptyMealSlot,
+    ExistingMeal,
     ExistingMealPlan,
     ExistingRecipe,
-    EmptyMealSlot,
-    ExistingMeal
 )
+from app.schemas.recipe import RecipeGenerateRequest
 from app.services import meal_plan_ai
 from app.services.recipe import create_recipe_for_user_without_commit
 
+
 class MealPlanGenerationError(Exception):
     """Raised when AI meal plan generation fails."""
+
 
 class MealPlanService:
     def _build_existing_recipe(
@@ -62,10 +64,7 @@ class MealPlanService:
         empty_slots: list[EmptyMealSlot] = []
 
         for meal in meal_plan.meals:
-            if (
-                meal.scheduled_date is None
-                or meal.meal_type is None
-            ):
+            if meal.scheduled_date is None or meal.meal_type is None:
                 continue
 
             existing_meals.append(
@@ -108,41 +107,29 @@ class MealPlanService:
         )
 
         if profile is None:
-            raise ValueError(
-                f"No profile found for user {user_id}"
-            )
+            raise ValueError(f"No profile found for user {user_id}")
 
         recipes = await recipe_repository.get_all_by_user(
             db,
             user_id,
         )
 
-        recipe_lookup = {
-            recipe.id: recipe
-            for recipe in recipes
-        }
+        recipe_lookup = {recipe.id: recipe for recipe in recipes}
 
-        existing_recipes = [
-            self._build_existing_recipe(recipe)
-            for recipe in recipes
-        ]
+        existing_recipes = [self._build_existing_recipe(recipe) for recipe in recipes]
 
         existing_plan = self._build_existing_meal_plan(
             meal_plan,
         )
 
         existing_lookup = {
-            (meal.date, meal.meal_type)
-            for meal in existing_plan.existing_meals
+            (meal.date, meal.meal_type) for meal in existing_plan.existing_meals
         }
 
         empty_slots: list[EmptyMealSlot] = []
 
         for day_offset in range(request.days):
-            current_date = (
-                request.start_date
-                + timedelta(days=day_offset)
-            )
+            current_date = request.start_date + timedelta(days=day_offset)
 
             for meal_type in request.meal_types:
                 key = (
@@ -171,9 +158,7 @@ class MealPlanService:
                 request=request,
             )
         except Exception as e:
-            raise MealPlanGenerationError(
-                "Failed to generate meal plan"
-            ) from e
+            raise MealPlanGenerationError("Failed to generate meal plan") from e
 
         generated_recipe_lookup: dict[
             tuple[str, MealType, str | None, tuple[str, ...]],
@@ -197,9 +182,7 @@ class MealPlanService:
                     ),
                     tuple(
                         ingredient.casefold()
-                        for ingredient in sorted(
-                            meal.recipe_concept.key_ingredients
-                        )
+                        for ingredient in sorted(meal.recipe_concept.key_ingredients)
                     ),
                 )
 
@@ -271,7 +254,6 @@ class MealPlanService:
         assert refreshed is not None
 
         return refreshed
-        
 
     async def create(
         self,

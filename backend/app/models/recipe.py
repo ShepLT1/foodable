@@ -16,6 +16,7 @@ from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+from app.models.common import MealType
 
 if TYPE_CHECKING:
     from app.models.meal_plan_meal import MealPlanMeal
@@ -53,7 +54,7 @@ class Recipe(Base):
         String(DESCRIPTION_MAX_LENGTH), nullable=True
     )
 
-    meal_type: Mapped[str | None] = mapped_column(
+    meal_type: Mapped[MealType | None] = mapped_column(
         String(MEAL_TYPE_MAX_LENGTH), nullable=True
     )
 

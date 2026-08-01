@@ -392,7 +392,7 @@ def check_prompt(name: str, prompt: str) -> None:
     try:
         plan = GeneratedMealPlan.model_validate(block.input)
     except ValidationError as e:
-        print(f"\nVALIDATION FAILED\n")
+        print("\nVALIDATION FAILED\n")
         print(e)
         print()
         print(json.dumps(block.input, indent=2))

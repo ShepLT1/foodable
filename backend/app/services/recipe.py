@@ -78,9 +78,7 @@ def _build_prompt(request: RecipeGenerateRequest, profile: Profile) -> str:
     parts = [f"Create a recipe using: {', '.join(request.ingredients)}."]
 
     if request.title:
-        parts.append(
-            f"Create a recipe titled '{request.title}'."
-        )
+        parts.append(f"Create a recipe titled '{request.title}'.")
 
     if request.description:
         parts.append(request.description)
@@ -142,6 +140,7 @@ async def create_recipe_for_user(
     )
 
     return await recipe_repository.create(db, data)
+
 
 async def create_recipe_for_user_without_commit(
     db: AsyncSession,

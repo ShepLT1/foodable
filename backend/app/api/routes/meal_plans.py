@@ -1,5 +1,4 @@
 from uuid import UUID
-import traceback
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,13 +9,13 @@ from app.repositories.meal_plan import RecipeNotFoundError
 from app.schemas.meal_plan import (
     DeleteMealPlanResponse,
     MealPlanCreate,
+    MealPlanGenerateRequest,
     MealPlanMealCreate,
     MealPlanMealUpdate,
     MealPlanResponse,
     MealPlanUpdate,
-    MealPlanGenerateRequest
 )
-from app.services.meal_plan import (meal_plan_service, MealPlanGenerationError)
+from app.services.meal_plan import MealPlanGenerationError, meal_plan_service
 
 router = APIRouter(prefix="/meal-plans", tags=["meal-plans"])
 
