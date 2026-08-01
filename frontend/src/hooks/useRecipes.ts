@@ -1,11 +1,12 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import {
   generateRecipe,
+  getMyRecipes,
   getRecipe,
-  searchRecipes,
   getRecipesByUser,
+  searchRecipes,
 } from '../api/recipes'
-import type { RecipeSearchParams } from '../api/recipes'
+import type { MyRecipesParams, RecipeSearchParams } from '../api/recipes'
 
 export function useGenerateRecipe() {
   return useMutation({
@@ -28,6 +29,7 @@ export function useSearchRecipes(params: RecipeSearchParams, enabled = true) {
     enabled,
   })
 }
+
 export function useRecipesByUser(
   userId: string,
   { limit = 20, offset = 0 }: { limit?: number; offset?: number } = {},
@@ -36,5 +38,13 @@ export function useRecipesByUser(
     queryKey: ['recipes', 'by-user', userId, limit, offset],
     queryFn: () => getRecipesByUser(userId, { limit, offset }),
     enabled: !!userId,
+  })
+}
+
+export function useMyRecipes(params: MyRecipesParams = {}, enabled = true) {
+  return useQuery({
+    queryKey: ['recipes', 'me', params],
+    queryFn: () => getMyRecipes(params),
+    enabled,
   })
 }
