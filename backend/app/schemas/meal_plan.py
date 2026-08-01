@@ -132,8 +132,8 @@ class MealPlanGenerateRequest(BaseModel):
 
     days: int = Field(
         ge=1,
-        le=14,
-        description="Number of days to generate (1-14).",
+        le=7,
+        description="Number of days to generate (1-7).",
     )
 
     meal_types: list[MealType] = Field(min_length=1)
