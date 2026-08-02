@@ -176,7 +176,7 @@ class RecipeResponse(StrictBaseModel):
         """Map a row from the shared recipe read query into a response."""
         return cls.from_db_recipe(
             row.recipe,
-            RecipeCreator(id=row.author.id, display_name=row.author.display_name),
+            RecipeCreator(id=row.creator.id, display_name=row.creator.display_name),
             is_favorited=row.is_favorited,
         )
 

@@ -11,16 +11,16 @@ from app.models.recipe_favorite import RecipeFavorite
 from app.schemas.recipe import RecipeCreate, RecipeSearchParams
 
 
-# One row of the shared recipe read query: the recipe, its author's profile,
+# One row of the shared recipe read query: the recipe, its creator's profile,
 # and whether the requesting user has favorited it.
 class RecipeRow(NamedTuple):
     recipe: Recipe
-    author: Profile
+    creator: Profile
     is_favorited: bool
 
 
 def _recipe_rows(current_user_id: UUID):
-    """Base select every recipe read path shares: recipe + author + favorited."""
+    """Base select every recipe read path shares: recipe + creator + favorited."""
     is_favorited = (
         exists()
         .where(
@@ -137,7 +137,7 @@ class RecipeRepository:
         row = (await db.execute(query)).first()
         if row is None:
             return None
-        return RecipeRow(recipe=row[0], author=row[1], is_favorited=row[2])
+        return RecipeRow(recipe=row[0], creator=row[1], is_favorited=row[2])
 
     async def list_public_by_user(
         self,
@@ -158,7 +158,7 @@ class RecipeRepository:
             .offset(offset)
         )
         rows = (await db.execute(query)).all()
-        return [RecipeRow(recipe=r[0], author=r[1], is_favorited=r[2]) for r in rows]
+        return [RecipeRow(recipe=r[0], creator=r[1], is_favorited=r[2]) for r in rows]
 
     async def count_public_by_user_id(
         self,
@@ -233,7 +233,7 @@ class RecipeRepository:
 
         rows = (await db.execute(query)).all()
         return [
-            RecipeRow(recipe=r[0], author=r[1], is_favorited=r[2]) for r in rows
+            RecipeRow(recipe=r[0], creator=r[1], is_favorited=r[2]) for r in rows
         ], total
 
 

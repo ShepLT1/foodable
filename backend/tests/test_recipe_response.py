@@ -39,17 +39,17 @@ def _recipe(user_id):
 
 
 def test_from_row_populates_creator_and_is_favorited():
-    author_id = uuid4()
-    recipe = _recipe(author_id)
-    author = Profile(id=author_id, display_name="Chef Mario")
+    creator_id = uuid4()
+    recipe = _recipe(creator_id)
+    creator = Profile(id=creator_id, display_name="Chef Mario")
 
     response = RecipeResponse.from_row(
-        RecipeRow(recipe=recipe, author=author, is_favorited=True)
+        RecipeRow(recipe=recipe, creator=creator, is_favorited=True)
     )
 
     assert response.is_favorited is True
     assert response.creator is not None
-    assert response.creator.id == author_id
+    assert response.creator.id == creator_id
     assert response.creator.display_name == "Chef Mario"
     assert response.title == "Veggie Stir Fry"
 
