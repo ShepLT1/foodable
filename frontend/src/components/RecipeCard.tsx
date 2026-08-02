@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { Utensils, User } from 'lucide-react'
 import type { Recipe } from '../api/recipes'
 import { useSession } from '../hooks/useSession'
+import { FavoriteButton } from './FavoriteButton'
 
 type RecipeCardProps = {
   recipe: Recipe
@@ -25,13 +26,19 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
           ) : (
             <span />
           )}
-          <div className="flex flex-col items-end">
-            <span className="text-xs font-semibold text-slate-400">
-              {Math.round(recipe.nutrition.calories)} kcal
-            </span>
-            <span className="text-[11px] text-slate-400">
-              Serves {recipe.servings}
-            </span>
+          <div className="flex items-start gap-2">
+            <div className="flex flex-col items-end">
+              <span className="text-xs font-semibold text-slate-400">
+                {Math.round(recipe.nutrition.calories)} kcal
+              </span>
+              <span className="text-[11px] text-slate-400">
+                Serves {recipe.servings}
+              </span>
+            </div>
+            <FavoriteButton
+              recipeId={recipe.id}
+              isFavorited={recipe.is_favorited}
+            />
           </div>
         </div>
 
