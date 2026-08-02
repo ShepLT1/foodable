@@ -11,10 +11,7 @@ type MealPlanHeaderProps = {
   onComplete: () => void
 }
 
-export function MealPlanHeader({
-  mealPlan,
-  onComplete,
-}: MealPlanHeaderProps) {
+export function MealPlanHeader({ mealPlan, onComplete }: MealPlanHeaderProps) {
   const [editing, setEditing] = useState(false)
   const [title, setTitle] = useState('')
 
@@ -143,7 +140,9 @@ export function MealPlanHeader({
               <Sparkles size={18} />
             )}
 
-            {generateMealPlan.isPending ? 'Generating...' : 'Complete Plan via AI'}
+            {generateMealPlan.isPending
+              ? 'Generating...'
+              : 'Complete Plan via AI'}
           </button>
 
           <button
@@ -169,7 +168,9 @@ export function MealPlanHeader({
               <Sparkles size={18} />
             )}
 
-            {generateList.isPending ? 'Generating...' : 'Generate Grocery List via AI'}
+            {generateList.isPending
+              ? 'Generating...'
+              : 'Generate Grocery List via AI'}
           </button>
         </div>
       </div>

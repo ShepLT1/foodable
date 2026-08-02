@@ -34,7 +34,6 @@ export function CompleteMealPlanDialog({
   mealPlan,
   onClose,
 }: CompleteMealPlanDialogProps) {
-
   const [startDate, setStartDate] = useState<string>(() =>
     getDefaultStartDate(mealPlan),
   )
