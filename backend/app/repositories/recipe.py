@@ -95,9 +95,7 @@ class RecipeRepository:
 
     async def count_by_user_id(self, db: AsyncSession, user_id: UUID) -> int:
         result = await db.execute(
-            select(func.count())
-            .select_from(Recipe)
-            .where(Recipe.user_id == user_id)
+            select(func.count()).select_from(Recipe).where(Recipe.user_id == user_id)
         )
         return result.scalar() or 0
 
