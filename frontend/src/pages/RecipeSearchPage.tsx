@@ -68,7 +68,7 @@ export function RecipeSearchPage() {
           My Recipes
         </button>
       </div>
-
+    { isCommunity && (
       <div className="mt-6 flex max-w-md flex-col gap-5">
         <input
           type="text"
@@ -102,6 +102,7 @@ export function RecipeSearchPage() {
           placeholder="Search or type a cuisine"
         />
       </div>
+    )}
 
       <div className="mt-8">
         {isLoading && <p className="text-gray-500">Loading...</p>}
