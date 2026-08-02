@@ -114,7 +114,7 @@ export function RecipeSearchPage() {
               setPage(1)
             }}
             label="Exclude my own recipes"
-/>
+          />
         </div>
       )}
 
