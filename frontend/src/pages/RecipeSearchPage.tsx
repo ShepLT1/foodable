@@ -5,6 +5,7 @@ import { useSearchRecipes, useMyRecipes } from '../hooks/useRecipes'
 import { MEAL_TYPES, CUISINE_TYPES, type MealType } from '../constants'
 import { ComboboxSelect } from '../components/ComboboxSelect'
 import { RecipeCard } from '../components/RecipeCard'
+import { Field, Label, Switch } from '@headlessui/react'
 
 type Tab = 'community' | 'me'
 
@@ -14,6 +15,7 @@ export function RecipeSearchPage() {
   const [mealType, setMealType] = useState<string | null>(null)
   const [cuisineType, setCuisineType] = useState<string | null>(null)
   const [page, setPage] = useState(1)
+  const [excludeOwn, setExcludeOwn] = useState(false)
 
   const isCommunity = tab === 'community'
 
@@ -21,6 +23,7 @@ export function RecipeSearchPage() {
     q: query || undefined,
     meal_type: (mealType ?? undefined) as MealType | undefined,
     cuisine_type: cuisineType ?? undefined,
+    exclude_own: excludeOwn || undefined,
     page,
   },
   isCommunity,
@@ -101,6 +104,28 @@ export function RecipeSearchPage() {
           }}
           placeholder="Search or type a cuisine"
         />
+
+        <Field className="flex items-center gap-3">
+          <Switch
+            checked={excludeOwn}
+            onChange={(checked: boolean) => {
+              setExcludeOwn(checked)
+              setPage(1)
+            }}
+            className={`${
+              excludeOwn ? 'bg-blue-600' : 'bg-gray-200'
+            } relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full transition`}
+          >
+            <span
+              className={`${
+                excludeOwn ? 'translate-x-6' : 'translate-x-1'
+              } inline-block h-4 w-4 transform rounded-full bg-white transition`}
+            />
+          </Switch>
+          <Label className="text-sm text-gray-700 cursor-pointer">
+            Exclude my own recipes
+          </Label>
+        </Field>
       </div>
     )}
 
