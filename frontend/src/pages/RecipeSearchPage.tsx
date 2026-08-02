@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { SingleChipSelect } from '../components/SingleChipSelect'
-import { useSearchRecipes, useMyRecipes } from '../hooks/useRecipes'
-import { MEAL_TYPES, CUISINE_TYPES, type MealType } from '../constants'
 import { ComboboxSelect } from '../components/ComboboxSelect'
 import { RecipeCard } from '../components/RecipeCard'
 import { Field, Label, Switch } from '@headlessui/react'
+
+import { useSearchRecipes, useMyRecipes } from '../hooks/useRecipes'
+import { MEAL_TYPES, CUISINE_TYPES, type MealType } from '../constants'
 
 type Tab = 'community' | 'me'
 
