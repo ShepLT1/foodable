@@ -120,3 +120,22 @@ class MealPlanResponse(BaseModel):
 
 class DeleteMealPlanResponse(BaseModel):
     id: UUID
+
+
+class MealPlanOptimization(BaseModel):
+    lower_cost: bool = False
+    minimize_food_waste: bool = False
+
+
+class MealPlanGenerateRequest(BaseModel):
+    start_date: date
+
+    days: int = Field(
+        ge=1,
+        le=7,
+        description="Number of days to generate (1-7).",
+    )
+
+    meal_types: list[MealType] = Field(min_length=1)
+
+    optimization: MealPlanOptimization = Field(default_factory=MealPlanOptimization)

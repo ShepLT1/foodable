@@ -56,6 +56,8 @@ class RecipeCreate(StrictBaseModel):
 
 
 class RecipeGenerateRequest(StrictBaseModel):
+    title: str | None = None
+    description: str | None = None
     ingredients: list[str] = Field(min_length=1)
     meal_type: MealType | None = None
     cuisine_type: str | None = None
@@ -98,11 +100,13 @@ class Recipe(StrictBaseModel):
         default=None, description="A brief description of the recipe."
     )
     ingredients: list[Ingredient] = Field(
-        description="A list of ingredients required for the recipe."
+        min_length=1,
+        description="A list of ingredients required for the recipe.",
     )
     tools_needed: list[str] = Field(description=TOOLS_NEEDED_DESCRIPTION)
     steps: list[Step] = Field(
-        description="Step-by-step instructions to prepare the recipe."
+        min_length=1,
+        description="Step-by-step instructions to prepare the recipe.",
     )
     nutrition: NutritionInfo = Field(
         description="Nutritional information for the recipe."
