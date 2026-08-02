@@ -118,4 +118,5 @@ temp/
 *.tar
 *.gz
 
-repomix*supabase/snippets/
+repomix*
+supabase/snippets/
