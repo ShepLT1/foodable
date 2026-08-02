@@ -85,19 +85,19 @@ async def get_recipe_endpoint(
     user: CurrentUser = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> RecipeResponse:
-    recipe = await recipe_repository.get_by_id(
+    row = await recipe_repository.get_detail(
         db,
         recipe_id=recipe_id,
-        user_id=UUID(user.id),
+        current_user_id=UUID(user.id),
     )
 
-    if recipe is None:
+    if row is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Recipe not found",
         )
 
-    return RecipeResponse.from_db_recipe(recipe)
+    return RecipeResponse.from_row(row)
 
 
 @router.post("/{recipe_id}/favorite", response_model=FavoriteActionResponse)

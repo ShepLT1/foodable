@@ -138,15 +138,20 @@ class RecipeResponse(StrictBaseModel):
     ingredients: list[Ingredient]
     nutrition: NutritionInfo
     is_public: bool
+    is_favorited: bool = False
     creator: RecipeCreator | None = None
     created_at: datetime
 
     if TYPE_CHECKING:
         from app.models.recipe import Recipe as DBRecipe
+        from app.repositories.recipe import RecipeRow
 
     @classmethod
     def from_db_recipe(
-        cls, recipe: "DBRecipe", creator: "RecipeCreator | None" = None
+        cls,
+        recipe: "DBRecipe",
+        creator: "RecipeCreator | None" = None,
+        is_favorited: bool = False,
     ) -> "RecipeResponse":
         return cls(
             id=recipe.id,
@@ -161,8 +166,18 @@ class RecipeResponse(StrictBaseModel):
             ingredients=[Ingredient.model_validate(i) for i in recipe.ingredients_json],
             nutrition=NutritionInfo.model_validate(recipe.nutrition_json),
             is_public=recipe.is_public,
+            is_favorited=is_favorited,
             creator=creator,
             created_at=recipe.created_at,
+        )
+
+    @classmethod
+    def from_row(cls, row: "RecipeRow") -> "RecipeResponse":
+        """Map a row from the shared recipe read query into a response."""
+        return cls.from_db_recipe(
+            row.recipe,
+            RecipeCreator(id=row.author.id, display_name=row.author.display_name),
+            is_favorited=row.is_favorited,
         )
 
 
