@@ -1,0 +1,1 @@
+select id, user_id, is_public from recipes where user_id != '11111111-1111-1111-1111-111111111111' limit 5;

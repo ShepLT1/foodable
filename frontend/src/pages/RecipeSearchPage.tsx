@@ -20,15 +20,16 @@ export function RecipeSearchPage() {
 
   const isCommunity = tab === 'community'
 
-  const communityResult = useSearchRecipes({
-    q: query || undefined,
-    meal_type: (mealType ?? undefined) as MealType | undefined,
-    cuisine_type: cuisineType ?? undefined,
-    exclude_own: excludeOwn || undefined,
-    page,
-  },
-  isCommunity,
-)
+  const communityResult = useSearchRecipes(
+    {
+      q: query || undefined,
+      meal_type: (mealType ?? undefined) as MealType | undefined,
+      cuisine_type: cuisineType ?? undefined,
+      exclude_own: excludeOwn || undefined,
+      page,
+    },
+    isCommunity,
+  )
 
   const myRecipesResult = useMyRecipes({ page }, !isCommunity)
 
@@ -72,63 +73,63 @@ export function RecipeSearchPage() {
           My Recipes
         </button>
       </div>
-    { isCommunity && (
-      <div className="mt-6 flex max-w-md flex-col gap-5">
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value)
-            setPage(1)
-          }}
-          placeholder="Search recipes..."
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-200"
-        />
-
-        <SingleChipSelect
-          label="Meal Type"
-          options={MEAL_TYPES}
-          value={mealType}
-          onChange={(value) => {
-            setMealType(value)
-            setPage(1)
-          }}
-        />
-
-        <ComboboxSelect
-          label="Cuisine Type"
-          options={CUISINE_TYPES}
-          value={cuisineType}
-          onChange={(value) => {
-            setCuisineType(value)
-            setPage(1)
-          }}
-          placeholder="Search or type a cuisine"
-        />
-
-        <Field className="flex items-center gap-3">
-          <Switch
-            checked={excludeOwn}
-            onChange={(checked: boolean) => {
-              setExcludeOwn(checked)
+      {isCommunity && (
+        <div className="mt-6 flex max-w-md flex-col gap-5">
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value)
               setPage(1)
             }}
-            className={`${
-              excludeOwn ? 'bg-blue-600' : 'bg-gray-200'
-            } relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full transition`}
-          >
-            <span
+            placeholder="Search recipes..."
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-200"
+          />
+
+          <SingleChipSelect
+            label="Meal Type"
+            options={MEAL_TYPES}
+            value={mealType}
+            onChange={(value) => {
+              setMealType(value)
+              setPage(1)
+            }}
+          />
+
+          <ComboboxSelect
+            label="Cuisine Type"
+            options={CUISINE_TYPES}
+            value={cuisineType}
+            onChange={(value) => {
+              setCuisineType(value)
+              setPage(1)
+            }}
+            placeholder="Search or type a cuisine"
+          />
+
+          <Field className="flex items-center gap-3">
+            <Switch
+              checked={excludeOwn}
+              onChange={(checked: boolean) => {
+                setExcludeOwn(checked)
+                setPage(1)
+              }}
               className={`${
-                excludeOwn ? 'translate-x-6' : 'translate-x-1'
-              } inline-block h-4 w-4 transform rounded-full bg-white transition`}
-            />
-          </Switch>
-          <Label className="text-sm text-gray-700 cursor-pointer">
-            Exclude my own recipes
-          </Label>
-        </Field>
-      </div>
-    )}
+                excludeOwn ? 'bg-blue-600' : 'bg-gray-200'
+              } relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full transition`}
+            >
+              <span
+                className={`${
+                  excludeOwn ? 'translate-x-6' : 'translate-x-1'
+                } inline-block h-4 w-4 transform rounded-full bg-white transition`}
+              />
+            </Switch>
+            <Label className="text-sm text-gray-700 cursor-pointer">
+              Exclude my own recipes
+            </Label>
+          </Field>
+        </div>
+      )}
 
       <div className="mt-8">
         {isLoading && <p className="text-gray-500">Loading...</p>}

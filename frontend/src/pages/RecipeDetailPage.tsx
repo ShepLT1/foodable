@@ -26,19 +26,19 @@ export function RecipeDetailPage() {
     )
   }
 
-return (
-  <div className="mx-auto w-full max-w-3xl">
-    <button
-      type="button"
-      onClick={() => navigate(-1)}
-      className="mb-4 flex cursor-pointer items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900"
-    >
-      <ArrowLeft className="h-4 w-4" />
-      Back
-    </button>
+  return (
+    <div className="mx-auto w-full max-w-3xl">
+      <button
+        type="button"
+        onClick={() => navigate(-1)}
+        className="mb-4 flex cursor-pointer items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back
+      </button>
 
-    <div className="rounded-lg bg-white p-8 shadow-sm border border-gray-100">
-      <h2 className="text-3xl font-bold text-gray-900">{recipe.title}</h2>
+      <div className="rounded-lg bg-white p-8 shadow-sm border border-gray-100">
+        <h2 className="text-3xl font-bold text-gray-900">{recipe.title}</h2>
 
         <div className="mt-3 flex flex-wrap gap-2">
           {recipe.meal_type && (
@@ -90,7 +90,9 @@ return (
         </div>
         {recipe.tools_needed.length > 0 && (
           <div className="mt-8 border-t border-gray-200 pt-8">
-            <h3 className="text-xl font-semibold text-gray-900">Tools Needed</h3>
+            <h3 className="text-xl font-semibold text-gray-900">
+              Tools Needed
+            </h3>
             <div className="mt-3 flex flex-wrap gap-2">
               {recipe.tools_needed.map((tool) => (
                 <span
@@ -110,7 +112,8 @@ return (
               {recipe.ingredients.map((ingredient, i) => (
                 <li key={i} className="text-gray-700">
                   {ingredient.quantity}
-                  {ingredient.unit ? ` ${ingredient.unit}` : ''} {ingredient.name}
+                  {ingredient.unit ? ` ${ingredient.unit}` : ''}{' '}
+                  {ingredient.name}
                 </li>
               ))}
             </ul>
@@ -121,7 +124,8 @@ return (
             <ol className="mt-3 space-y-4">
               {recipe.steps.map((step, i) => (
                 <li key={i} className="text-gray-700">
-                  <span className="font-medium">{i + 1}.</span> {step.instruction}
+                  <span className="font-medium">{i + 1}.</span>{' '}
+                  {step.instruction}
                   {step.estimated_duration_minutes && (
                     <span className="ml-1 text-sm text-gray-500">
                       (~{step.estimated_duration_minutes} min)
@@ -133,6 +137,6 @@ return (
           </div>
         </div>
       </div>
-    </div>  
+    </div>
   )
 }
