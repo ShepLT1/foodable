@@ -22,7 +22,6 @@ export interface NutritionInfo {
 
 export interface Recipe {
   id: string
-  user_id: string
   title: string
   description: string | null
   meal_type: string | null

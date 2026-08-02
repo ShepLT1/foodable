@@ -127,7 +127,6 @@ class RecipeCreator(StrictBaseModel):
 
 class RecipeResponse(StrictBaseModel):
     id: UUID
-    user_id: UUID
     title: str
     description: str | None
     meal_type: str | None
@@ -155,7 +154,6 @@ class RecipeResponse(StrictBaseModel):
     ) -> "RecipeResponse":
         return cls(
             id=recipe.id,
-            user_id=recipe.user_id,
             title=recipe.title,
             description=recipe.description,
             meal_type=recipe.meal_type,
