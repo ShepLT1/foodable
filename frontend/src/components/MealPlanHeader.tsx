@@ -1,20 +1,22 @@
 import { useState } from 'react'
-import { ArrowLeft, Pencil, Loader2 } from 'lucide-react'
+import { ArrowLeft, Pencil, Loader2, Sparkles } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import type { MealPlan } from '../api/mealPlans'
-import { useUpdateMealPlan } from '../hooks/useMealPlans'
+import { useUpdateMealPlan, useGenerateMealPlan } from '../hooks/useMealPlans'
 import { useGenerateGroceryList } from '../hooks/useGroceryLists'
 
 type MealPlanHeaderProps = {
   mealPlan: MealPlan
+  onComplete: () => void
 }
 
-export function MealPlanHeader({ mealPlan }: MealPlanHeaderProps) {
+export function MealPlanHeader({ mealPlan, onComplete }: MealPlanHeaderProps) {
   const [editing, setEditing] = useState(false)
   const [title, setTitle] = useState('')
 
   const updateMealPlan = useUpdateMealPlan()
+  const generateMealPlan = useGenerateMealPlan()
   const generateList = useGenerateGroceryList()
   const navigate = useNavigate()
 
@@ -56,7 +58,7 @@ export function MealPlanHeader({ mealPlan }: MealPlanHeaderProps) {
         Meal Plans
       </Link>
 
-      <div className="mt-4 flex items-start justify-between">
+      <div className="mt-4 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="flex-1">
           {editing ? (
             <input
@@ -125,14 +127,28 @@ export function MealPlanHeader({ mealPlan }: MealPlanHeaderProps) {
           </p>
         </div>
 
-        <div className="ml-6 flex gap-3">
-          {generateList.isPending && (
-            <Loader2 size={32} className="animate-spin" />
-          )}
+        <div className="flex flex-col gap-3 md:ml-6 md:flex-row">
+          <button
+            type="button"
+            disabled={generateMealPlan.isPending}
+            onClick={onComplete}
+            className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg px-4 py-2 font-medium text-white bg-purple-700 hover:bg-purple-800 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {generateMealPlan.isPending ? (
+              <Loader2 size={18} className="animate-spin" />
+            ) : (
+              <Sparkles size={18} />
+            )}
+
+            {generateMealPlan.isPending
+              ? 'Generating...'
+              : 'Complete Plan via AI'}
+          </button>
+
           <button
             type="button"
             disabled={generateList.isPending}
-            className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white disabled:opacity-50 cursor-pointer"
+            className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 px-4 py-2 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
             onClick={() =>
               generateList.mutate(
                 {
@@ -146,7 +162,15 @@ export function MealPlanHeader({ mealPlan }: MealPlanHeaderProps) {
               )
             }
           >
-            {generateList.isPending ? 'Generating...' : 'Generate Grocery List'}
+            {generateList.isPending ? (
+              <Loader2 size={18} className="animate-spin" />
+            ) : (
+              <Sparkles size={18} />
+            )}
+
+            {generateList.isPending
+              ? 'Generating...'
+              : 'Generate Grocery List via AI'}
           </button>
         </div>
       </div>

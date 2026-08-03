@@ -122,7 +122,7 @@ class DeleteMealPlanResponse(BaseModel):
     id: UUID
 
 
-class MealPlanOptimization(BaseModel):
+class MealPlanOptimizations(BaseModel):
     lower_cost: bool = False
     minimize_food_waste: bool = False
 
@@ -138,4 +138,4 @@ class MealPlanGenerateRequest(BaseModel):
 
     meal_types: list[MealType] = Field(min_length=1)
 
-    optimization: MealPlanOptimization = Field(default_factory=MealPlanOptimization)
+    optimizations: MealPlanOptimizations = Field(default_factory=MealPlanOptimizations)

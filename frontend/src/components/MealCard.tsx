@@ -130,7 +130,7 @@ export function MealCard({ mealPlanId, meal }: MealCardProps) {
                 type="button"
                 onClick={() => queueServingUpdate(Math.max(1, servings - 1))}
                 disabled={updateMeal.isPending || servings <= 1}
-                className="flex h-8 w-8 items-center justify-center border-r border-gray-300 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400 cursor-pointer"
+                className="flex h-9 w-8 items-center justify-center border-r border-gray-300 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400 cursor-pointer"
               >
                 −
               </button>
@@ -143,7 +143,7 @@ export function MealCard({ mealPlanId, meal }: MealCardProps) {
                 type="button"
                 onClick={() => queueServingUpdate(servings + 1)}
                 disabled={updateMeal.isPending}
-                className="flex h-8 w-8 items-center justify-center border-l border-gray-300 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400 cursor-pointer"
+                className="flex h-9 w-8 items-center justify-center border-l border-gray-300 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400 cursor-pointer"
               >
                 +
               </button>
