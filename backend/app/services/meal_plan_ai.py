@@ -7,7 +7,7 @@ from pydantic import ValidationError
 
 from app.models.common import MealType
 from app.models.profile import Profile
-from app.schemas.meal_plan import MealPlanGenerateRequest, MealPlanOptimization
+from app.schemas.meal_plan import MealPlanGenerateRequest, MealPlanOptimizations
 from app.schemas.meal_plan_ai import (
     ExistingMealPlan,
     ExistingRecipe,
@@ -146,13 +146,13 @@ def _validate_generated_meal_plan(
 
 
 def _build_optimization_section(
-    optimization: MealPlanOptimization,
+    optimizations: MealPlanOptimizations,
 ) -> list[str]:
     """
     Build optimization instructions for Claude.
     """
 
-    if not optimization.lower_cost and not optimization.minimize_food_waste:
+    if not optimizations.lower_cost and not optimizations.minimize_food_waste:
         return []
 
     parts = [
@@ -176,7 +176,7 @@ def _build_optimization_section(
         "",
     ]
 
-    if optimization.lower_cost:
+    if optimizations.lower_cost:
         parts.extend(
             [
                 "Lower Cost",
@@ -188,7 +188,7 @@ def _build_optimization_section(
             ]
         )
 
-    if optimization.minimize_food_waste:
+    if optimizations.minimize_food_waste:
         parts.extend(
             [
                 "Minimize Food Waste",
@@ -351,7 +351,7 @@ def _build_prompt_from_meal_plan(
 
     parts.extend(
         _build_optimization_section(
-            request.optimization,
+            request.optimizations,
         )
     )
     parts.append("")
