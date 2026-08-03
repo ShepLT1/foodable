@@ -102,21 +102,22 @@ class RecipeRepository:
         )
         return result.scalar_one_or_none()
 
-    async def get_by_user_id(
+    async def list_own_by_user(
         self,
         db: AsyncSession,
-        user_id: UUID,
+        current_user_id: UUID,
         limit: int,
         offset: int,
-    ) -> list[Recipe]:
-        result = await db.execute(
-            select(Recipe)
-            .where(Recipe.user_id == user_id)
+    ) -> list[RecipeRow]:
+        query = (
+            _recipe_rows(current_user_id)
+            .where(Recipe.user_id == current_user_id)
             .order_by(Recipe.created_at.desc())
             .limit(limit)
             .offset(offset)
         )
-        return list(result.scalars().all())
+        rows = (await db.execute(query)).all()
+        return [RecipeRow(recipe=r[0], creator=r[1], is_favorited=r[2]) for r in rows]
 
     async def count_by_user_id(self, db: AsyncSession, user_id: UUID) -> int:
         result = await db.execute(

@@ -67,12 +67,15 @@ async def get_my_recipes_endpoint(
     limit: int = Query(default=20, ge=1, le=100),
     page: int = Query(default=1, ge=1),
 ) -> PaginatedRecipes:
-    recipes = await recipe_repository.get_by_user_id(
-        db, UUID(user.id), limit=limit, offset=(page - 1) * limit
+    rows = await recipe_repository.list_own_by_user(
+        db,
+        current_user_id=UUID(user.id),
+        limit=limit,
+        offset=(page - 1) * limit,
     )
     total = await recipe_repository.count_by_user_id(db, UUID(user.id))
     return PaginatedRecipes(
-        items=[RecipeResponse.from_db_recipe(r) for r in recipes],
+        items=[RecipeResponse.from_row(row) for row in rows],
         total=total,
         page=page,
         limit=limit,
