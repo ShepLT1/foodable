@@ -1,12 +1,15 @@
 import { Link } from 'react-router-dom'
 import { Utensils, User } from 'lucide-react'
 import type { Recipe } from '../api/recipes'
+import { useSession } from '../hooks/useSession'
 
 type RecipeCardProps = {
   recipe: Recipe
 }
 
 export function RecipeCard({ recipe }: RecipeCardProps) {
+  const { session } = useSession()
+
   return (
     <Link
       to={`/recipes/${recipe.id}`}
@@ -51,7 +54,10 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
         )}
         {recipe.creator?.display_name && (
           <span className="flex items-center gap-1">
-            <User className="h-3 w-3" /> {recipe.creator.display_name}
+            <User className="h-3 w-3" />
+            {recipe.creator.id === session?.user.id
+              ? 'You'
+              : recipe.creator.display_name}
           </span>
         )}
       </div>

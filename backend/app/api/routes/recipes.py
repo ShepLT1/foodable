@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import CurrentUser, get_current_user
@@ -58,6 +58,25 @@ async def generate_recipe_endpoint(
         raise _map_recipe_error(e) from e
 
     return RecipeResponse.from_db_recipe(recipe)
+
+
+@router.get("/me", response_model=PaginatedRecipes)
+async def get_my_recipes_endpoint(
+    user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    limit: int = Query(default=20, ge=1, le=100),
+    page: int = Query(default=1, ge=1),
+) -> PaginatedRecipes:
+    recipes = await recipe_repository.get_by_user_id(
+        db, UUID(user.id), limit=limit, offset=(page - 1) * limit
+    )
+    total = await recipe_repository.count_by_user_id(db, UUID(user.id))
+    return PaginatedRecipes(
+        items=[RecipeResponse.from_db_recipe(r) for r in recipes],
+        total=total,
+        page=page,
+        limit=limit,
+    )
 
 
 @router.get("/{recipe_id}", response_model=RecipeResponse)
