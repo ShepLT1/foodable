@@ -127,3 +127,19 @@ export function getMyRecipes(params: MyRecipesParams = {}) {
     `/recipes/me${queryString ? `?${queryString}` : ''}`,
   )
 }
+export interface FavoriteActionResponse {
+  success: boolean
+  message: string
+}
+
+export function favoriteRecipe(recipeId: string) {
+  return api<FavoriteActionResponse>(`/recipes/${recipeId}/favorite`, {
+    method: 'POST',
+  })
+}
+
+export function unfavoriteRecipe(recipeId: string) {
+  return api<FavoriteActionResponse>(`/recipes/${recipeId}/favorite`, {
+    method: 'DELETE',
+  })
+}
