@@ -67,12 +67,15 @@ async def get_my_recipes_endpoint(
     limit: int = Query(default=20, ge=1, le=100),
     page: int = Query(default=1, ge=1),
 ) -> PaginatedRecipes:
-    recipes = await recipe_repository.get_by_user_id(
-        db, UUID(user.id), limit=limit, offset=(page - 1) * limit
+    rows = await recipe_repository.list_own_by_user(
+        db,
+        current_user_id=UUID(user.id),
+        limit=limit,
+        offset=(page - 1) * limit,
     )
     total = await recipe_repository.count_by_user_id(db, UUID(user.id))
     return PaginatedRecipes(
-        items=[RecipeResponse.from_db_recipe(r) for r in recipes],
+        items=[RecipeResponse.from_row(row) for row in rows],
         total=total,
         page=page,
         limit=limit,
@@ -85,19 +88,19 @@ async def get_recipe_endpoint(
     user: CurrentUser = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> RecipeResponse:
-    recipe = await recipe_repository.get_by_id(
+    row = await recipe_repository.get_detail(
         db,
         recipe_id=recipe_id,
-        user_id=UUID(user.id),
+        current_user_id=UUID(user.id),
     )
 
-    if recipe is None:
+    if row is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Recipe not found",
         )
 
-    return RecipeResponse.from_db_recipe(recipe)
+    return RecipeResponse.from_row(row)
 
 
 @router.post("/{recipe_id}/favorite", response_model=FavoriteActionResponse)

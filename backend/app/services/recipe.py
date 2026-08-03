@@ -14,7 +14,6 @@ from app.schemas.recipe import (
     PaginatedRecipes,
     Recipe,
     RecipeCreate,
-    RecipeCreator,
     RecipeGenerateRequest,
     RecipeResponse,
     RecipeSearchParams,
@@ -186,12 +185,7 @@ async def search_recipes(
     results, total = await recipe_repository.search(db, params, current_user_id)
 
     return PaginatedRecipes(
-        items=[
-            RecipeResponse.from_db_recipe(
-                recipe, RecipeCreator(id=recipe.user_id, display_name=display_name)
-            )
-            for recipe, display_name in results
-        ],
+        items=[RecipeResponse.from_row(row) for row in results],
         total=total,
         page=params.page,
         limit=params.limit,

@@ -86,17 +86,21 @@ async def get_user(
 @router.get("/{user_id}/recipes", response_model=PaginatedRecipes)
 async def get_user_recipes(
     user_id: UUID,
-    _: CurrentUser = Depends(get_current_user),  # any authenticated user may view
+    user: CurrentUser = Depends(get_current_user),  # any authenticated user may view
     db: AsyncSession = Depends(get_db),
     limit: int = Query(default=20, ge=1, le=100),
     page: int = Query(default=1, ge=1),
 ) -> PaginatedRecipes:
-    recipes = await recipe_repository.get_public_by_user_id(
-        db, user_id, limit=limit, offset=(page - 1) * limit
+    rows = await recipe_repository.list_public_by_user(
+        db,
+        user_id,
+        current_user_id=UUID(user.id),
+        limit=limit,
+        offset=(page - 1) * limit,
     )
     total = await recipe_repository.count_public_by_user_id(db, user_id)
     return PaginatedRecipes(
-        items=[RecipeResponse.from_db_recipe(r) for r in recipes],
+        items=[RecipeResponse.from_row(row) for row in rows],
         total=total,
         page=page,
         limit=limit,

@@ -22,7 +22,6 @@ export interface NutritionInfo {
 
 export interface Recipe {
   id: string
-  user_id: string
   title: string
   description: string | null
   meal_type: string | null
@@ -33,6 +32,7 @@ export interface Recipe {
   ingredients: Ingredient[]
   nutrition: NutritionInfo
   is_public: boolean
+  is_favorited: boolean
   creator: {
     id: string
     display_name: string | null
