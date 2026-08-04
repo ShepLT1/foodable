@@ -5,10 +5,14 @@ import { ComboboxSelect } from '../components/ComboboxSelect'
 import { RecipeCard } from '../components/RecipeCard'
 import { Toggle } from '../components/Toggle'
 
-import { useSearchRecipes, useMyRecipes } from '../hooks/useRecipes'
+import {
+  useSearchRecipes,
+  useMyRecipes,
+  useMyFavoriteRecipes,
+} from '../hooks/useRecipes'
 import { MEAL_TYPES, CUISINE_TYPES, type MealType } from '../constants'
 
-type Tab = 'community' | 'me'
+type Tab = 'community' | 'me' | 'favorites'
 
 export function RecipeSearchPage() {
   const [tab, setTab] = useState<Tab>('community')
@@ -19,6 +23,11 @@ export function RecipeSearchPage() {
   const [excludeOwn, setExcludeOwn] = useState(false)
 
   const isCommunity = tab === 'community'
+
+  function selectTab(next: Tab) {
+    setTab(next)
+    setPage(1)
+  }
 
   const communityResult = useSearchRecipes(
     {
@@ -31,11 +40,15 @@ export function RecipeSearchPage() {
     isCommunity,
   )
 
-  const myRecipesResult = useMyRecipes({ page }, !isCommunity)
+  const myRecipesResult = useMyRecipes({ page }, tab === 'me')
 
-  const { data, isLoading, isError } = isCommunity
-    ? communityResult
-    : myRecipesResult
+  const favoritesResult = useMyFavoriteRecipes({ page }, tab === 'favorites')
+
+  const { data, isLoading, isError } = {
+    community: communityResult,
+    me: myRecipesResult,
+    favorites: favoritesResult,
+  }[tab]
 
   return (
     <div className="rounded-xl bg-white p-8 shadow-sm border border-gray-100">
@@ -52,7 +65,7 @@ export function RecipeSearchPage() {
       <div className="mt-6 flex gap-2 border-b border-gray-200">
         <button
           type="button"
-          onClick={() => setTab('community')}
+          onClick={() => selectTab('community')}
           className={`cursor-pointer border-b-2 px-4 py-2 text-sm font-semibold transition ${
             tab === 'community'
               ? 'border-blue-600 text-blue-600'
@@ -63,7 +76,7 @@ export function RecipeSearchPage() {
         </button>
         <button
           type="button"
-          onClick={() => setTab('me')}
+          onClick={() => selectTab('me')}
           className={`cursor-pointer border-b-2 px-4 py-2 text-sm font-semibold transition ${
             tab === 'me'
               ? 'border-blue-600 text-blue-600'
@@ -71,6 +84,17 @@ export function RecipeSearchPage() {
           }`}
         >
           My Recipes
+        </button>
+        <button
+          type="button"
+          onClick={() => selectTab('favorites')}
+          className={`cursor-pointer border-b-2 px-4 py-2 text-sm font-semibold transition ${
+            tab === 'favorites'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Favorites
         </button>
       </div>
       {isCommunity && (
@@ -129,7 +153,11 @@ export function RecipeSearchPage() {
 
         {data && data.items.length === 0 && (
           <p className="text-gray-500">
-            No recipes found. Try adjusting your search.
+            {tab === 'favorites'
+              ? 'No favorites yet. Tap the heart on a recipe to save it here.'
+              : tab === 'me'
+                ? "You haven't created any recipes yet."
+                : 'No recipes found. Try adjusting your search.'}
           </p>
         )}
 
