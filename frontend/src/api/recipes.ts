@@ -40,13 +40,6 @@ export interface Recipe {
   created_at: string
 }
 
-export interface PaginatedRecipes {
-  items: Recipe[]
-  total: number
-  limit: number
-  offset: number
-}
-
 export interface GenerateRecipeRequest {
   ingredients: string[]
   meal_type?: 'breakfast' | 'lunch' | 'dinner' | 'dessert' | 'snack'
@@ -75,15 +68,20 @@ export function getRecipe(recipeId: string) {
   return api<Recipe>(`/recipes/${recipeId}`)
 }
 
+export interface RecipesByUserParams {
+  page?: number
+  limit?: number
+}
+
 export function getRecipesByUser(
   userId: string,
-  { limit = 20, offset = 0 }: { limit?: number; offset?: number } = {},
+  params: RecipesByUserParams = {},
 ) {
-  const params = new URLSearchParams({
-    limit: String(limit),
-    offset: String(offset),
-  })
-  return api<PaginatedRecipes>(`/users/${userId}/recipes?${params}`)
+  const queryString = buildQueryString(params)
+
+  return api<PaginatedRecipes>(
+    `/users/${userId}/recipes${queryString ? `?${queryString}` : ''}`,
+  )
 }
 
 // Recipe API request handlers

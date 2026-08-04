@@ -12,6 +12,7 @@ import {
 import type {
   MyFavoriteRecipesParams,
   MyRecipesParams,
+  RecipesByUserParams,
   PaginatedRecipes,
   Recipe,
   RecipeSearchParams,
@@ -41,11 +42,11 @@ export function useSearchRecipes(params: RecipeSearchParams, enabled = true) {
 
 export function useRecipesByUser(
   userId: string,
-  { limit = 20, offset = 0 }: { limit?: number; offset?: number } = {},
+  params: RecipesByUserParams = {},
 ) {
   return useQuery({
-    queryKey: ['recipes', 'by-user', userId, limit, offset],
-    queryFn: () => getRecipesByUser(userId, { limit, offset }),
+    queryKey: ['recipes', 'by-user', userId, params],
+    queryFn: () => getRecipesByUser(userId, params),
     enabled: !!userId,
   })
 }

@@ -11,7 +11,7 @@ const PAGE_SIZE = 12
 // Page state resets naturally: PublicUserPage keys this by userId, so a new
 // profile remounts fresh instead of resetting page in an effect.
 function PublicUserPageView({ userId }: { userId: string }) {
-  const [page, setPage] = useState(0)
+  const [page, setPage] = useState(1)
 
   const {
     data: user,
@@ -22,7 +22,7 @@ function PublicUserPageView({ userId }: { userId: string }) {
     userId,
     {
       limit: PAGE_SIZE,
-      offset: page * PAGE_SIZE,
+      page,
     },
   )
 
@@ -93,19 +93,19 @@ function PublicUserPageView({ userId }: { userId: string }) {
               <div className="flex items-center justify-center gap-4 pt-2">
                 <button
                   type="button"
-                  onClick={() => setPage((p) => Math.max(0, p - 1))}
-                  disabled={page === 0}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
                   className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Previous
                 </button>
                 <span className="text-sm text-slate-500">
-                  Page {page + 1} of {pageCount}
+                  Page {page} of {pageCount}
                 </span>
                 <button
                   type="button"
-                  onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
-                  disabled={page >= pageCount - 1}
+                  onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
+                  disabled={page >= pageCount}
                   className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Next
