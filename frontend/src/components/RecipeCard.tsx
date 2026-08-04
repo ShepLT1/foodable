@@ -3,12 +3,17 @@ import { Utensils, User } from 'lucide-react'
 import type { Recipe } from '../api/recipes'
 import { useSession } from '../hooks/useSession'
 import { FavoriteButton } from './FavoriteButton'
+import { RecipePublishToggle } from './RecipePublishToggle'
 
 type RecipeCardProps = {
   recipe: Recipe
+  showPublishToggle?: boolean
 }
 
-export function RecipeCard({ recipe }: RecipeCardProps) {
+export function RecipeCard({
+  recipe,
+  showPublishToggle = false,
+}: RecipeCardProps) {
   const { session } = useSession()
 
   return (
@@ -59,13 +64,17 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
         ) : (
           <span />
         )}
-        {recipe.creator?.display_name && (
-          <span className="flex items-center gap-1">
-            <User className="h-3 w-3" />
-            {recipe.creator.id === session?.user.id
-              ? 'You'
-              : recipe.creator.display_name}
-          </span>
+        {showPublishToggle ? (
+          <RecipePublishToggle recipe={recipe} />
+        ) : (
+          recipe.creator?.display_name && (
+            <span className="flex items-center gap-1">
+              <User className="h-3 w-3" />
+              {recipe.creator.id === session?.user.id
+                ? 'You'
+                : recipe.creator.display_name}
+            </span>
+          )
         )}
       </div>
     </Link>

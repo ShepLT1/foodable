@@ -4,9 +4,15 @@ type ToggleProps = {
   checked: boolean
   onChange: (checked: boolean) => void
   label: string
+  labelClassName?: string
 }
 
-export function Toggle({ checked, onChange, label }: ToggleProps) {
+export function Toggle({
+  checked,
+  onChange,
+  label,
+  labelClassName = 'text-sm text-gray-700',
+}: ToggleProps) {
   return (
     <Field className="flex items-center gap-3">
       <Switch
@@ -22,7 +28,7 @@ export function Toggle({ checked, onChange, label }: ToggleProps) {
           } inline-block h-4 w-4 transform rounded-full bg-white transition`}
         />
       </Switch>
-      <Label className="text-sm text-gray-700 cursor-pointer">{label}</Label>
+      <Label className={`cursor-pointer ${labelClassName}`}>{label}</Label>
     </Field>
   )
 }
