@@ -84,6 +84,17 @@ export function getRecipesByUser(
   )
 }
 
+export interface RecipeUpdate {
+  is_public?: boolean
+}
+
+export function updateRecipe(recipeId: string, data: RecipeUpdate) {
+  return api<Recipe>(`/recipes/${recipeId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  })
+}
+
 // Recipe API request handlers
 export function generateRecipe(data: GenerateRecipeRequest) {
   return api<Recipe>('/recipes/generate', {
