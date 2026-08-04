@@ -82,6 +82,28 @@ async def get_my_recipes_endpoint(
     )
 
 
+@router.get("/favorites", response_model=PaginatedRecipes)
+async def get_my_favorites_endpoint(
+    user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    limit: int = Query(default=20, ge=1, le=100),
+    page: int = Query(default=1, ge=1),
+) -> PaginatedRecipes:
+    rows = await recipe_repository.list_favorites_by_user(
+        db,
+        current_user_id=UUID(user.id),
+        limit=limit,
+        offset=(page - 1) * limit,
+    )
+    total = await recipe_repository.count_favorites_by_user(db, UUID(user.id))
+    return PaginatedRecipes(
+        items=[RecipeResponse.from_row(row) for row in rows],
+        total=total,
+        page=page,
+        limit=limit,
+    )
+
+
 @router.get("/{recipe_id}", response_model=RecipeResponse)
 async def get_recipe_endpoint(
     recipe_id: UUID,

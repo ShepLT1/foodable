@@ -19,16 +19,29 @@ class RecipeRow(NamedTuple):
     is_favorited: bool
 
 
-def _recipe_rows(current_user_id: UUID):
-    """Base select every recipe read path shares: recipe + creator + favorited."""
-    is_favorited = (
-        exists()
+def _favorited_by(current_user_id: UUID):
+    """Whether the requesting user has favorited the recipe."""
+    return exists().where(
+        RecipeFavorite.recipe_id == Recipe.id,
+        RecipeFavorite.user_id == current_user_id,
+    )
+
+
+def _favorited_at(current_user_id: UUID):
+    """When the requesting user favorited the recipe; null if they have not."""
+    return (
+        select(RecipeFavorite.created_at)
         .where(
             RecipeFavorite.recipe_id == Recipe.id,
             RecipeFavorite.user_id == current_user_id,
         )
-        .label("is_favorited")
+        .scalar_subquery()
     )
+
+
+def _recipe_rows(current_user_id: UUID):
+    """Base select every recipe read path shares: recipe + creator + favorited."""
+    is_favorited = _favorited_by(current_user_id).label("is_favorited")
     return select(Recipe, Profile, is_favorited).join(
         Profile, Recipe.user_id == Profile.id
     )
@@ -122,6 +135,41 @@ class RecipeRepository:
     async def count_by_user_id(self, db: AsyncSession, user_id: UUID) -> int:
         result = await db.execute(
             select(func.count()).select_from(Recipe).where(Recipe.user_id == user_id)
+        )
+        return result.scalar() or 0
+
+    async def list_favorites_by_user(
+        self,
+        db: AsyncSession,
+        current_user_id: UUID,
+        limit: int,
+        offset: int,
+    ) -> list[RecipeRow]:
+        query = (
+            _recipe_rows(current_user_id)
+            .where(
+                _favorited_by(current_user_id),
+                or_(Recipe.user_id == current_user_id, Recipe.is_public.is_(True)),
+            )
+            .order_by(_favorited_at(current_user_id).desc(), Recipe.id)
+            .limit(limit)
+            .offset(offset)
+        )
+        rows = (await db.execute(query)).all()
+        return [RecipeRow(recipe=r[0], creator=r[1], is_favorited=r[2]) for r in rows]
+
+    async def count_favorites_by_user(
+        self,
+        db: AsyncSession,
+        current_user_id: UUID,
+    ) -> int:
+        result = await db.execute(
+            select(func.count())
+            .select_from(Recipe)
+            .where(
+                _favorited_by(current_user_id),
+                or_(Recipe.user_id == current_user_id, Recipe.is_public.is_(True)),
+            )
         )
         return result.scalar() or 0
 
