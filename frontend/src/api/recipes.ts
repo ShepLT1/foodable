@@ -127,6 +127,19 @@ export function getMyRecipes(params: MyRecipesParams = {}) {
     `/recipes/me${queryString ? `?${queryString}` : ''}`,
   )
 }
+export interface MyFavoriteRecipesParams {
+  page?: number
+  limit?: number
+}
+
+export function getMyFavoriteRecipes(params: MyFavoriteRecipesParams = {}) {
+  const queryString = buildQueryString(params)
+
+  return api<PaginatedRecipes>(
+    `/recipes/favorites${queryString ? `?${queryString}` : ''}`,
+  )
+}
+
 export interface FavoriteActionResponse {
   success: boolean
   message: string

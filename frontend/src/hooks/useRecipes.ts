@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   favoriteRecipe,
   generateRecipe,
+  getMyFavoriteRecipes,
   getMyRecipes,
   getRecipe,
   getRecipesByUser,
@@ -9,6 +10,7 @@ import {
   unfavoriteRecipe,
 } from '../api/recipes'
 import type {
+  MyFavoriteRecipesParams,
   MyRecipesParams,
   PaginatedRecipes,
   Recipe,
@@ -52,6 +54,17 @@ export function useMyRecipes(params: MyRecipesParams = {}, enabled = true) {
   return useQuery({
     queryKey: ['recipes', 'me', params],
     queryFn: () => getMyRecipes(params),
+    enabled,
+  })
+}
+
+export function useMyFavoriteRecipes(
+  params: MyFavoriteRecipesParams = {},
+  enabled = true,
+) {
+  return useQuery({
+    queryKey: ['recipes', 'favorites', params],
+    queryFn: () => getMyFavoriteRecipes(params),
     enabled,
   })
 }
