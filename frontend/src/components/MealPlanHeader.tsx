@@ -14,7 +14,7 @@ type MealPlanHeaderProps = {
 export function MealPlanHeader({ mealPlan, onComplete }: MealPlanHeaderProps) {
   const MAX_MEALS = 35
   const exceedsMealLimit = mealPlan.meals.length > MAX_MEALS
-  
+
   const [editing, setEditing] = useState(false)
   const [title, setTitle] = useState('')
 
