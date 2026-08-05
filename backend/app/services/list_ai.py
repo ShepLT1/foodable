@@ -10,7 +10,7 @@ from app.schemas.prompts_list_gen import MERGE_RULES
 client = AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
 CLAUDE_MODEL = "claude-haiku-4-5-20251001"
-MAX_TOKENS = 2500
+MAX_TOKENS = 6000
 
 SYSTEM_PROMPT = f"""
 You are an expert culinary assistant responsible for generating merged grocery
