@@ -61,7 +61,7 @@ STEP_DURATION_DESCRIPTION = (
     "no meaningful duration."
 )
 
-SUBSTITUTED_DESCRIPTION = (
+SAFE_SUBSTITUTE_DESCRIPTION = (
     "True if the user's requested ingredient(s) were not real, edible, "
     "legal food items, and a safe common ingredient (e.g. beef, chicken, "
     "or a seasonal vegetable) was substituted instead. Do not generate a "
