@@ -5,6 +5,7 @@ from anthropic import AsyncAnthropic
 from anthropic.types import ToolUseBlock
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import NamedTuple
 
 from app.models.profile import Profile
 from app.models.recipe import Recipe as DBRecipe
@@ -26,6 +27,12 @@ client = AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
 CLAUDE_MODEL = "claude-haiku-4-5-20251001"
 MAX_TOKENS = 2500
+
+
+class RecipeGenerationResult(NamedTuple):
+    recipe: DBRecipe
+    safe_substitute: bool
+
 
 RECIPE_TOOL = {
     "name": "create_recipe",
@@ -160,7 +167,7 @@ async def create_recipe_for_user(
     db: AsyncSession,
     user_id: UUID,
     request: RecipeGenerateRequest,
-) -> DBRecipe:
+) -> RecipeGenerationResult:
     profile = await profile_repository.get_by_id(db, profile_id=user_id)
     if profile is None:
         raise ProfileNotFoundError(f"No profile found for user_id={user_id}")
@@ -171,7 +178,10 @@ async def create_recipe_for_user(
         request=request,
     )
 
-    return await recipe_repository.create(db, data)
+    db_recipe = await recipe_repository.create(db, data)
+    return RecipeGenerationResult(
+        recipe=db_recipe, safe_substitute=recipe.safe_substitute
+    )
 
 
 async def create_recipe_for_user_without_commit(
