@@ -52,5 +52,5 @@ class GroceryList(Base):
         cascade="all, delete-orphan",
         passive_deletes=True,
         lazy="selectin",
-        order_by="GroceryListItem.created_at",
+        order_by="GroceryListItem.name",
     )
