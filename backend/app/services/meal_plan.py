@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
+import asyncio
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -7,6 +8,7 @@ from app.models.common import MealType
 from app.models.meal_plan import MealPlan
 from app.models.meal_plan_meal import MealPlanMeal
 from app.models.recipe import Recipe
+from app.models.profile import Profile
 from app.repositories.meal_plan import meal_plan_repository
 from app.repositories.profile import profile_repository
 from app.repositories.recipe import recipe_repository
@@ -23,9 +25,13 @@ from app.schemas.meal_plan_ai import (
     ExistingMealPlan,
     ExistingRecipe,
 )
-from app.schemas.recipe import RecipeGenerateRequest
+from app.schemas.recipe import (RecipeGenerateRequest, RecipeCreate)
 from app.services import meal_plan_ai
 from app.services.recipe import create_recipe_for_user_without_commit
+from app.services.recipe import (
+    RECIPE_GENERATION_CONCURRENCY,
+    generate_recipe_create,
+)
 
 
 class MealPlanGenerationError(Exception):
@@ -80,6 +86,37 @@ class MealPlanService:
             existing_meals=existing_meals,
             empty_slots=empty_slots,
         )
+
+    def _recipe_cache_key(
+        self,
+        title: str,
+        meal_type: MealType,
+        cuisine: str | None,
+        ingredients: list[str],
+    ) -> tuple[str, MealType, str | None, tuple[str, ...]]:
+        return (
+            title.casefold(),
+            meal_type,
+            cuisine.casefold() if cuisine else None,
+            tuple(
+                ingredient.casefold()
+                for ingredient in sorted(ingredients)
+            ),
+        )
+
+    async def _generate_recipe_with_limit(
+        self,
+        semaphore: asyncio.Semaphore,
+        profile: Profile,
+        user_id: UUID,
+        request: RecipeGenerateRequest,
+    ) -> RecipeCreate:
+        async with semaphore:
+            return await generate_recipe_create(
+                profile=profile,
+                user_id=user_id,
+                request=request,
+            )
 
     async def generate(
         self,
@@ -165,6 +202,17 @@ class MealPlanService:
             UUID,
         ] = {}
 
+
+        recipe_requests: dict[
+            tuple[str, MealType, str | None, tuple[str, ...]],
+            RecipeGenerateRequest,
+        ] = {}
+
+        recipe_meals: dict[
+            tuple[str, MealType, str | None, tuple[str, ...]],
+            list,
+        ] = {}
+
         for day in generated_plan.days:
             for meal in day.meals:
                 if meal.existing_recipe_id is not None:
@@ -172,24 +220,17 @@ class MealPlanService:
 
                 assert meal.recipe_concept is not None
 
-                cache_key = (
-                    meal.recipe_concept.title.casefold(),
-                    meal.meal_type,
-                    (
-                        meal.recipe_concept.cuisine.casefold()
-                        if meal.recipe_concept.cuisine is not None
-                        else None
-                    ),
-                    tuple(
-                        ingredient.casefold()
-                        for ingredient in sorted(meal.recipe_concept.key_ingredients)
-                    ),
+                cache_key = self._recipe_cache_key(
+                    title=meal.recipe_concept.title,
+                    meal_type=meal.meal_type,
+                    cuisine=meal.recipe_concept.cuisine,
+                    ingredients=meal.recipe_concept.key_ingredients,
                 )
 
-                recipe_id = generated_recipe_lookup.get(cache_key)
+                recipe_meals.setdefault(cache_key, []).append(meal)
 
-                if recipe_id is None:
-                    recipe_request = RecipeGenerateRequest(
+                if cache_key not in recipe_requests:
+                    recipe_requests[cache_key] = RecipeGenerateRequest(
                         title=meal.recipe_concept.title,
                         description=meal.recipe_concept.planning_notes,
                         ingredients=meal.recipe_concept.key_ingredients,
@@ -197,23 +238,40 @@ class MealPlanService:
                         cuisine_type=meal.recipe_concept.cuisine,
                     )
 
-                    try:
-                        recipe = await create_recipe_for_user_without_commit(
-                            db=db,
-                            user_id=user_id,
-                            request=recipe_request,
-                        )
-                    except Exception as e:
-                        raise MealPlanGenerationError(
-                            "Failed to generate recipe for meal plan"
-                        ) from e
+        semaphore = asyncio.Semaphore(RECIPE_GENERATION_CONCURRENCY)
 
-                    recipe_lookup[recipe.id] = recipe
+        items = list(recipe_requests.items())
 
-                    recipe_id = recipe.id
-                    generated_recipe_lookup[cache_key] = recipe_id
+        try:
+            recipe_data = await asyncio.gather(
+                *[
+                    self._generate_recipe_with_limit(
+                        semaphore=semaphore,
+                        profile=profile,
+                        user_id=user_id,
+                        request=request,
+                    )
+                    for _, request in items
+                ]
+            )
+        except Exception as e:
+            raise MealPlanGenerationError("Failed to generate recipe for meal plan") from e
 
-                meal.existing_recipe_id = recipe_id
+        for (cache_key, _), data in zip(
+            items,
+            recipe_data,
+            strict=True,
+        ):
+            recipe = await recipe_repository.create_without_commit(
+                db=db,
+                data=data,
+            )
+
+            recipe_lookup[recipe.id] = recipe
+            generated_recipe_lookup[cache_key] = recipe.id
+
+            for meal in recipe_meals[cache_key]:
+                meal.existing_recipe_id = recipe.id
                 meal.recipe_concept = None
 
         new_meals: list[MealPlanMeal] = []

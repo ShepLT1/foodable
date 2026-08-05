@@ -19,6 +19,8 @@ from app.schemas.recipe import (
     RecipeSearchParams,
 )
 
+RECIPE_GENERATION_CONCURRENCY = 4
+
 client = AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
 CLAUDE_MODEL = "claude-haiku-4-5-20251001"
@@ -113,6 +115,43 @@ class ProfileNotFoundError(Exception):
     """Raised when the requesting user has no profile."""
 
 
+def _build_recipe_create(
+    recipe: Recipe,
+    user_id: UUID,
+) -> RecipeCreate:
+    return RecipeCreate(
+        user_id=user_id,
+        title=recipe.title,
+        description=recipe.description,
+        meal_type=recipe.meal_type,
+        cuisine_type=recipe.cuisine_type,
+        servings=recipe.servings,
+        tools_needed=recipe.tools_needed,
+        steps=[step.model_dump() for step in recipe.steps],
+        ingredients_json=[ingredient.model_dump() for ingredient in recipe.ingredients],
+        nutrition_json=recipe.nutrition.model_dump(),
+    )
+
+async def generate_recipe_create(
+    profile: Profile,
+    user_id: UUID,
+    request: RecipeGenerateRequest,
+) -> RecipeCreate:
+    """
+    Generate a RecipeCreate without touching the database.
+
+    Intended for workflows that generate many recipes concurrently
+    before persisting them in a single transaction.
+    """
+    prompt = _build_prompt(request, profile)
+
+    recipe = await generate_recipe(prompt)
+
+    return _build_recipe_create(
+        recipe=recipe,
+        user_id=user_id,
+    )
+
 async def create_recipe_for_user(
     db: AsyncSession,
     user_id: UUID,
@@ -122,20 +161,10 @@ async def create_recipe_for_user(
     if profile is None:
         raise ProfileNotFoundError(f"No profile found for user_id={user_id}")
 
-    prompt = _build_prompt(request, profile)
-    recipe = await generate_recipe(prompt)
-
-    data = RecipeCreate(
+    data = await generate_recipe_create(
+        profile=profile,
         user_id=user_id,
-        title=recipe.title,
-        description=recipe.description,
-        meal_type=recipe.meal_type,
-        cuisine_type=recipe.cuisine_type,
-        servings=recipe.servings,
-        tools_needed=recipe.tools_needed,
-        steps=[step.model_dump() for step in recipe.steps],
-        ingredients_json=[ing.model_dump() for ing in recipe.ingredients],
-        nutrition_json=recipe.nutrition.model_dump(),
+        request=request,
     )
 
     return await recipe_repository.create(db, data)
@@ -154,21 +183,10 @@ async def create_recipe_for_user_without_commit(
     if profile is None:
         raise ProfileNotFoundError(f"No profile found for user_id={user_id}")
 
-    prompt = _build_prompt(request, profile)
-
-    recipe = await generate_recipe(prompt)
-
-    data = RecipeCreate(
+    data = await generate_recipe_create(
+        profile=profile,
         user_id=user_id,
-        title=recipe.title,
-        description=recipe.description,
-        meal_type=recipe.meal_type,
-        cuisine_type=recipe.cuisine_type,
-        servings=recipe.servings,
-        tools_needed=recipe.tools_needed,
-        steps=[step.model_dump() for step in recipe.steps],
-        ingredients_json=[ingredient.model_dump() for ingredient in recipe.ingredients],
-        nutrition_json=recipe.nutrition.model_dump(),
+        request=request,
     )
 
     return await recipe_repository.create_without_commit(
