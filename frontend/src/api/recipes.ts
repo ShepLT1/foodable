@@ -33,6 +33,7 @@ export interface Recipe {
   nutrition: NutritionInfo
   is_public: boolean
   is_favorited: boolean
+  safe_substitute: boolean
   creator: {
     id: string
     display_name: string | null
