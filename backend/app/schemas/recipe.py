@@ -33,6 +33,7 @@ from app.schemas.prompts_recipe_gen import (
     STEP_DURATION_DESCRIPTION,
     STEP_INGREDIENTS_DESCRIPTION,
     STEP_INSTRUCTION_DESCRIPTION,
+    SUBSTITUTED_DESCRIPTION,
     TOOLS_NEEDED_DESCRIPTION,
     UNIT_DESCRIPTION,
 )
@@ -117,6 +118,10 @@ class Recipe(StrictBaseModel):
     )
     meal_type: MealType = Field(
         description="The type of meal this recipe is intended for."
+    )
+    substituted: bool = Field(
+        default=False,
+        description=SUBSTITUTED_DESCRIPTION,
     )
 
 
