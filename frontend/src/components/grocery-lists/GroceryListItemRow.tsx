@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Checkbox } from '@headlessui/react'
 import { Check, Trash2 } from 'lucide-react'
 
 import type { GroceryListItem, UpdateListItemRequest } from '../../api/lists'
-
+import { QuantityStepper } from './QuantityStepper'
 interface GroceryListItemRowProps {
   item: GroceryListItem
   onUpdate: (itemId: string, data: UpdateListItemRequest) => Promise<void>
@@ -15,24 +15,8 @@ export function GroceryListItemRow({
   onUpdate,
   onDelete,
 }: GroceryListItemRowProps) {
-  const [quantity, setQuantity] = useState(Number(item.quantity).toString())
+  const [quantity, setQuantity] = useState(Number(item.quantity))
   const [unit, setUnit] = useState(item.unit ?? '')
-
-  async function saveQuantity() {
-    const trimmed = quantity.trim()
-    if (trimmed === '') {
-      setQuantity(Number(item.quantity).toString())
-      return
-    }
-
-    const value = Number(trimmed)
-    if (!Number.isFinite(value) || value === item.quantity) {
-      setQuantity(Number(item.quantity).toString())
-      return
-    }
-
-    await onUpdate(item.id, { quantity: value })
-  }
 
   async function saveUnit() {
     const trimmed = unit.trim()
@@ -40,13 +24,19 @@ export function GroceryListItemRow({
     await onUpdate(item.id, { unit: trimmed || null })
   }
 
-  function cancelQuantity() {
-    setQuantity(Number(item.quantity).toString())
-  }
-
   function cancelUnit() {
     setUnit(item.unit ?? '')
   }
+
+  useEffect(() => {
+    if (quantity === Number(item.quantity)) return
+
+    const timeout = setTimeout(() => {
+      void onUpdate(item.id, { quantity })
+    }, 500)
+
+    return () => clearTimeout(timeout)
+  }, [quantity, item.id, item.quantity, onUpdate])
 
   return (
     <div
@@ -77,20 +67,7 @@ export function GroceryListItemRow({
         </div>
 
         <div className="flex items-center gap-3">
-          <input
-            type="number"
-            step="0.125"
-            min="0"
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
-            onBlur={saveQuantity}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') void saveQuantity()
-              if (e.key === 'Escape') cancelQuantity()
-            }}
-            className="w-20 rounded-lg border border-slate-200 px-2.5 py-1 text-center text-sm font-medium focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
-          />
-
+          <QuantityStepper value={quantity} onChange={setQuantity} />
           <input
             type="text"
             value={unit}
@@ -145,16 +122,8 @@ export function GroceryListItemRow({
           </button>
         </div>
 
-        <div className="flex items-center gap-2 pl-8">
-          <input
-            type="number"
-            step="0.125"
-            min="0"
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
-            onBlur={saveQuantity}
-            className="w-20 rounded-lg border border-slate-200 px-2 py-1 text-center text-xs font-medium"
-          />
+        <div className="flex items-center gap-2">
+          <QuantityStepper value={quantity} onChange={setQuantity} />
           <input
             type="text"
             value={unit}
