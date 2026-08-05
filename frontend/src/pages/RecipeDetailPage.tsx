@@ -1,15 +1,21 @@
 import { useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { useRecipe } from '../hooks/useRecipes'
 import { RecipeMealPlanMenu } from '../components/RecipeMealPlanMenu'
 import { FavoriteButton } from '../components/FavoriteButton'
+import { Banner } from '../components/Banner'
 
 export function RecipeDetailPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { id } = useParams()
   const { data: recipe, isLoading, error } = useRecipe(id ?? '')
   const [showNutritionDetails, setShowNutritionDetails] = useState(false)
+
+  const safeSubstitute = Boolean(
+    (location.state as { safeSubstitute?: boolean } | null)?.safeSubstitute,
+  )
 
   if (isLoading) {
     return (
@@ -37,6 +43,11 @@ export function RecipeDetailPage() {
         <ArrowLeft className="h-4 w-4" />
         Back
       </button>
+
+      <Banner
+        show={safeSubstitute}
+        message="Heads up — we swapped one of your ingredients for something we could actually cook with!"
+      />
 
       <div className="rounded-lg bg-white p-8 shadow-sm border border-gray-100">
         <div className="flex items-start justify-between gap-4">
