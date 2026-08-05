@@ -1,11 +1,11 @@
 import os
+from typing import NamedTuple
 from uuid import UUID
 
 from anthropic import AsyncAnthropic
 from anthropic.types import ToolUseBlock
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import NamedTuple
 
 from app.models.profile import Profile
 from app.models.recipe import Recipe as DBRecipe
