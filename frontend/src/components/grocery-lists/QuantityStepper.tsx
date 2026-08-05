@@ -16,7 +16,7 @@ interface QuantityStepperProps {
 export function QuantityStepper({
   value,
   onChange,
-  min = 0,
+  min = 0.125,
   max,
   step = 0.125,
   disabled = false,
