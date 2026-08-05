@@ -49,7 +49,7 @@ async def generate_recipe_endpoint(
     db: AsyncSession = Depends(get_db),
 ) -> RecipeResponse:
     try:
-        recipe = await create_recipe_for_user(
+        result = await create_recipe_for_user(
             db,
             user_id=UUID(user.id),
             request=payload,
@@ -57,7 +57,9 @@ async def generate_recipe_endpoint(
     except (ProfileNotFoundError, RecipeGenerationError) as e:
         raise _map_recipe_error(e) from e
 
-    return RecipeResponse.from_db_recipe(recipe)
+    return RecipeResponse.from_db_recipe(
+        result.recipe, safe_substitute=result.safe_substitute
+    )
 
 
 @router.get("/me", response_model=PaginatedRecipes)
