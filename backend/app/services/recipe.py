@@ -10,6 +10,7 @@ from app.models.profile import Profile
 from app.models.recipe import Recipe as DBRecipe
 from app.repositories.profile import profile_repository
 from app.repositories.recipe import recipe_repository
+from app.schemas.prompts_recipe_gen import RECIPE_SYSTEM_PROMPT
 from app.schemas.recipe import (
     PaginatedRecipes,
     Recipe,
@@ -60,6 +61,7 @@ async def generate_recipe(prompt: str) -> Recipe:
     response = await client.messages.create(
         model=CLAUDE_MODEL,
         max_tokens=MAX_TOKENS,
+        system=RECIPE_SYSTEM_PROMPT,
         tools=[RECIPE_TOOL],  # type: ignore[call-overload]
         tool_choice={"type": "tool", "name": "create_recipe"},
         messages=[{"role": "user", "content": prompt}],

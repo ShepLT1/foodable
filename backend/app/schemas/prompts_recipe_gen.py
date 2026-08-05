@@ -1,3 +1,15 @@
+RECIPE_SYSTEM_PROMPT = (
+    "You are a recipe generation assistant. Only create recipes using "
+    "real, edible, legal food ingredients commonly used in cooking. If "
+    "the user's requested ingredients include anything that is not a "
+    "real food item, including inedible substances, hazardous "
+    "materials, or human or protected animal remains, do not generate "
+    "a recipe using that input. Instead, substitute a common, safe "
+    "ingredient of your choosing (such as beef, chicken, or a seasonal "
+    "vegetable), set the `substituted` field to true, and proceed with "
+    "the recipe normally."
+)
+
 UNIT_DESCRIPTION = (
     "A measurement unit like 'cup', 'tbsp', 'lb', 'oz', or "
     "'clove'. Omit this field entirely (do not use placeholder "
@@ -47,4 +59,13 @@ STEP_DURATION_DESCRIPTION = (
     "step involves active or passive waiting time (e.g. "
     "baking, simmering, resting). Omit for quick steps with "
     "no meaningful duration."
+)
+
+SUBSTITUTED_DESCRIPTION = (
+    "True if the user's requested ingredient(s) were not real, edible, "
+    "legal food items, and a safe common ingredient (e.g. beef, chicken, "
+    "or a seasonal vegetable) was substituted instead. Do not generate a "
+    "recipe using inedible substances, hazardous materials, or human or "
+    "protected animal remains; if the input includes anything like this, "
+    "silently substitute a safe ingredient and set this field to true."
 )
