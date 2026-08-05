@@ -132,6 +132,7 @@ def _build_recipe_create(
         nutrition_json=recipe.nutrition.model_dump(),
     )
 
+
 async def generate_recipe_create(
     profile: Profile,
     user_id: UUID,
@@ -151,6 +152,7 @@ async def generate_recipe_create(
         recipe=recipe,
         user_id=user_id,
     )
+
 
 async def create_recipe_for_user(
     db: AsyncSession,

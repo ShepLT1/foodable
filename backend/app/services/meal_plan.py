@@ -1,14 +1,14 @@
+import asyncio
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
-import asyncio
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.common import MealType
 from app.models.meal_plan import MealPlan
 from app.models.meal_plan_meal import MealPlanMeal
-from app.models.recipe import Recipe
 from app.models.profile import Profile
+from app.models.recipe import Recipe
 from app.repositories.meal_plan import meal_plan_repository
 from app.repositories.profile import profile_repository
 from app.repositories.recipe import recipe_repository
@@ -25,9 +25,8 @@ from app.schemas.meal_plan_ai import (
     ExistingMealPlan,
     ExistingRecipe,
 )
-from app.schemas.recipe import (RecipeGenerateRequest, RecipeCreate)
+from app.schemas.recipe import RecipeCreate, RecipeGenerateRequest
 from app.services import meal_plan_ai
-from app.services.recipe import create_recipe_for_user_without_commit
 from app.services.recipe import (
     RECIPE_GENERATION_CONCURRENCY,
     generate_recipe_create,
@@ -98,10 +97,7 @@ class MealPlanService:
             title.casefold(),
             meal_type,
             cuisine.casefold() if cuisine else None,
-            tuple(
-                ingredient.casefold()
-                for ingredient in sorted(ingredients)
-            ),
+            tuple(ingredient.casefold() for ingredient in sorted(ingredients)),
         )
 
     async def _generate_recipe_with_limit(
@@ -202,7 +198,6 @@ class MealPlanService:
             UUID,
         ] = {}
 
-
         recipe_requests: dict[
             tuple[str, MealType, str | None, tuple[str, ...]],
             RecipeGenerateRequest,
@@ -255,7 +250,9 @@ class MealPlanService:
                 ]
             )
         except Exception as e:
-            raise MealPlanGenerationError("Failed to generate recipe for meal plan") from e
+            raise MealPlanGenerationError(
+                "Failed to generate recipe for meal plan"
+            ) from e
 
         for (cache_key, _), data in zip(
             items,
