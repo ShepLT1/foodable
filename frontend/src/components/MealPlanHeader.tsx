@@ -12,6 +12,9 @@ type MealPlanHeaderProps = {
 }
 
 export function MealPlanHeader({ mealPlan, onComplete }: MealPlanHeaderProps) {
+  const MAX_MEALS = 35
+  const exceedsMealLimit = mealPlan.meals.length > MAX_MEALS
+
   const [editing, setEditing] = useState(false)
   const [title, setTitle] = useState('')
 
@@ -147,7 +150,12 @@ export function MealPlanHeader({ mealPlan, onComplete }: MealPlanHeaderProps) {
 
           <button
             type="button"
-            disabled={generateList.isPending}
+            disabled={generateList.isPending || exceedsMealLimit}
+            title={
+              exceedsMealLimit
+                ? `Available for meal plans with ${MAX_MEALS} meals or fewer.`
+                : undefined
+            }
             className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 px-4 py-2 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
             onClick={() =>
               generateList.mutate(
