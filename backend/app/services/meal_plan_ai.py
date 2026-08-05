@@ -162,6 +162,7 @@ def _build_optimization_section(
             "Your primary objective is to satisfy these optimization goals "
             "while still respecting the user's dietary preferences and "
             "meal requests."
+            "Your task is to optimize the quality of the completed meal plan as a whole, not to choose the best meal for each empty slot independently. Continuously reevaluate earlier choices as you fill later meal slots."
         ),
         "",
         "Recipe Selection",
@@ -169,7 +170,7 @@ def _build_optimization_section(
         "- Reuse an existing recipe from the available recipe catalog.",
         "- Create a new recipe concept.",
         (
-            "Existing recipes are optional. Do not favor reusing an existing "
+            "Do not favor reusing an existing "
             "recipe if creating a new recipe concept would better satisfy the "
             "requested optimization goals."
         ),
@@ -185,6 +186,11 @@ def _build_optimization_section(
                 "- Avoid expensive ingredients unless they provide significant value.",
                 "- Reducing grocery cost is more important than maximizing meal variety.",
                 "",
+                "When lowering grocery cost:",
+                "Review every meal selection.",
+                "If a substantially less expensive meal satisfies the same nutritional and meal type requirements, prefer the less expensive option.",
+                "Assume grocery cost is a primary planning objective rather than a tie-breaker.",
+                "",
             ]
         )
 
@@ -196,7 +202,13 @@ def _build_optimization_section(
                 "- Minimize one-off ingredients.",
                 "- Reuse proteins, vegetables, grains, sauces, and herbs.",
                 "- Ingredient reuse should be considered one of the highest priorities.",
-                "- It is acceptable for several meals to share many ingredients.",
+                "- Actively seek opportunities for meals to share ingredients.",
+                "- Ingredient reuse is desirable and should occur whenever it does not violate dietary requirements.",
+                "",
+                "When minimizing food waste:",
+                "Intentionally build groups of meals that share fresh ingredients.",
+                "When selecting a meal, consider how its ingredients can be reused in later meals.",
+                "Favor meal sequences that naturally consume the same produce, herbs, dairy, proteins, and sauces across multiple days.",
                 "",
             ]
         )
