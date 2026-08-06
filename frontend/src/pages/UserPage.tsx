@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Sparkles,
@@ -14,11 +14,19 @@ import {
 
 import { useCurrentUser } from '../hooks/useCurrentUser'
 import { useGroceryLists } from '../hooks/useGroceryLists'
+import { useFollowers, useFollowing, useFollowStats } from '../hooks/useFollow'
 import { UserAvatar } from '../components/UserAvatar'
+import { FollowListDialog } from '../components/FollowListDialog'
 
 export const UserPage: React.FC = () => {
   const { data: user, isPending: userLoading } = useCurrentUser()
   const { data: lists = [], isPending: listsLoading } = useGroceryLists()
+
+  const { data: stats } = useFollowStats(user?.id ?? '')
+  const { data: followers = [], isLoading: followersLoading } = useFollowers(user?.id ?? '')
+  const { data: following = [], isLoading: followingLoading } = useFollowing(user?.id ?? '')
+
+  const [activeDialog, setActiveDialog] = useState<'followers' | 'following' | null>(null)
 
   const memberSince = user?.created_at
     ? new Date(user.created_at).toLocaleDateString('en-US', {
@@ -43,14 +51,12 @@ export const UserPage: React.FC = () => {
           <UserAvatar name={user?.display_name} size="lg" />
           <div>
             <h1 className="text-2xl font-bold text-slate-900">
-              Welcome back{user?.display_name ? `, ${user.display_name}` : ''}!
-              👋
+              Welcome back{user?.display_name ? `, ${user.display_name}` : ''}! 👋
             </h1>
             <p className="text-sm text-slate-500">
               {user?.email} {memberSince && `• Member since ${memberSince}`}
             </p>
 
-            {/* Active Preference Tags */}
             <div className="mt-3 flex flex-wrap gap-1.5">
               {user?.dietary_restrictions?.map((tag) => (
                 <span
@@ -101,24 +107,19 @@ export const UserPage: React.FC = () => {
 
       {/* 3. Main Dashboard Grid */}
       <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-        {/* Left Column: Historical Recipes Coming Soon Preview (Spans 2 cols) */}
+        {/* Left Column */}
         <section className="space-y-4 md:col-span-2">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div className="flex items-center gap-2.5">
               <BookOpen className="h-5 w-5 text-blue-600" />
-              <h2 className="text-lg font-bold text-slate-900">
-                Recent AI Recipes
-              </h2>
+              <h2 className="text-lg font-bold text-slate-900">Recent AI Recipes</h2>
               <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-[10px] font-semibold text-blue-700 border border-blue-200">
                 Coming Soon
               </span>
             </div>
-            <span className="text-xs text-slate-400 font-medium">
-              Preview Layout
-            </span>
+            <span className="text-xs text-slate-400 font-medium">Preview Layout</span>
           </div>
 
-          {/* Static Mock Preview Cards */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 opacity-75 select-none">
             <div className="flex flex-col justify-between rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-4 shadow-2xs">
               <div className="space-y-2">
@@ -126,19 +127,13 @@ export const UserPage: React.FC = () => {
                   <span className="rounded-md bg-slate-200 text-slate-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
                     Dinner
                   </span>
-                  <span className="text-xs font-semibold text-slate-400">
-                    420 kcal
-                  </span>
+                  <span className="text-xs font-semibold text-slate-400">420 kcal</span>
                 </div>
-                <h3 className="font-bold text-slate-700 truncate">
-                  Veggie Stir Fry
-                </h3>
+                <h3 className="font-bold text-slate-700 truncate">Veggie Stir Fry</h3>
                 <p className="text-xs text-slate-400 line-clamp-2">
-                  Quick weeknight stir fry with fresh broccoli and savory soy
-                  sauce.
+                  Quick weeknight stir fry with fresh broccoli and savory soy sauce.
                 </p>
               </div>
-
               <div className="mt-4 flex items-center justify-between border-t border-slate-200/60 pt-3 text-[11px] text-slate-400">
                 <span className="flex items-center gap-1">
                   <Utensils className="h-3 w-3" /> Asian
@@ -155,19 +150,13 @@ export const UserPage: React.FC = () => {
                   <span className="rounded-md bg-slate-200 text-slate-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
                     Dinner
                   </span>
-                  <span className="text-xs font-semibold text-slate-400">
-                    650 kcal
-                  </span>
+                  <span className="text-xs font-semibold text-slate-400">650 kcal</span>
                 </div>
-                <h3 className="font-bold text-slate-700 truncate">
-                  Chicken & Chickpea Curry
-                </h3>
+                <h3 className="font-bold text-slate-700 truncate">Chicken & Chickpea Curry</h3>
                 <p className="text-xs text-slate-400 line-clamp-2">
-                  A hearty, spiced curry with tender chicken and chickpeas
-                  simmered in coconut milk.
+                  A hearty, spiced curry with tender chicken and chickpeas simmered in coconut milk.
                 </p>
               </div>
-
               <div className="mt-4 flex items-center justify-between border-t border-slate-200/60 pt-3 text-[11px] text-slate-400">
                 <span className="flex items-center gap-1">
                   <Utensils className="h-3 w-3" /> Indian
@@ -181,15 +170,13 @@ export const UserPage: React.FC = () => {
 
           <div className="rounded-xl bg-blue-50/60 border border-blue-100 p-3.5 text-center">
             <p className="text-xs text-blue-800 font-medium">
-              ✨ Once the recipes API is integrated, your generated meals will
-              automatically appear here!
+              ✨ Once the recipes API is integrated, your generated meals will automatically appear here!
             </p>
           </div>
         </section>
 
-        {/* Right Column: Live Grocery Lists & Social Stats Preview */}
+        {/* Right Column */}
         <div className="space-y-6">
-          {/* Grocery Lists Widget (LIVE DATA) */}
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900">
@@ -219,9 +206,7 @@ export const UserPage: React.FC = () => {
             ) : (
               <div className="space-y-2">
                 {lists.slice(0, 4).map((list) => {
-                  const completedCount = list.items.filter(
-                    (i) => i.checked,
-                  ).length
+                  const completedCount = list.items.filter((i) => i.checked).length
                   return (
                     <Link
                       key={list.id}
@@ -243,31 +228,56 @@ export const UserPage: React.FC = () => {
             )}
           </section>
 
-          {/* Social Stats Placeholder Widget (COMING SOON) */}
+          {/* Social Stats Live Widget */}
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h2 className="flex items-center gap-2 text-base font-bold text-slate-900">
                 <Users className="h-5 w-5 text-purple-600" />
                 Community
               </h2>
-              <span className="rounded-full bg-purple-50 px-2.5 py-0.5 text-[10px] font-semibold text-purple-700 border border-purple-200">
-                Coming Soon
-              </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 text-center opacity-75 select-none">
-              <div className="rounded-xl bg-slate-50 p-3 border border-dashed border-slate-300">
-                <span className="block text-xs text-slate-400">Followers</span>
-                <span className="text-lg font-bold text-slate-700">--</span>
-              </div>
-              <div className="rounded-xl bg-slate-50 p-3 border border-dashed border-slate-300">
-                <span className="block text-xs text-slate-400">Following</span>
-                <span className="text-lg font-bold text-slate-700">--</span>
-              </div>
+            <div className="grid grid-cols-2 gap-3 text-center">
+              <button
+                type="button"
+                onClick={() => setActiveDialog('followers')}
+                className="cursor-pointer rounded-xl bg-slate-50 p-3 border border-slate-200 transition hover:bg-slate-100"
+              >
+                <span className="block text-xs text-slate-500">Followers</span>
+                <span className="text-lg font-bold text-slate-800">
+                  {stats?.follower_count ?? 0}
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveDialog('following')}
+                className="cursor-pointer rounded-xl bg-slate-50 p-3 border border-slate-200 transition hover:bg-slate-100"
+              >
+                <span className="block text-xs text-slate-500">Following</span>
+                <span className="text-lg font-bold text-slate-800">
+                  {stats?.following_count ?? 0}
+                </span>
+              </button>
             </div>
           </section>
         </div>
       </div>
+
+      <FollowListDialog
+        open={activeDialog === 'followers'}
+        onClose={() => setActiveDialog(null)}
+        title="Followers"
+        users={followers}
+        isLoading={followersLoading}
+      />
+
+      <FollowListDialog
+        open={activeDialog === 'following'}
+        onClose={() => setActiveDialog(null)}
+        title="Following"
+        users={following}
+        isLoading={followingLoading}
+      />
     </div>
   )
 }
