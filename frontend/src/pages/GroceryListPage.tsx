@@ -1,10 +1,8 @@
 import { useParams } from 'react-router-dom'
 
 import type { CreateListItemRequest, UpdateListItemRequest } from '../api/lists'
-
 import { GroceryListHeader } from '../components/grocery-lists/GroceryListHeader'
 import { GroceryListTable } from '../components/grocery-lists/GroceryListTable'
-
 import {
   useCreateGroceryListItem,
   useDeleteGroceryListItem,
@@ -15,7 +13,6 @@ import {
 
 export function GroceryListPage() {
   const { listId } = useParams<{ listId: string }>()
-
   const { data: groceryList, isLoading, isError } = useGroceryList(listId ?? '')
 
   const updateListMutation = useUpdateGroceryList()
@@ -24,46 +21,17 @@ export function GroceryListPage() {
   const deleteItemMutation = useDeleteGroceryListItem()
 
   if (!listId) {
-    return <div className="p-8">Invalid grocery list.</div>
-  }
-
-  const groceryListId = listId
-
-  async function handleRename(title: string) {
-    await updateListMutation.mutateAsync({
-      listId: groceryListId,
-      data: {
-        title,
-      },
-    })
-  }
-
-  async function handleAddItem(data: CreateListItemRequest) {
-    await createItemMutation.mutateAsync({
-      listId: groceryListId,
-      data,
-    })
-  }
-
-  async function handleUpdateItem(itemId: string, data: UpdateListItemRequest) {
-    await updateItemMutation.mutateAsync({
-      listId: groceryListId,
-      itemId,
-      data,
-    })
-  }
-
-  async function handleDeleteItem(itemId: string) {
-    await deleteItemMutation.mutateAsync({
-      listId: groceryListId,
-      itemId,
-    })
+    return (
+      <div className="p-8 text-center text-slate-500">
+        Invalid grocery list.
+      </div>
+    )
   }
 
   if (isLoading) {
     return (
       <main className="mx-auto max-w-5xl px-4 py-6">
-        <div className="rounded-lg border border-slate-200 bg-white p-8 text-center text-slate-500">
+        <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-500 shadow-sm">
           Loading grocery list...
         </div>
       </main>
@@ -73,7 +41,7 @@ export function GroceryListPage() {
   if (isError || !groceryList) {
     return (
       <main className="mx-auto max-w-5xl px-4 py-6">
-        <div className="rounded-lg border border-red-200 bg-red-50 p-8 text-center text-red-700">
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-8 text-center text-rose-700">
           Grocery list not found.
         </div>
       </main>
@@ -82,13 +50,27 @@ export function GroceryListPage() {
 
   return (
     <main className="mx-auto max-w-5xl space-y-8 px-4 py-6">
-      <GroceryListHeader title={groceryList.title} onRename={handleRename} />
+      <GroceryListHeader
+        title={groceryList.title}
+        onRename={async (title) => {
+          await updateListMutation.mutateAsync({
+            listId,
+            data: { title },
+          })
+        }}
+      />
 
       <GroceryListTable
         items={groceryList.items}
-        onAddItem={handleAddItem}
-        onUpdateItem={handleUpdateItem}
-        onDeleteItem={handleDeleteItem}
+        onAddItem={async (data: CreateListItemRequest) => {
+          await createItemMutation.mutateAsync({ listId, data })
+        }}
+        onUpdateItem={async (itemId: string, data: UpdateListItemRequest) => {
+          await updateItemMutation.mutateAsync({ listId, itemId, data })
+        }}
+        onDeleteItem={async (itemId: string) => {
+          await deleteItemMutation.mutateAsync({ listId, itemId })
+        }}
       />
     </main>
   )

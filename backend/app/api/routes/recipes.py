@@ -1,17 +1,19 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import CurrentUser, get_current_user
 from app.db.dependencies import get_db
 from app.repositories.recipe import recipe_repository
+from app.repositories.recipe_favorite import recipe_favorite_repository
 from app.schemas.recipe import (
+    PaginatedRecipes,
     RecipeGenerateRequest,
     RecipeResponse,
     RecipeSearchParams,
-    RecipeSearchResponse,
 )
+from app.schemas.recipe_favorite import FavoriteActionResponse
 from app.services.recipe import (
     ProfileNotFoundError,
     RecipeGenerationError,
@@ -31,12 +33,12 @@ def _map_recipe_error(e: Exception) -> HTTPException:
     raise e
 
 
-@router.get("", response_model=RecipeSearchResponse)
+@router.get("", response_model=PaginatedRecipes)
 async def search_recipes_endpoint(
     params: RecipeSearchParams = Depends(),
     user: CurrentUser = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-) -> RecipeSearchResponse:
+) -> PaginatedRecipes:
     return await search_recipes(db, params, UUID(user.id))
 
 
@@ -58,12 +60,77 @@ async def generate_recipe_endpoint(
     return RecipeResponse.from_db_recipe(recipe)
 
 
+@router.get("/me", response_model=PaginatedRecipes)
+async def get_my_recipes_endpoint(
+    user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    limit: int = Query(default=20, ge=1, le=100),
+    page: int = Query(default=1, ge=1),
+) -> PaginatedRecipes:
+    rows = await recipe_repository.list_own_by_user(
+        db,
+        current_user_id=UUID(user.id),
+        limit=limit,
+        offset=(page - 1) * limit,
+    )
+    total = await recipe_repository.count_by_user_id(db, UUID(user.id))
+    return PaginatedRecipes(
+        items=[RecipeResponse.from_row(row) for row in rows],
+        total=total,
+        page=page,
+        limit=limit,
+    )
+
+
+@router.get("/favorites", response_model=PaginatedRecipes)
+async def get_my_favorites_endpoint(
+    user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    limit: int = Query(default=20, ge=1, le=100),
+    page: int = Query(default=1, ge=1),
+) -> PaginatedRecipes:
+    rows = await recipe_repository.list_favorites_by_user(
+        db,
+        current_user_id=UUID(user.id),
+        limit=limit,
+        offset=(page - 1) * limit,
+    )
+    total = await recipe_repository.count_favorites_by_user(db, UUID(user.id))
+    return PaginatedRecipes(
+        items=[RecipeResponse.from_row(row) for row in rows],
+        total=total,
+        page=page,
+        limit=limit,
+    )
+
+
 @router.get("/{recipe_id}", response_model=RecipeResponse)
 async def get_recipe_endpoint(
     recipe_id: UUID,
     user: CurrentUser = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> RecipeResponse:
+    row = await recipe_repository.get_detail(
+        db,
+        recipe_id=recipe_id,
+        current_user_id=UUID(user.id),
+    )
+
+    if row is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Recipe not found",
+        )
+
+    return RecipeResponse.from_row(row)
+
+
+@router.post("/{recipe_id}/favorite", response_model=FavoriteActionResponse)
+async def favorite_recipe_endpoint(
+    recipe_id: UUID,
+    user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> FavoriteActionResponse:
     recipe = await recipe_repository.get_by_id(
         db,
         recipe_id=recipe_id,
@@ -76,4 +143,22 @@ async def get_recipe_endpoint(
             detail="Recipe not found",
         )
 
-    return RecipeResponse.from_db_recipe(recipe)
+    await recipe_favorite_repository.favorite(db, UUID(user.id), recipe_id)
+    return FavoriteActionResponse(success=True, message="Recipe favorited")
+
+
+@router.delete("/{recipe_id}/favorite", response_model=FavoriteActionResponse)
+async def unfavorite_recipe_endpoint(
+    recipe_id: UUID,
+    user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> FavoriteActionResponse:
+    removed = await recipe_favorite_repository.unfavorite(db, UUID(user.id), recipe_id)
+
+    if not removed:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Recipe was not favorited",
+        )
+
+    return FavoriteActionResponse(success=True, message="Recipe unfavorited")

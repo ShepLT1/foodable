@@ -3,6 +3,7 @@ import { useSession } from './hooks/useSession'
 import { AuthForm } from './components/AuthForm'
 import { NavBar } from './components/NavBar'
 import { UserPage } from './pages/UserPage'
+import { PublicUserPage } from './pages/PublicUserPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { GroceryListsPage } from './pages/GroceryListsPage'
 import { GroceryListPage } from './pages/GroceryListPage'
@@ -35,6 +36,7 @@ function App() {
         <main className="flex-1 p-8">
           <Routes>
             <Route path="/" element={<UserPage />} />
+            <Route path="/users/:id" element={<PublicUserPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/recipes" element={<RecipeSearchPage />} />
             <Route path="/recipes/new" element={<RecipeGeneratePage />} />

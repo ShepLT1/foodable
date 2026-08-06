@@ -9,12 +9,13 @@ from app.repositories.meal_plan import RecipeNotFoundError
 from app.schemas.meal_plan import (
     DeleteMealPlanResponse,
     MealPlanCreate,
+    MealPlanGenerateRequest,
     MealPlanMealCreate,
     MealPlanMealUpdate,
     MealPlanResponse,
     MealPlanUpdate,
 )
-from app.services.meal_plan import meal_plan_service
+from app.services.meal_plan import MealPlanGenerationError, meal_plan_service
 
 router = APIRouter(prefix="/meal-plans", tags=["meal-plans"])
 
@@ -122,6 +123,38 @@ async def delete_meal_plan(
         )
 
     return DeleteMealPlanResponse(id=meal_plan_id)
+
+
+@router.post(
+    "/{meal_plan_id}/generate",
+    response_model=MealPlanResponse,
+)
+async def generate_meal_plan(
+    meal_plan_id: UUID,
+    payload: MealPlanGenerateRequest,
+    user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> MealPlanResponse:
+    try:
+        meal_plan = await meal_plan_service.generate(
+            db=db,
+            meal_plan_id=meal_plan_id,
+            user_id=UUID(user.id),
+            request=payload,
+        )
+    except MealPlanGenerationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        ) from e
+
+    if meal_plan is None:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            "Meal plan not found",
+        )
+
+    return MealPlanResponse.from_db_meal_plan(meal_plan)
 
 
 @router.post(

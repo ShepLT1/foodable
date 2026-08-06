@@ -22,7 +22,6 @@ export interface NutritionInfo {
 
 export interface Recipe {
   id: string
-  user_id: string
   title: string
   description: string | null
   meal_type: string | null
@@ -33,6 +32,7 @@ export interface Recipe {
   ingredients: Ingredient[]
   nutrition: NutritionInfo
   is_public: boolean
+  is_favorited: boolean
   creator: {
     id: string
     display_name: string | null
@@ -57,7 +57,7 @@ export interface RecipeSearchParams {
   order?: 'asc' | 'desc'
 }
 
-export interface RecipeSearchResponse {
+export interface PaginatedRecipes {
   items: Recipe[]
   total: number
   page: number
@@ -68,6 +68,22 @@ export function getRecipe(recipeId: string) {
   return api<Recipe>(`/recipes/${recipeId}`)
 }
 
+export interface RecipesByUserParams {
+  page?: number
+  limit?: number
+}
+
+export function getRecipesByUser(
+  userId: string,
+  params: RecipesByUserParams = {},
+) {
+  const queryString = buildQueryString(params)
+
+  return api<PaginatedRecipes>(
+    `/users/${userId}/recipes${queryString ? `?${queryString}` : ''}`,
+  )
+}
+
 // Recipe API request handlers
 export function generateRecipe(data: GenerateRecipeRequest) {
   return api<Recipe>('/recipes/generate', {
@@ -76,17 +92,65 @@ export function generateRecipe(data: GenerateRecipeRequest) {
   })
 }
 
-export function searchRecipes(params: RecipeSearchParams = {}) {
+// Helper func, builds a URL query string from params
+function buildQueryString<T extends object>(params: T): string {
   const query = new URLSearchParams()
 
-  Object.entries(params).forEach(([key, value]) => {
+  Object.entries(params as Record<string, unknown>).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
       query.set(key, String(value))
     }
   })
 
-  const queryString = query.toString()
-  return api<RecipeSearchResponse>(
+  return query.toString()
+}
+
+export function searchRecipes(params: RecipeSearchParams = {}) {
+  const queryString = buildQueryString(params)
+
+  return api<PaginatedRecipes>(
     `/recipes${queryString ? `?${queryString}` : ''}`,
   )
+}
+
+export interface MyRecipesParams {
+  page?: number
+  limit?: number
+}
+
+export function getMyRecipes(params: MyRecipesParams = {}) {
+  const queryString = buildQueryString(params)
+
+  return api<PaginatedRecipes>(
+    `/recipes/me${queryString ? `?${queryString}` : ''}`,
+  )
+}
+export interface MyFavoriteRecipesParams {
+  page?: number
+  limit?: number
+}
+
+export function getMyFavoriteRecipes(params: MyFavoriteRecipesParams = {}) {
+  const queryString = buildQueryString(params)
+
+  return api<PaginatedRecipes>(
+    `/recipes/favorites${queryString ? `?${queryString}` : ''}`,
+  )
+}
+
+export interface FavoriteActionResponse {
+  success: boolean
+  message: string
+}
+
+export function favoriteRecipe(recipeId: string) {
+  return api<FavoriteActionResponse>(`/recipes/${recipeId}/favorite`, {
+    method: 'POST',
+  })
+}
+
+export function unfavoriteRecipe(recipeId: string) {
+  return api<FavoriteActionResponse>(`/recipes/${recipeId}/favorite`, {
+    method: 'DELETE',
+  })
 }

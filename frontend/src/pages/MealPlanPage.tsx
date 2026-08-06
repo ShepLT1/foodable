@@ -1,12 +1,15 @@
+import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 
 import { MealList } from '../components/MealList'
 import { MealPlanHeader } from '../components/MealPlanHeader'
+import { CompleteMealPlanDialog } from '../components/CompleteMealPlanDialog'
 import { useMealPlan } from '../hooks/useMealPlans'
 import { groupMealsByDate } from '../utils/groupMealsByDate'
 
 export function MealPlanPage() {
   const { id } = useParams()
+  const [showGenerateDialog, setShowGenerateDialog] = useState(false)
 
   const { data: mealPlan, isLoading, error } = useMealPlan(id ?? '')
 
@@ -28,11 +31,21 @@ export function MealPlanPage() {
 
   const groups = groupMealsByDate(mealPlan.meals)
 
-  if (mealPlan.meals.length === 0) {
-    return (
-      <div className="mx-auto max-w-5xl">
-        <MealPlanHeader mealPlan={mealPlan} />
+  return (
+    <div className="mx-auto max-w-5xl">
+      <MealPlanHeader
+        mealPlan={mealPlan}
+        onComplete={() => setShowGenerateDialog(true)}
+      />
 
+      {showGenerateDialog && (
+        <CompleteMealPlanDialog
+          mealPlan={mealPlan}
+          onClose={() => setShowGenerateDialog(false)}
+        />
+      )}
+
+      {mealPlan.meals.length == 0 ? (
         <div className="mt-10 rounded-xl border border-dashed border-gray-300 bg-gray-50 py-12 text-center">
           <p className="text-lg font-medium text-gray-900">No meals yet</p>
 
@@ -41,29 +54,23 @@ export function MealPlanPage() {
             plan.
           </p>
         </div>
-      </div>
-    )
-  }
+      ) : (
+        <div className="mt-10 space-y-10">
+          {groups.map((group) => (
+            <section key={group.date ?? 'unscheduled'}>
+              <div className="mb-5 flex items-center gap-4">
+                <h2 className="text-xl font-semibold text-gray-900">
+                  {group.title}
+                </h2>
 
-  return (
-    <div className="mx-auto max-w-5xl">
-      <MealPlanHeader mealPlan={mealPlan} />
+                <div className="h-px flex-1 bg-gray-200" />
+              </div>
 
-      <div className="mt-10 space-y-10">
-        {groups.map((group) => (
-          <section key={group.date ?? 'unscheduled'}>
-            <div className="mb-5 flex items-center gap-4">
-              <h2 className="text-xl font-semibold text-gray-900">
-                {group.title}
-              </h2>
-
-              <div className="h-px flex-1 bg-gray-200" />
-            </div>
-
-            <MealList mealPlanId={mealPlan.id} meals={group.meals} />
-          </section>
-        ))}
-      </div>
+              <MealList mealPlanId={mealPlan.id} meals={group.meals} />
+            </section>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

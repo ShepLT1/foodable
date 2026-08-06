@@ -74,6 +74,8 @@ class ListService:
         user_id: UUID,
         data: GroceryListGenerateRequest,
     ) -> GroceryList:
+        MAX_MEALS = 35
+
         meal_plan = await meal_plan_repository.get_by_id(
             db=db,
             meal_plan_id=data.meal_plan_id,
@@ -88,10 +90,21 @@ class ListService:
         if not meal_plan.meals:
             raise MealPlanValidationError("Meal plan must contain at least one meal.")
 
+        if len(meal_plan.meals) > MAX_MEALS:
+            raise MealPlanValidationError(
+                f"Grocery list generation does not currently support meal plans with more than {MAX_MEALS} meals."
+            )
+
         scaled_recipes = self._build_scaled_recipes(meal_plan)
 
         generated_list = await generate_grocery_list(
             scaled_recipes,
+        )
+
+        generated_list.title = (
+            meal_plan.title
+            if "meal plan" in meal_plan.title.lower()
+            else f"Meal Plan: {meal_plan.title}"
         )
 
         return await lists_repository.create_with_items(

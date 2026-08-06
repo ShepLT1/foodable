@@ -16,6 +16,7 @@ import {
   deleteMealPlan,
   updateMeal,
   deleteMeal,
+  generateMealPlan,
 } from '../api/mealPlans'
 
 export const mealPlanKeys = {
@@ -81,6 +82,18 @@ export function useCreateMealPlan() {
 
     onSuccess: (mealPlan) => {
       updateMealPlanCaches(queryClient, mealPlan)
+    },
+  })
+}
+
+export function useGenerateMealPlan() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: generateMealPlan,
+
+    onSuccess: (updatedMealPlan) => {
+      updateMealPlanCaches(queryClient, updatedMealPlan)
     },
   })
 }

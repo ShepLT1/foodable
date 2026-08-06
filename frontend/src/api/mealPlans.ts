@@ -30,6 +30,23 @@ export interface CreateMealPlanMealRequest {
   recipe_id: string
 }
 
+export interface MealPlanOptimizations {
+  lower_cost: boolean
+  minimize_food_waste: boolean
+}
+
+export interface GenerateMealPlanRequest {
+  start_date: string
+  days: number
+  meal_types: MealType[]
+  optimizations: MealPlanOptimizations
+}
+
+interface GenerateMealPlanParams {
+  mealPlanId: string
+  data: GenerateMealPlanRequest
+}
+
 interface AddMealParams {
   mealPlanId: string
   data: CreateMealPlanMealRequest
@@ -75,6 +92,13 @@ export function getMealPlan(mealPlanId: string) {
 
 export function createMealPlan(data: CreateMealPlanRequest) {
   return api<MealPlan>('/meal-plans', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+}
+
+export function generateMealPlan({ mealPlanId, data }: GenerateMealPlanParams) {
+  return api<MealPlan>(`/meal-plans/${mealPlanId}/generate`, {
     method: 'POST',
     body: JSON.stringify(data),
   })

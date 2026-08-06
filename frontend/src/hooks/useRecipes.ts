@@ -1,6 +1,22 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
-import { generateRecipe, getRecipe, searchRecipes } from '../api/recipes'
-import type { RecipeSearchParams } from '../api/recipes'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  favoriteRecipe,
+  generateRecipe,
+  getMyFavoriteRecipes,
+  getMyRecipes,
+  getRecipe,
+  getRecipesByUser,
+  searchRecipes,
+  unfavoriteRecipe,
+} from '../api/recipes'
+import type {
+  MyFavoriteRecipesParams,
+  MyRecipesParams,
+  RecipesByUserParams,
+  PaginatedRecipes,
+  Recipe,
+  RecipeSearchParams,
+} from '../api/recipes'
 
 export function useGenerateRecipe() {
   return useMutation({
@@ -21,5 +37,87 @@ export function useSearchRecipes(params: RecipeSearchParams, enabled = true) {
     queryKey: ['recipes', 'search', params],
     queryFn: () => searchRecipes(params),
     enabled,
+  })
+}
+
+export function useRecipesByUser(
+  userId: string,
+  params: RecipesByUserParams = {},
+) {
+  return useQuery({
+    queryKey: ['recipes', 'by-user', userId, params],
+    queryFn: () => getRecipesByUser(userId, params),
+    enabled: !!userId,
+  })
+}
+
+export function useMyRecipes(params: MyRecipesParams = {}, enabled = true) {
+  return useQuery({
+    queryKey: ['recipes', 'me', params],
+    queryFn: () => getMyRecipes(params),
+    enabled,
+  })
+}
+
+export function useMyFavoriteRecipes(
+  params: MyFavoriteRecipesParams = {},
+  enabled = true,
+) {
+  return useQuery({
+    queryKey: ['recipes', 'favorites', params],
+    queryFn: () => getMyFavoriteRecipes(params),
+    enabled,
+  })
+}
+
+// flip is_favorited wherever this recipe sits in the cache (single or paginated)
+function applyFavorited(
+  data: Recipe | PaginatedRecipes | undefined,
+  recipeId: string,
+  isFavorited: boolean,
+) {
+  if (!data) return data
+  if ('items' in data) {
+    return {
+      ...data,
+      items: data.items.map((r) =>
+        r.id === recipeId ? { ...r, is_favorited: isFavorited } : r,
+      ),
+    }
+  }
+  return data.id === recipeId ? { ...data, is_favorited: isFavorited } : data
+}
+
+export function useToggleFavorite() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      recipeId,
+      isFavorited,
+    }: {
+      recipeId: string
+      isFavorited: boolean
+    }) => (isFavorited ? favoriteRecipe(recipeId) : unfavoriteRecipe(recipeId)),
+
+    onMutate: async ({ recipeId, isFavorited }) => {
+      await queryClient.cancelQueries({ queryKey: ['recipes'] })
+      const previous = queryClient.getQueriesData({ queryKey: ['recipes'] })
+      queryClient.setQueriesData<Recipe | PaginatedRecipes>(
+        { queryKey: ['recipes'] },
+        (data) => applyFavorited(data, recipeId, isFavorited),
+      )
+      return { previous }
+    },
+
+    onError: (_err, _vars, context) => {
+      context?.previous.forEach(([key, data]) => {
+        queryClient.setQueryData(key, data)
+      })
+    },
+
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['recipes'] })
+    },
   })
 }

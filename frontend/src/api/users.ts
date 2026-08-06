@@ -2,12 +2,10 @@ import { api } from './client'
 
 export type UserPublic = {
   id: string
-  email: string
   display_name: string
   created_at: string
 }
 
-// owner's own view of their profile — matches GET /users/me (UserMe)
 export type UserMe = {
   id: string
   email: string
@@ -19,7 +17,6 @@ export type UserMe = {
   onboarded_at: string | null
 }
 
-// partial update — only provided fields are changed (PATCH /users/me)
 export type ProfileUpdate = {
   display_name?: string
   dietary_restrictions?: string[]
@@ -27,16 +24,7 @@ export type ProfileUpdate = {
   preferences?: string[]
 }
 
-export function getCurrentUser() {
-  return api<UserMe>('/users/me')
-}
-
-export function updateCurrentUser(payload: ProfileUpdate) {
-  return api<UserMe>('/users/me', {
-    method: 'PATCH',
-    body: JSON.stringify(payload),
-  })
-}
+// Social / Followers types
 export type FollowUserSummary = {
   id: string
   display_name: string
@@ -54,6 +42,22 @@ export type FollowActionResponse = {
   message: string
 }
 
+export function getCurrentUser() {
+  return api<UserMe>('/users/me')
+}
+
+export function getUser(userId: string) {
+  return api<UserPublic>(`/users/${userId}`)
+}
+
+export function updateCurrentUser(payload: ProfileUpdate) {
+  return api<UserMe>('/users/me', {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  })
+}
+
+// Social API Handlers
 export function getFollowStats(userId: string) {
   return api<FollowStatsResponse>(`/users/${userId}/stats`)
 }

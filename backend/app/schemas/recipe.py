@@ -56,6 +56,8 @@ class RecipeCreate(StrictBaseModel):
 
 
 class RecipeGenerateRequest(StrictBaseModel):
+    title: str | None = None
+    description: str | None = None
     ingredients: list[str] = Field(min_length=1)
     meal_type: MealType | None = None
     cuisine_type: str | None = None
@@ -98,11 +100,13 @@ class Recipe(StrictBaseModel):
         default=None, description="A brief description of the recipe."
     )
     ingredients: list[Ingredient] = Field(
-        description="A list of ingredients required for the recipe."
+        min_length=1,
+        description="A list of ingredients required for the recipe.",
     )
     tools_needed: list[str] = Field(description=TOOLS_NEEDED_DESCRIPTION)
     steps: list[Step] = Field(
-        description="Step-by-step instructions to prepare the recipe."
+        min_length=1,
+        description="Step-by-step instructions to prepare the recipe.",
     )
     nutrition: NutritionInfo = Field(
         description="Nutritional information for the recipe."
@@ -123,7 +127,6 @@ class RecipeCreator(StrictBaseModel):
 
 class RecipeResponse(StrictBaseModel):
     id: UUID
-    user_id: UUID
     title: str
     description: str | None
     meal_type: str | None
@@ -134,19 +137,23 @@ class RecipeResponse(StrictBaseModel):
     ingredients: list[Ingredient]
     nutrition: NutritionInfo
     is_public: bool
+    is_favorited: bool = False
     creator: RecipeCreator | None = None
     created_at: datetime
 
     if TYPE_CHECKING:
         from app.models.recipe import Recipe as DBRecipe
+        from app.repositories.recipe import RecipeRow
 
     @classmethod
     def from_db_recipe(
-        cls, recipe: "DBRecipe", creator: "RecipeCreator | None" = None
+        cls,
+        recipe: "DBRecipe",
+        creator: "RecipeCreator | None" = None,
+        is_favorited: bool = False,
     ) -> "RecipeResponse":
         return cls(
             id=recipe.id,
-            user_id=recipe.user_id,
             title=recipe.title,
             description=recipe.description,
             meal_type=recipe.meal_type,
@@ -157,8 +164,18 @@ class RecipeResponse(StrictBaseModel):
             ingredients=[Ingredient.model_validate(i) for i in recipe.ingredients_json],
             nutrition=NutritionInfo.model_validate(recipe.nutrition_json),
             is_public=recipe.is_public,
+            is_favorited=is_favorited,
             creator=creator,
             created_at=recipe.created_at,
+        )
+
+    @classmethod
+    def from_row(cls, row: "RecipeRow") -> "RecipeResponse":
+        """Map a row from the shared recipe read query into a response."""
+        return cls.from_db_recipe(
+            row.recipe,
+            RecipeCreator(id=row.creator.id, display_name=row.creator.display_name),
+            is_favorited=row.is_favorited,
         )
 
 
@@ -173,7 +190,7 @@ class RecipeSearchParams(StrictBaseModel):
     order: Literal["asc", "desc"] = "desc"
 
 
-class RecipeSearchResponse(StrictBaseModel):
+class PaginatedRecipes(StrictBaseModel):
     items: list[RecipeResponse]
     total: int
     page: int
