@@ -2,20 +2,24 @@ import { useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { useRecipe } from '../hooks/useRecipes'
+import { useCurrentUser } from '../hooks/useCurrentUser'
 import { RecipeMealPlanMenu } from '../components/RecipeMealPlanMenu'
 import { FavoriteButton } from '../components/FavoriteButton'
 import { Banner } from '../components/Banner'
+import { RecipePublishToggle } from '../components/RecipePublishToggle'
 
 export function RecipeDetailPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { id } = useParams()
   const { data: recipe, isLoading, error } = useRecipe(id ?? '')
+  const { data: currentUser } = useCurrentUser()
   const [showNutritionDetails, setShowNutritionDetails] = useState(false)
 
   const safeSubstitute = Boolean(
     (location.state as { safeSubstitute?: boolean } | null)?.safeSubstitute,
   )
+  const isOwner = !!currentUser && recipe?.creator?.id === currentUser.id
 
   if (isLoading) {
     return (
@@ -52,10 +56,13 @@ export function RecipeDetailPage() {
       <div className="rounded-lg bg-white p-8 shadow-sm border border-gray-100">
         <div className="flex items-start justify-between gap-4">
           <h2 className="text-3xl font-bold text-gray-900">{recipe.title}</h2>
-          <FavoriteButton
-            recipeId={recipe.id}
-            isFavorited={recipe.is_favorited}
-          />
+          <div className="flex shrink-0 items-center gap-4">
+            {isOwner && <RecipePublishToggle recipe={recipe} />}
+            <FavoriteButton
+              recipeId={recipe.id}
+              isFavorited={recipe.is_favorited}
+            />
+          </div>
         </div>
 
         <div className="mt-3 flex flex-wrap gap-2">

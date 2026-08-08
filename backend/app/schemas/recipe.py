@@ -56,6 +56,10 @@ class RecipeCreate(StrictBaseModel):
     nutrition_json: dict
 
 
+class RecipeUpdate(StrictBaseModel):
+    is_public: bool | None = None
+
+
 class RecipeGenerateRequest(StrictBaseModel):
     title: str | None = None
     description: str | None = None
