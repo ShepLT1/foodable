@@ -188,6 +188,7 @@ class RecipeSearchParams(StrictBaseModel):
     cuisine_type: str | None = None
     meal_type: MealType | None = None
     exclude_own: bool = False
+    following_only: bool = False
     page: int = Field(default=1, ge=1)
     limit: int = Field(default=20, ge=1, le=100)
     sort_by: Literal["title", "created_at"] = "created_at"
