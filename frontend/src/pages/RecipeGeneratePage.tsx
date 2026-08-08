@@ -26,7 +26,9 @@ export function RecipeGeneratePage() {
       },
       {
         onSuccess: (recipe) => {
-          navigate(`/recipes/${recipe.id}`, { state: { recipe } })
+          navigate(`/recipes/${recipe.id}`, {
+            state: { safeSubstitute: recipe.safe_substitute },
+          })
         },
         onError: () => {
           alert('Something went wrong, please try again')

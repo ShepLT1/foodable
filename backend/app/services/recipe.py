@@ -1,4 +1,5 @@
 import os
+from typing import NamedTuple
 from uuid import UUID
 
 from anthropic import AsyncAnthropic
@@ -10,6 +11,7 @@ from app.models.profile import Profile
 from app.models.recipe import Recipe as DBRecipe
 from app.repositories.profile import profile_repository
 from app.repositories.recipe import recipe_repository
+from app.schemas.prompts_recipe_gen import RECIPE_SYSTEM_PROMPT
 from app.schemas.recipe import (
     PaginatedRecipes,
     Recipe,
@@ -25,6 +27,17 @@ client = AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
 CLAUDE_MODEL = "claude-haiku-4-5-20251001"
 MAX_TOKENS = 2500
+
+
+class RecipeGenerationResult(NamedTuple):
+    recipe: DBRecipe
+    safe_substitute: bool
+
+
+class RecipeGenerationData(NamedTuple):
+    data: RecipeCreate
+    safe_substitute: bool
+
 
 RECIPE_TOOL = {
     "name": "create_recipe",
@@ -62,6 +75,7 @@ async def generate_recipe(prompt: str) -> Recipe:
     response = await client.messages.create(
         model=CLAUDE_MODEL,
         max_tokens=MAX_TOKENS,
+        system=RECIPE_SYSTEM_PROMPT,
         tools=[RECIPE_TOOL],  # type: ignore[call-overload]
         tool_choice={"type": "tool", "name": "create_recipe"},
         messages=[{"role": "user", "content": prompt}],
@@ -137,7 +151,7 @@ async def generate_recipe_create(
     profile: Profile,
     user_id: UUID,
     request: RecipeGenerateRequest,
-) -> RecipeCreate:
+) -> RecipeGenerationData:
     """
     Generate a RecipeCreate without touching the database.
 
@@ -148,9 +162,9 @@ async def generate_recipe_create(
 
     recipe = await generate_recipe(prompt)
 
-    return _build_recipe_create(
-        recipe=recipe,
-        user_id=user_id,
+    return RecipeGenerationData(
+        data=_build_recipe_create(recipe=recipe, user_id=user_id),
+        safe_substitute=recipe.safe_substitute,
     )
 
 
@@ -158,18 +172,21 @@ async def create_recipe_for_user(
     db: AsyncSession,
     user_id: UUID,
     request: RecipeGenerateRequest,
-) -> DBRecipe:
+) -> RecipeGenerationResult:
     profile = await profile_repository.get_by_id(db, profile_id=user_id)
     if profile is None:
         raise ProfileNotFoundError(f"No profile found for user_id={user_id}")
 
-    data = await generate_recipe_create(
+    result = await generate_recipe_create(
         profile=profile,
         user_id=user_id,
         request=request,
     )
 
-    return await recipe_repository.create(db, data)
+    db_recipe = await recipe_repository.create(db, result.data)
+    return RecipeGenerationResult(
+        recipe=db_recipe, safe_substitute=result.safe_substitute
+    )
 
 
 async def create_recipe_for_user_without_commit(
@@ -185,7 +202,7 @@ async def create_recipe_for_user_without_commit(
     if profile is None:
         raise ProfileNotFoundError(f"No profile found for user_id={user_id}")
 
-    data = await generate_recipe_create(
+    result = await generate_recipe_create(
         profile=profile,
         user_id=user_id,
         request=request,
@@ -193,7 +210,7 @@ async def create_recipe_for_user_without_commit(
 
     return await recipe_repository.create_without_commit(
         db,
-        data,
+        result.data,
     )
 
 

@@ -25,10 +25,11 @@ from app.schemas.meal_plan_ai import (
     ExistingMealPlan,
     ExistingRecipe,
 )
-from app.schemas.recipe import RecipeCreate, RecipeGenerateRequest
+from app.schemas.recipe import RecipeGenerateRequest
 from app.services import meal_plan_ai
 from app.services.recipe import (
     RECIPE_GENERATION_CONCURRENCY,
+    RecipeGenerationData,
     generate_recipe_create,
 )
 
@@ -106,7 +107,7 @@ class MealPlanService:
         profile: Profile,
         user_id: UUID,
         request: RecipeGenerateRequest,
-    ) -> RecipeCreate:
+    ) -> RecipeGenerationData:
         async with semaphore:
             return await generate_recipe_create(
                 profile=profile,
@@ -254,14 +255,14 @@ class MealPlanService:
                 "Failed to generate recipe for meal plan"
             ) from e
 
-        for (cache_key, _), data in zip(
+        for (cache_key, _), result in zip(
             items,
             recipe_data,
             strict=True,
         ):
             recipe = await recipe_repository.create_without_commit(
                 db=db,
-                data=data,
+                data=result.data,
             )
 
             recipe_lookup[recipe.id] = recipe
