@@ -53,6 +53,7 @@ export interface RecipeSearchParams {
   exclude_own?: boolean
   page?: number
   limit?: number
+  following_only?: boolean
   sort_by?: 'created_at' | 'title'
   order?: 'asc' | 'desc'
 }
