@@ -30,6 +30,7 @@ from app.models.recipe import (
 )
 from app.schemas.prompts_recipe_gen import (
     CARBS_DESCRIPTION,
+    SAFE_SUBSTITUTE_DESCRIPTION,
     STEP_DURATION_DESCRIPTION,
     STEP_INGREDIENTS_DESCRIPTION,
     STEP_INSTRUCTION_DESCRIPTION,
@@ -122,6 +123,10 @@ class Recipe(StrictBaseModel):
     meal_type: MealType = Field(
         description="The type of meal this recipe is intended for."
     )
+    safe_substitute: bool = Field(
+        default=False,
+        description=SAFE_SUBSTITUTE_DESCRIPTION,
+    )
 
 
 class RecipeCreator(StrictBaseModel):
@@ -142,6 +147,7 @@ class RecipeResponse(StrictBaseModel):
     nutrition: NutritionInfo
     is_public: bool
     is_favorited: bool = False
+    safe_substitute: bool = False
     creator: RecipeCreator | None = None
     created_at: datetime
 
@@ -155,6 +161,7 @@ class RecipeResponse(StrictBaseModel):
         recipe: "DBRecipe",
         creator: "RecipeCreator | None" = None,
         is_favorited: bool = False,
+        safe_substitute: bool = False,
     ) -> "RecipeResponse":
         return cls(
             id=recipe.id,
@@ -169,6 +176,7 @@ class RecipeResponse(StrictBaseModel):
             nutrition=NutritionInfo.model_validate(recipe.nutrition_json),
             is_public=recipe.is_public,
             is_favorited=is_favorited,
+            safe_substitute=safe_substitute,
             creator=creator,
             created_at=recipe.created_at,
         )

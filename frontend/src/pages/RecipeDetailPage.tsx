@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, useParams, Link } from 'react-router-dom'
+import { useLocation, useNavigate, useParams, Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { useRecipe } from '../hooks/useRecipes'
 import { useSession } from '../hooks/useSession'
@@ -12,14 +12,19 @@ import { RecipeMealPlanMenu } from '../components/RecipeMealPlanMenu'
 import { FavoriteButton } from '../components/FavoriteButton'
 import { RecipePublishToggle } from '../components/RecipePublishToggle'
 import { UserAvatar } from '../components/UserAvatar'
+import { Banner } from '../components/Banner'
 
 export function RecipeDetailPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { id } = useParams()
   const { session } = useSession()
   const { data: recipe, isLoading, error } = useRecipe(id ?? '')
   const [showNutritionDetails, setShowNutritionDetails] = useState(false)
 
+  const safeSubstitute = Boolean(
+    (location.state as { safeSubstitute?: boolean } | null)?.safeSubstitute,
+  )
   const creatorId = recipe?.creator?.id ?? ''
   const isOwner = session?.user.id === creatorId
 
@@ -63,6 +68,11 @@ export function RecipeDetailPage() {
         <ArrowLeft className="h-4 w-4" />
         Back
       </button>
+
+      <Banner
+        show={safeSubstitute}
+        message="Heads up — we swapped one of your ingredients for something we could actually cook with!"
+      />
 
       <div className="rounded-lg border border-gray-100 bg-white p-8 shadow-sm">
         <div className="flex items-start justify-between gap-4">
