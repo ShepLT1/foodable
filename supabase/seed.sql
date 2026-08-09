@@ -426,3 +426,73 @@ values
     '2026-07-31',
     'dinner'
 );
+
+-- ============================================================
+-- CURRENT MONTH'S TEST PLAN (For testing the dashboard widget)
+-- Spans from today through the next 30 days
+-- ============================================================
+insert into public.meal_plans (id, user_id, title)
+values (
+  'bbbbbbbb-0000-0000-0000-000000000006', 
+  '11111111-1111-1111-1111-111111111111', 
+  'Current Month Test Plan'
+);
+
+insert into public.meal_plan_meals (
+    id,
+    meal_plan_id,
+    recipe_id,
+    servings,
+    scheduled_date,
+    meal_type
+)
+values
+-- Today's Breakfast - Pancakes
+(
+    'cccccccc-0000-0000-0000-000000000010',
+    'bbbbbbbb-0000-0000-0000-000000000006',
+    'aaaaaaaa-0000-0000-0000-000000000003',
+    2,
+    CURRENT_DATE,
+    'breakfast'
+),
+
+-- Today's Dinner - Spaghetti Bolognese
+(
+    'cccccccc-0000-0000-0000-000000000011',
+    'bbbbbbbb-0000-0000-0000-000000000006',
+    'aaaaaaaa-0000-0000-0000-000000000005',
+    4,
+    CURRENT_DATE,
+    'dinner'
+),
+
+-- Tomorrow's Lunch - Caesar Salad
+(
+    'cccccccc-0000-0000-0000-000000000012',
+    'bbbbbbbb-0000-0000-0000-000000000006',
+    'aaaaaaaa-0000-0000-0000-000000000006',
+    2,
+    CURRENT_DATE + 1,
+    'lunch'
+),
+
+-- Next Week's Dinner - Veggie Stir Fry
+(
+    'cccccccc-0000-0000-0000-000000000013',
+    'bbbbbbbb-0000-0000-0000-000000000006',
+    'aaaaaaaa-0000-0000-0000-000000000001',
+    2,
+    CURRENT_DATE + 7,
+    'dinner'
+),
+
+-- End of the month Breakfast - Banana Oat Muffins
+(
+    'cccccccc-0000-0000-0000-000000000014',
+    'bbbbbbbb-0000-0000-0000-000000000006',
+    'aaaaaaaa-0000-0000-0000-000000000012',
+    1,
+    CURRENT_DATE + 30,
+    'breakfast'
+);

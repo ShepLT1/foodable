@@ -7,20 +7,23 @@ import {
   Users,
   User,
   ArrowRight,
-  BookOpen,
-  Clock,
   Utensils,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
 
 import { useCurrentUser } from '../hooks/useCurrentUser'
 import { useGroceryLists } from '../hooks/useGroceryLists'
 import { useFollowers, useFollowing, useFollowStats } from '../hooks/useFollow'
+import { useMealPlans } from '../hooks/useMealPlans'
 import { UserAvatar } from '../components/UserAvatar'
 import { FollowListDialog } from '../components/FollowListDialog'
 
 export const UserPage: React.FC = () => {
   const { data: user, isPending: userLoading } = useCurrentUser()
   const { data: lists = [], isPending: listsLoading } = useGroceryLists()
+  const { data: mealPlans = [], isPending: mealPlansLoading } = useMealPlans()
 
   const { data: stats } = useFollowStats(user?.id ?? '')
   const { data: followers = [], isLoading: followersLoading } = useFollowers(
@@ -33,6 +36,47 @@ export const UserPage: React.FC = () => {
   const [activeDialog, setActiveDialog] = useState<
     'followers' | 'following' | null
   >(null)
+
+  // 1. Calculate local 'Today' YYYY-MM-DD string securely
+  const today = new Date()
+  const offset = today.getTimezoneOffset()
+  const todayStr = new Date(today.getTime() - offset * 60 * 1000)
+    .toISOString()
+    .split('T')[0]
+
+  // 2. Set up state for our currently viewed date
+  const [selectedDateStr, setSelectedDateStr] = useState(todayStr)
+
+  // Helper to change the viewed date by X days
+  function changeDateOffset(days: number) {
+    setSelectedDateStr((prev) => {
+      const d = new Date(prev)
+      d.setUTCDate(d.getUTCDate() + days)
+      return d.toISOString().split('T')[0]
+    })
+  }
+
+  // 3. Helper to format the display title beautifully
+  function getDisplayTitle() {
+    if (selectedDateStr === todayStr) return "Today"
+    
+    const tomorrow = new Date(todayStr)
+    tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
+    if (selectedDateStr === tomorrow.toISOString().split('T')[0]) return "Tomorrow"
+
+    const yesterday = new Date(todayStr)
+    yesterday.setUTCDate(yesterday.getUTCDate() - 1)
+    if (selectedDateStr === yesterday.toISOString().split('T')[0]) return "Yesterday"
+
+    // Fallback format for dates further out (e.g. "Wed, Aug 12")
+    const d = new Date(selectedDateStr)
+    return d.toLocaleDateString('en-US', { 
+      timeZone: 'UTC', 
+      weekday: 'short', 
+      month: 'short', 
+      day: 'numeric' 
+    })
+  }
 
   const memberSince = user?.created_at
     ? new Date(user.created_at).toLocaleDateString('en-US', {
@@ -48,6 +92,23 @@ export const UserPage: React.FC = () => {
       </div>
     )
   }
+
+  // Flatten, inject parent meal plan data, and filter for our SELECTED date
+  const activeMeals = mealPlans
+    .flatMap((plan) => 
+      plan.meals.map((meal) => ({
+        ...meal,
+        mealPlanId: plan.id,
+        mealPlanTitle: plan.title,
+      }))
+    )
+    .filter((meal) => meal.scheduled_date === selectedDateStr)
+
+  // Accumulate ALL intake calculations per standard serving
+  const totalCalories = activeMeals.reduce((sum, meal) => sum + meal.recipe_nutrition.calories, 0)
+  const totalProtein = activeMeals.reduce((sum, meal) => sum + meal.recipe_nutrition.protein_g, 0)
+  const totalCarbs = activeMeals.reduce((sum, meal) => sum + meal.recipe_nutrition.carbs_g, 0)
+  const totalFat = activeMeals.reduce((sum, meal) => sum + meal.recipe_nutrition.fat_g, 0)
 
   return (
     <div className="mx-auto max-w-5xl space-y-8 font-sans text-slate-800">
@@ -115,91 +176,138 @@ export const UserPage: React.FC = () => {
       <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
         {/* Left Column */}
         <section className="space-y-4 md:col-span-2">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <div className="flex items-center gap-2.5">
-              <BookOpen className="h-5 w-5 text-blue-600" />
-              <h2 className="text-lg font-bold text-slate-900">
-                Recent AI Recipes
-              </h2>
-              <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-[10px] font-semibold text-blue-700">
-                Coming Soon
-              </span>
-            </div>
-            <span className="text-xs font-medium text-slate-400">
-              Preview Layout
-            </span>
-          </div>
-
-          {/* Static Mock Preview Cards */}
-          <div className="grid grid-cols-1 gap-4 opacity-75 select-none sm:grid-cols-2">
-            <div className="flex flex-col justify-between rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-4 shadow-2xs">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="rounded-md bg-slate-200 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-600">
-                    Dinner
-                  </span>
-                  <span className="text-xs font-semibold text-slate-400">
-                    420 kcal
-                  </span>
+          <div className="flex flex-col border-b border-slate-100 pb-4">
+            
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <div className="flex items-center gap-2.5">
+                  <Utensils className="h-5 w-5 text-blue-600" />
+                  <h2 className="text-lg font-bold text-slate-900">
+                    {getDisplayTitle()}'s Meals
+                  </h2>
                 </div>
-                <h3 className="truncate font-bold text-slate-700">
-                  Veggie Stir Fry
-                </h3>
-                <p className="line-clamp-2 text-xs text-slate-400">
-                  Quick weeknight stir fry with fresh broccoli and savory soy
-                  sauce.
-                </p>
-              </div>
-              <div className="mt-4 flex items-center justify-between border-t border-slate-200/60 pt-3 text-[11px] text-slate-400">
-                <span className="flex items-center gap-1">
-                  <Utensils className="h-3 w-3" /> Asian
-                </span>
-                <span className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" /> Preview
-                </span>
-              </div>
-            </div>
 
-            <div className="flex flex-col justify-between rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-4 shadow-2xs">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="rounded-md bg-slate-200 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-600">
-                    Dinner
-                  </span>
-                  <span className="text-xs font-semibold text-slate-400">
-                    650 kcal
-                  </span>
+                {/* Explicit Date Navigation Controls */}
+                <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 p-1">
+                  <button
+                    type="button"
+                    onClick={() => changeDateOffset(-1)}
+                    className="flex cursor-pointer items-center justify-center rounded-md p-1.5 text-slate-500 transition hover:bg-white hover:text-slate-900 hover:shadow-sm"
+                    aria-label="Previous day"
+                    title="Go to previous day"
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+                  
+                  <div className="relative flex items-center">
+                    <input
+                      type="date"
+                      value={selectedDateStr}
+                      onChange={(e) => {
+                        if (e.target.value) setSelectedDateStr(e.target.value)
+                      }}
+                      className="cursor-pointer bg-transparent px-2 py-1 text-sm font-semibold text-slate-700 outline-none hover:text-blue-600 focus:ring-0"
+                      title="Select a specific date from calendar"
+                      aria-label="Select date"
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => changeDateOffset(1)}
+                    className="flex cursor-pointer items-center justify-center rounded-md p-1.5 text-slate-500 transition hover:bg-white hover:text-slate-900 hover:shadow-sm"
+                    aria-label="Next day"
+                    title="Go to next day"
+                  >
+                    <ChevronRight size={18} />
+                  </button>
                 </div>
-                <h3 className="truncate font-bold text-slate-700">
-                  Chicken & Chickpea Curry
-                </h3>
-                <p className="line-clamp-2 text-xs text-slate-400">
-                  A hearty, spiced curry with tender chicken and chickpeas
-                  simmered in coconut milk.
-                </p>
               </div>
-              <div className="mt-4 flex items-center justify-between border-t border-slate-200/60 pt-3 text-[11px] text-slate-400">
-                <span className="flex items-center gap-1">
-                  <Utensils className="h-3 w-3" /> Indian
-                </span>
-                <span className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" /> Preview
-                </span>
-              </div>
+
+              <Link
+                to="/meal-plans"
+                className="flex items-center gap-1 text-sm font-semibold text-blue-600 hover:underline"
+              >
+                Plan Future Meals <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
+            
+            {/* Highly Visible Nutrition Summary */}
+            {activeMeals.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                <span className="rounded-lg bg-slate-100 px-3 py-1.5 text-sm font-bold text-slate-700">
+                  🔥 {Math.round(totalCalories)} kcal
+                </span>
+                <span className="rounded-lg bg-blue-50 px-3 py-1.5 text-sm font-bold text-blue-700">
+                  🥩 {Math.round(totalProtein)}g Protein
+                </span>
+                <span className="rounded-lg bg-amber-50 px-3 py-1.5 text-sm font-bold text-amber-700">
+                  🌾 {Math.round(totalCarbs)}g Carbs
+                </span>
+                <span className="rounded-lg bg-rose-50 px-3 py-1.5 text-sm font-bold text-rose-700">
+                  🥑 {Math.round(totalFat)}g Fat
+                </span>
+              </div>
+            )}
           </div>
 
-          <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-3.5 text-center">
-            <p className="text-xs font-medium text-blue-800">
-              ✨ Once the recipes API is integrated, your generated meals will
-              automatically appear here!
-            </p>
-          </div>
+          {mealPlansLoading ? (
+            <div className="rounded-xl border border-gray-100 bg-white p-8 text-center text-gray-500 shadow-sm">
+              Loading meals...
+            </div>
+          ) : activeMeals.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-slate-500 shadow-2xs">
+              <p className="text-sm">No meals scheduled for {getDisplayTitle().toLowerCase()}.</p>
+              <Link
+                to="/meal-plans"
+                className="mt-2 inline-block text-sm font-semibold text-blue-600 hover:underline"
+              >
+                Plan your meals →
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {activeMeals.map((meal) => (
+                <div
+                  key={meal.id}
+                  className="flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-2xs transition hover:border-blue-300 hover:shadow-sm"
+                >
+                  <Link to={`/recipes/${meal.recipe_id}`} className="space-y-2 block">
+                    <div className="flex items-center justify-between">
+                      <span className="rounded-md bg-slate-200 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-600">
+                        {meal.meal_type || 'Meal'}
+                      </span>
+                      <span className="text-xs font-semibold text-slate-400">
+                        {Math.round(meal.recipe_nutrition.calories)} kcal
+                      </span>
+                    </div>
+                    <h3 className="truncate font-bold text-slate-700 hover:text-blue-600 transition-colors">
+                      {meal.recipe_title}
+                    </h3>
+                    <p className="line-clamp-2 text-xs text-slate-400">
+                      {meal.recipe_nutrition.explanation}
+                    </p>
+                  </Link>
+
+                  <div className="mt-4 border-t border-slate-200/60 pt-3">
+                    <Link
+                      to={`/meal-plans/${meal.mealPlanId}`}
+                      className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500 hover:text-blue-600 transition-colors"
+                      title="View this meal plan"
+                    >
+                      <Calendar className="h-3.5 w-3.5" />
+                      <span className="truncate flex-1">From: {meal.mealPlanTitle}</span>
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* Right Column: Live Grocery Lists & Social Stats */}
         <div className="space-y-6">
-          {/* Grocery Lists Widget (LIVE DATA) */}
+          {/* Grocery Lists Widget */}
           <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900">
@@ -253,7 +361,7 @@ export const UserPage: React.FC = () => {
             )}
           </section>
 
-          {/* Social Stats Widget (LIVE DATA) */}
+          {/* Social Stats Widget */}
           <section className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h2 className="flex items-center gap-2 text-base font-bold text-slate-900">

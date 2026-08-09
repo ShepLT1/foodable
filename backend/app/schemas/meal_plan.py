@@ -4,6 +4,9 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+# 1. Import NutritionInfo from the recipe schemas
+from app.schemas.recipe import NutritionInfo
+
 if TYPE_CHECKING:
     from app.models.meal_plan import MealPlanMeal as DBMealPlanMeal
 
@@ -35,6 +38,9 @@ class MealPlanMeal(BaseModel):
     meal_type: MealType | None
 
     created_at: datetime
+    
+    # 2. Add the recipe_nutrition field
+    recipe_nutrition: NutritionInfo
 
     @classmethod
     def from_db_meal(cls, meal: "DBMealPlanMeal") -> "MealPlanMeal":
@@ -46,6 +52,8 @@ class MealPlanMeal(BaseModel):
             scheduled_date=meal.scheduled_date,
             meal_type=meal.meal_type,
             created_at=meal.created_at,
+            # 3. Extract the nutrition JSON from the joined recipe and validate it
+            recipe_nutrition=NutritionInfo.model_validate(meal.recipe.nutrition_json),
         )
 
 
