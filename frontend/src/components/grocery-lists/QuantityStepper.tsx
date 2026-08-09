@@ -8,7 +8,6 @@ interface QuantityStepperProps {
   onChange: (value: number) => void
   min?: number
   max?: number
-  step?: number
   disabled?: boolean
   className?: string
 }
@@ -18,7 +17,6 @@ export function QuantityStepper({
   onChange,
   min = 0.125,
   max,
-  step = 0.125,
   disabled = false,
   className = '',
 }: QuantityStepperProps) {
@@ -34,14 +32,13 @@ export function QuantityStepper({
     return next
   }
 
-  function roundToStep(value: number) {
-    return Math.round(value / step) * step
-  }
+  function changeQuantity(direction: 'increase' | 'decrease') {
+    const next =
+      direction === 'increase'
+        ? Math.ceil(value) + (Number.isInteger(value) ? 1 : 0)
+        : Math.floor(value) - (Number.isInteger(value) ? 1 : 0)
 
-  function changeQuantity(delta: number) {
-    const next = clamp(roundToStep(value + delta))
-
-    onChange(next)
+    onChange(clamp(next))
   }
 
   function commit() {
@@ -53,7 +50,8 @@ export function QuantityStepper({
       return
     }
 
-    const next = clamp(roundToStep(parsed))
+    // Preserve the exact manually entered value.
+    const next = clamp(parsed)
 
     onChange(next)
     setEditing(false)
@@ -66,7 +64,7 @@ export function QuantityStepper({
       <button
         type="button"
         disabled={disabled}
-        onClick={() => changeQuantity(-step)}
+        onClick={() => changeQuantity('decrease')}
         className="flex h-7 w-7 cursor-pointer items-center justify-center border-r border-slate-300 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
       >
         <Minus size={14} />
@@ -81,9 +79,7 @@ export function QuantityStepper({
           setText(formatQuantity(value))
         }}
         onChange={(e) => setText(e.target.value)}
-        onBlur={() => {
-          commit()
-        }}
+        onBlur={commit}
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
             commit()
@@ -96,13 +92,13 @@ export function QuantityStepper({
             e.currentTarget.blur()
           }
         }}
-        className="w-12 border-0 bg-transparent px-2 text-center text-sm font-medium focus:outline-none disabled:cursor-not-allowed"
+        className="w-14 border-0 bg-transparent px-1 text-center text-sm font-medium focus:outline-none disabled:cursor-not-allowed"
       />
 
       <button
         type="button"
         disabled={disabled}
-        onClick={() => changeQuantity(step)}
+        onClick={() => changeQuantity('increase')}
         className="flex h-7 w-7 cursor-pointer items-center justify-center border-l border-slate-300 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
       >
         <Plus size={14} />

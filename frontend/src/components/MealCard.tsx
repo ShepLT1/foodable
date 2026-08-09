@@ -1,5 +1,6 @@
 import { Trash2 } from 'lucide-react'
 import { useState, useRef } from 'react'
+import { Link } from 'react-router-dom'
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
 
 import { useDeleteMeal, useUpdateMeal } from '../hooks/useMealPlans'
@@ -82,9 +83,12 @@ export function MealCard({ mealPlanId, meal }: MealCardProps) {
   return (
     <div className="rounded-xl border border-gray-200 bg-white px-5 py-4 shadow-sm">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between md:gap-8">
-        <h3 className="min-w-0 flex-1 text-lg font-semibold text-gray-900">
+        <Link
+          to={`/recipes/${meal.recipe_id}`}
+          className="min-w-0 flex-1 text-lg font-semibold text-gray-900 hover:text-blue-600 hover:underline"
+        >
           {meal.recipe_title}
-        </h3>
+        </Link>
 
         {/* Mobile row 1 / Desktop flow */}
         <div className="flex items-end justify-between gap-4 md:contents">
@@ -161,6 +165,7 @@ export function MealCard({ mealPlanId, meal }: MealCardProps) {
             <input
               type="date"
               value={scheduledDate}
+              min={new Date().toISOString().split('T')[0]}
               onChange={(e) => queueDateUpdate(e.target.value)}
               disabled={updateMeal.isPending}
               className="w-36 rounded-lg border border-gray-300 px-2 py-2 text-sm"

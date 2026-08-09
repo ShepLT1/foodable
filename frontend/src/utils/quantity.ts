@@ -2,22 +2,22 @@ const FRACTIONS: Record<number, string> = {
   0: '',
   0.125: '1/8',
   0.25: '1/4',
+  0.333: '1/3',
   0.375: '3/8',
   0.5: '1/2',
   0.625: '5/8',
+  0.667: '2/3',
   0.75: '3/4',
   0.875: '7/8',
 }
 
 export function formatQuantity(value: number): string {
-  const rounded = Math.round(value * 8) / 8
-
+  const rounded = Math.round(value * 1000) / 1000
   const whole = Math.floor(rounded)
   const remainder = Number((rounded - whole).toFixed(3))
-
   const fraction = FRACTIONS[remainder]
 
-  if (!fraction) return whole.toString()
+  if (!fraction) return rounded.toString()
   if (whole === 0) return fraction
 
   return `${whole} ${fraction}`
