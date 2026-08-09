@@ -68,12 +68,16 @@ export function RecipeCard({
           <RecipePublishToggle recipe={recipe} />
         ) : (
           recipe.creator?.display_name && (
-            <span className="flex items-center gap-1">
+            <Link
+              to={`/users/${recipe.creator.id}`}
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center gap-1 transition hover:text-blue-600 hover:underline"
+            >
               <User className="h-3 w-3" />
               {recipe.creator.id === session?.user.id
                 ? 'You'
                 : recipe.creator.display_name}
-            </span>
+            </Link>
           )
         )}
       </div>

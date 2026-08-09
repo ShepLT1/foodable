@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.profile import Profile
 from app.models.recipe import Recipe
 from app.models.recipe_favorite import RecipeFavorite
+from app.models.user_follow import UserFollow
 from app.schemas.recipe import RecipeCreate, RecipeSearchParams, RecipeUpdate
 
 
@@ -288,6 +289,13 @@ class RecipeRepository:
         current_user_id: UUID,
     ) -> tuple[list[RecipeRow], int]:
         query = _recipe_rows(current_user_id).where(Recipe.is_public.is_(True))
+
+        if params.following_only:
+            query = query.join(
+                UserFollow,
+                (UserFollow.following_id == Recipe.user_id)
+                & (UserFollow.follower_id == current_user_id),
+            )
 
         if params.exclude_own:
             query = query.where(Recipe.user_id != current_user_id)
