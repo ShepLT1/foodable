@@ -21,15 +21,23 @@ function PublicUserPageView({ userId }: { userId: string }) {
   const { session } = useSession()
   const [page, setPage] = useState(1)
 
-  const { data: user, isPending: userLoading, error: userError } = useUser(userId)
+  const {
+    data: user,
+    isPending: userLoading,
+    error: userError,
+  } = useUser(userId)
   const { data: stats } = useFollowStats(userId)
-  const { data: followers = [], isLoading: followersLoading } = useFollowers(userId)
-  const { data: following = [], isLoading: followingLoading } = useFollowing(userId)
+  const { data: followers = [], isLoading: followersLoading } =
+    useFollowers(userId)
+  const { data: following = [], isLoading: followingLoading } =
+    useFollowing(userId)
 
   const followMutation = useFollowUser()
   const unfollowMutation = useUnfollowUser()
 
-  const [activeDialog, setActiveDialog] = useState<'followers' | 'following' | null>(null)
+  const [activeDialog, setActiveDialog] = useState<
+    'followers' | 'following' | null
+  >(null)
 
   const { data: recipesPage, isPending: recipesLoading } = useRecipesByUser(
     userId,
@@ -55,11 +63,19 @@ function PublicUserPageView({ userId }: { userId: string }) {
   }
 
   if (userLoading) {
-    return <div className="mx-auto max-w-5xl p-8 text-center text-slate-500">Loading profile...</div>
+    return (
+      <div className="mx-auto max-w-5xl p-8 text-center text-slate-500">
+        Loading profile...
+      </div>
+    )
   }
 
   if (userError || !user) {
-    return <div className="mx-auto max-w-5xl p-8 text-center text-slate-500">User not found.</div>
+    return (
+      <div className="mx-auto max-w-5xl p-8 text-center text-slate-500">
+        User not found.
+      </div>
+    )
   }
 
   const total = recipesPage?.total ?? 0
@@ -72,8 +88,14 @@ function PublicUserPageView({ userId }: { userId: string }) {
         <div className="flex items-center gap-4">
           <UserAvatar name={user.display_name} size="lg" />
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">{user.display_name}</h1>
-            {memberSince && <p className="text-xs text-slate-500">Member since {memberSince}</p>}
+            <h1 className="text-2xl font-bold text-slate-900">
+              {user.display_name}
+            </h1>
+            {memberSince && (
+              <p className="text-xs text-slate-500">
+                Member since {memberSince}
+              </p>
+            )}
 
             <div className="mt-3 flex items-center gap-4 text-xs font-medium text-slate-500">
               <button
@@ -81,7 +103,10 @@ function PublicUserPageView({ userId }: { userId: string }) {
                 onClick={() => setActiveDialog('followers')}
                 className="cursor-pointer hover:text-purple-600 hover:underline"
               >
-                <span className="font-bold text-slate-900">{stats?.follower_count ?? 0}</span> Followers
+                <span className="font-bold text-slate-900">
+                  {stats?.follower_count ?? 0}
+                </span>{' '}
+                Followers
               </button>
               <span>•</span>
               <button
@@ -89,7 +114,10 @@ function PublicUserPageView({ userId }: { userId: string }) {
                 onClick={() => setActiveDialog('following')}
                 className="cursor-pointer hover:text-purple-600 hover:underline"
               >
-                <span className="font-bold text-slate-900">{stats?.following_count ?? 0}</span> Following
+                <span className="font-bold text-slate-900">
+                  {stats?.following_count ?? 0}
+                </span>{' '}
+                Following
               </button>
             </div>
           </div>

@@ -39,9 +39,13 @@ export function FollowListDialog({
           </div>
 
           {isLoading ? (
-            <p className="p-4 text-center text-sm text-slate-500">Loading users...</p>
+            <p className="p-4 text-center text-sm text-slate-500">
+              Loading users...
+            </p>
           ) : users.length === 0 ? (
-            <p className="p-4 text-center text-sm text-slate-400">No users found.</p>
+            <p className="p-4 text-center text-sm text-slate-400">
+              No users found.
+            </p>
           ) : (
             <div className="max-h-80 overflow-y-auto space-y-2">
               {users.map((user) => (

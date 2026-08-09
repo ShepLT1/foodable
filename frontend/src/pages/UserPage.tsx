@@ -58,23 +58,25 @@ export const UserPage: React.FC = () => {
 
   // 3. Helper to format the display title beautifully
   function getDisplayTitle() {
-    if (selectedDateStr === todayStr) return "Today"
-    
+    if (selectedDateStr === todayStr) return 'Today'
+
     const tomorrow = new Date(todayStr)
     tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
-    if (selectedDateStr === tomorrow.toISOString().split('T')[0]) return "Tomorrow"
+    if (selectedDateStr === tomorrow.toISOString().split('T')[0])
+      return 'Tomorrow'
 
     const yesterday = new Date(todayStr)
     yesterday.setUTCDate(yesterday.getUTCDate() - 1)
-    if (selectedDateStr === yesterday.toISOString().split('T')[0]) return "Yesterday"
+    if (selectedDateStr === yesterday.toISOString().split('T')[0])
+      return 'Yesterday'
 
     // Fallback format for dates further out (e.g. "Wed, Aug 12")
     const d = new Date(selectedDateStr)
-    return d.toLocaleDateString('en-US', { 
-      timeZone: 'UTC', 
-      weekday: 'short', 
-      month: 'short', 
-      day: 'numeric' 
+    return d.toLocaleDateString('en-US', {
+      timeZone: 'UTC',
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
     })
   }
 
@@ -95,20 +97,32 @@ export const UserPage: React.FC = () => {
 
   // Flatten, inject parent meal plan data, and filter for our SELECTED date
   const activeMeals = mealPlans
-    .flatMap((plan) => 
+    .flatMap((plan) =>
       plan.meals.map((meal) => ({
         ...meal,
         mealPlanId: plan.id,
         mealPlanTitle: plan.title,
-      }))
+      })),
     )
     .filter((meal) => meal.scheduled_date === selectedDateStr)
 
   // Accumulate ALL intake calculations per standard serving
-  const totalCalories = activeMeals.reduce((sum, meal) => sum + meal.recipe_nutrition.calories, 0)
-  const totalProtein = activeMeals.reduce((sum, meal) => sum + meal.recipe_nutrition.protein_g, 0)
-  const totalCarbs = activeMeals.reduce((sum, meal) => sum + meal.recipe_nutrition.carbs_g, 0)
-  const totalFat = activeMeals.reduce((sum, meal) => sum + meal.recipe_nutrition.fat_g, 0)
+  const totalCalories = activeMeals.reduce(
+    (sum, meal) => sum + meal.recipe_nutrition.calories,
+    0,
+  )
+  const totalProtein = activeMeals.reduce(
+    (sum, meal) => sum + meal.recipe_nutrition.protein_g,
+    0,
+  )
+  const totalCarbs = activeMeals.reduce(
+    (sum, meal) => sum + meal.recipe_nutrition.carbs_g,
+    0,
+  )
+  const totalFat = activeMeals.reduce(
+    (sum, meal) => sum + meal.recipe_nutrition.fat_g,
+    0,
+  )
 
   return (
     <div className="mx-auto max-w-5xl space-y-8 font-sans text-slate-800">
@@ -118,7 +132,8 @@ export const UserPage: React.FC = () => {
           <UserAvatar name={user?.display_name} size="lg" />
           <div>
             <h1 className="text-2xl font-bold text-slate-900">
-              Welcome back{user?.display_name ? `, ${user.display_name}` : ''}! 👋
+              Welcome back{user?.display_name ? `, ${user.display_name}` : ''}!
+              👋
             </h1>
             <p className="text-sm text-slate-500">
               {user?.email} {memberSince && `• Member since ${memberSince}`}
@@ -177,7 +192,6 @@ export const UserPage: React.FC = () => {
         {/* Left Column */}
         <section className="space-y-4 md:col-span-2">
           <div className="flex flex-col border-b border-slate-100 pb-4">
-            
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <div className="flex items-center gap-2.5">
@@ -198,7 +212,7 @@ export const UserPage: React.FC = () => {
                   >
                     <ChevronLeft size={18} />
                   </button>
-                  
+
                   <div className="relative flex items-center">
                     <input
                       type="date"
@@ -231,7 +245,7 @@ export const UserPage: React.FC = () => {
                 Plan Future Meals <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
-            
+
             {/* Highly Visible Nutrition Summary */}
             {activeMeals.length > 0 && (
               <div className="mt-4 flex flex-wrap gap-2">
@@ -257,7 +271,9 @@ export const UserPage: React.FC = () => {
             </div>
           ) : activeMeals.length === 0 ? (
             <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-slate-500 shadow-2xs">
-              <p className="text-sm">No meals scheduled for {getDisplayTitle().toLowerCase()}.</p>
+              <p className="text-sm">
+                No meals scheduled for {getDisplayTitle().toLowerCase()}.
+              </p>
               <Link
                 to="/meal-plans"
                 className="mt-2 inline-block text-sm font-semibold text-blue-600 hover:underline"
@@ -272,7 +288,10 @@ export const UserPage: React.FC = () => {
                   key={meal.id}
                   className="flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-2xs transition hover:border-blue-300 hover:shadow-sm"
                 >
-                  <Link to={`/recipes/${meal.recipe_id}`} className="space-y-2 block">
+                  <Link
+                    to={`/recipes/${meal.recipe_id}`}
+                    className="space-y-2 block"
+                  >
                     <div className="flex items-center justify-between">
                       <span className="rounded-md bg-slate-200 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-600">
                         {meal.meal_type || 'Meal'}
@@ -296,7 +315,9 @@ export const UserPage: React.FC = () => {
                       title="View this meal plan"
                     >
                       <Calendar className="h-3.5 w-3.5" />
-                      <span className="truncate flex-1">From: {meal.mealPlanTitle}</span>
+                      <span className="truncate flex-1">
+                        From: {meal.mealPlanTitle}
+                      </span>
                     </Link>
                   </div>
                 </div>
