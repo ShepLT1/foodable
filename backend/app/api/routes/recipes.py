@@ -59,7 +59,7 @@ async def generate_recipe_endpoint(
         raise _map_recipe_error(e) from e
 
     return RecipeResponse.from_db_recipe(
-        result.recipe, safe_substitute=result.safe_substitute
+        result.data, safe_substitute=result.safe_substitute
     )
 
 

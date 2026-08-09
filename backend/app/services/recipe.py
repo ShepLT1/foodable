@@ -30,7 +30,12 @@ MAX_TOKENS = 2500
 
 
 class RecipeGenerationResult(NamedTuple):
-    recipe: DBRecipe
+    data: DBRecipe
+    safe_substitute: bool
+
+
+class RecipeGenerationData(NamedTuple):
+    data: RecipeCreate
     safe_substitute: bool
 
 
@@ -146,7 +151,7 @@ async def generate_recipe_create(
     profile: Profile,
     user_id: UUID,
     request: RecipeGenerateRequest,
-) -> RecipeCreate:
+) -> RecipeGenerationData:
     """
     Generate a RecipeCreate without touching the database.
 
@@ -157,9 +162,12 @@ async def generate_recipe_create(
 
     recipe = await generate_recipe(prompt)
 
-    return _build_recipe_create(
-        recipe=recipe,
-        user_id=user_id,
+    return RecipeGenerationData(
+        data=_build_recipe_create(
+            recipe=recipe,
+            user_id=user_id,
+        ),
+        safe_substitute=recipe.safe_substitute,
     )
 
 
@@ -172,15 +180,14 @@ async def create_recipe_for_user(
     if profile is None:
         raise ProfileNotFoundError(f"No profile found for user_id={user_id}")
 
-    data = await generate_recipe_create(
+    result = await generate_recipe_create(
         profile=profile,
         user_id=user_id,
         request=request,
     )
-
-    db_recipe = await recipe_repository.create(db, data)
+    db_recipe = await recipe_repository.create(db, result.data)
     return RecipeGenerationResult(
-        recipe=db_recipe, safe_substitute=recipe.safe_substitute
+        data=db_recipe, safe_substitute=result.safe_substitute
     )
 
 
@@ -197,7 +204,7 @@ async def create_recipe_for_user_without_commit(
     if profile is None:
         raise ProfileNotFoundError(f"No profile found for user_id={user_id}")
 
-    data = await generate_recipe_create(
+    result = await generate_recipe_create(
         profile=profile,
         user_id=user_id,
         request=request,
@@ -205,7 +212,7 @@ async def create_recipe_for_user_without_commit(
 
     return await recipe_repository.create_without_commit(
         db,
-        data,
+        result.data,
     )
 
 
