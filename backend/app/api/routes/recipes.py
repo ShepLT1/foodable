@@ -12,6 +12,7 @@ from app.schemas.recipe import (
     RecipeGenerateRequest,
     RecipeResponse,
     RecipeSearchParams,
+    RecipeUpdate,
 )
 from app.schemas.recipe_favorite import FavoriteActionResponse
 from app.services.recipe import (
@@ -49,7 +50,7 @@ async def generate_recipe_endpoint(
     db: AsyncSession = Depends(get_db),
 ) -> RecipeResponse:
     try:
-        recipe = await create_recipe_for_user(
+        result = await create_recipe_for_user(
             db,
             user_id=UUID(user.id),
             request=payload,
@@ -57,7 +58,9 @@ async def generate_recipe_endpoint(
     except (ProfileNotFoundError, RecipeGenerationError) as e:
         raise _map_recipe_error(e) from e
 
-    return RecipeResponse.from_db_recipe(recipe)
+    return RecipeResponse.from_db_recipe(
+        result.data, safe_substitute=result.safe_substitute
+    )
 
 
 @router.get("/me", response_model=PaginatedRecipes)
@@ -110,6 +113,43 @@ async def get_recipe_endpoint(
     user: CurrentUser = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> RecipeResponse:
+    row = await recipe_repository.get_detail(
+        db,
+        recipe_id=recipe_id,
+        current_user_id=UUID(user.id),
+    )
+
+    if row is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Recipe not found",
+        )
+
+    return RecipeResponse.from_row(row)
+
+
+@router.patch("/{recipe_id}", response_model=RecipeResponse)
+async def update_recipe_endpoint(
+    recipe_id: UUID,
+    payload: RecipeUpdate,
+    user: CurrentUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> RecipeResponse:
+    updated = await recipe_repository.update(
+        db,
+        recipe_id=recipe_id,
+        user_id=UUID(user.id),
+        data=payload,
+    )
+
+    if updated is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Recipe not found",
+        )
+
+    # Re-read through the shared row query so creator and is_favorited come back
+    # populated; the update itself only yields the bare Recipe.
     row = await recipe_repository.get_detail(
         db,
         recipe_id=recipe_id,

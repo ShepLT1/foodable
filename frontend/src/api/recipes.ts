@@ -33,6 +33,7 @@ export interface Recipe {
   nutrition: NutritionInfo
   is_public: boolean
   is_favorited: boolean
+  safe_substitute: boolean
   creator: {
     id: string
     display_name: string | null
@@ -53,6 +54,7 @@ export interface RecipeSearchParams {
   exclude_own?: boolean
   page?: number
   limit?: number
+  following_only?: boolean
   sort_by?: 'created_at' | 'title'
   order?: 'asc' | 'desc'
 }
@@ -82,6 +84,17 @@ export function getRecipesByUser(
   return api<PaginatedRecipes>(
     `/users/${userId}/recipes${queryString ? `?${queryString}` : ''}`,
   )
+}
+
+export interface RecipeUpdate {
+  is_public?: boolean
+}
+
+export function updateRecipe(recipeId: string, data: RecipeUpdate) {
+  return api<Recipe>(`/recipes/${recipeId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  })
 }
 
 // Recipe API request handlers

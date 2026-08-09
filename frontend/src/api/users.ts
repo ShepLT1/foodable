@@ -1,11 +1,13 @@
 import { api } from './client'
 
+// Public view of another user
 export type UserPublic = {
   id: string
   display_name: string
   created_at: string
 }
 
+// Owner's view of their own profile
 export type UserMe = {
   id: string
   email: string
@@ -24,7 +26,7 @@ export type ProfileUpdate = {
   preferences?: string[]
 }
 
-// Social / Followers types
+// Social / Follower types
 export type FollowUserSummary = {
   id: string
   display_name: string
@@ -42,6 +44,7 @@ export type FollowActionResponse = {
   message: string
 }
 
+// User API Handlers
 export function getCurrentUser() {
   return api<UserMe>('/users/me')
 }

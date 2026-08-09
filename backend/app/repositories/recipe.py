@@ -8,7 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.profile import Profile
 from app.models.recipe import Recipe
 from app.models.recipe_favorite import RecipeFavorite
-from app.schemas.recipe import RecipeCreate, RecipeSearchParams
+from app.models.user_follow import UserFollow
+from app.schemas.recipe import RecipeCreate, RecipeSearchParams, RecipeUpdate
 
 
 # One row of the shared recipe read query: the recipe, its creator's profile,
@@ -114,6 +115,37 @@ class RecipeRepository:
             )
         )
         return result.scalar_one_or_none()
+
+    async def update(
+        self,
+        db: AsyncSession,
+        recipe_id: UUID,
+        user_id: UUID,
+        data: RecipeUpdate,
+    ) -> Recipe | None:
+        # Owner-scoped: unlike the read paths, being public does not grant access.
+        result = await db.execute(
+            select(Recipe).where(
+                Recipe.id == recipe_id,
+                Recipe.user_id == user_id,
+            )
+        )
+        recipe = result.scalar_one_or_none()
+
+        if recipe is None:
+            return None
+
+        for field, value in data.model_dump(exclude_unset=True).items():
+            setattr(recipe, field, value)
+
+        try:
+            await db.commit()
+            await db.refresh(recipe)
+        except SQLAlchemyError:
+            await db.rollback()
+            raise
+
+        return recipe
 
     async def list_own_by_user(
         self,
@@ -257,6 +289,13 @@ class RecipeRepository:
         current_user_id: UUID,
     ) -> tuple[list[RecipeRow], int]:
         query = _recipe_rows(current_user_id).where(Recipe.is_public.is_(True))
+
+        if params.following_only:
+            query = query.join(
+                UserFollow,
+                (UserFollow.following_id == Recipe.user_id)
+                & (UserFollow.follower_id == current_user_id),
+            )
 
         if params.exclude_own:
             query = query.where(Recipe.user_id != current_user_id)

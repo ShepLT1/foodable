@@ -21,6 +21,7 @@ export function RecipeSearchPage() {
   const [cuisineType, setCuisineType] = useState<string | null>(null)
   const [page, setPage] = useState(1)
   const [excludeOwn, setExcludeOwn] = useState(false)
+  const [followingOnly, setFollowingOnly] = useState(false)
 
   const isCommunity = tab === 'community'
 
@@ -35,13 +36,13 @@ export function RecipeSearchPage() {
       meal_type: (mealType ?? undefined) as MealType | undefined,
       cuisine_type: cuisineType ?? undefined,
       exclude_own: excludeOwn || undefined,
+      following_only: followingOnly || undefined,
       page,
     },
     isCommunity,
   )
 
   const myRecipesResult = useMyRecipes({ page }, tab === 'me')
-
   const favoritesResult = useMyFavoriteRecipes({ page }, tab === 'favorites')
 
   const { data, isLoading, isError } = {
@@ -51,7 +52,7 @@ export function RecipeSearchPage() {
   }[tab]
 
   return (
-    <div className="rounded-xl bg-white p-8 shadow-sm border border-gray-100">
+    <div className="rounded-xl border border-gray-100 bg-white p-8 shadow-sm">
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold text-gray-900">Browse Recipes</h2>
         <Link
@@ -97,6 +98,7 @@ export function RecipeSearchPage() {
           Favorites
         </button>
       </div>
+
       {isCommunity && (
         <div className="mt-6 flex max-w-md flex-col gap-5">
           <input
@@ -131,14 +133,25 @@ export function RecipeSearchPage() {
             placeholder="Search or type a cuisine"
           />
 
-          <Toggle
-            checked={excludeOwn}
-            onChange={(checked) => {
-              setExcludeOwn(checked)
-              setPage(1)
-            }}
-            label="Exclude my own recipes"
-          />
+          <div className="space-y-3">
+            <Toggle
+              checked={followingOnly}
+              onChange={(checked) => {
+                setFollowingOnly(checked)
+                setPage(1)
+              }}
+              label="Only recipes from people I follow"
+            />
+
+            <Toggle
+              checked={excludeOwn}
+              onChange={(checked) => {
+                setExcludeOwn(checked)
+                setPage(1)
+              }}
+              label="Exclude my own recipes"
+            />
+          </div>
         </div>
       )}
 
@@ -164,7 +177,11 @@ export function RecipeSearchPage() {
         {data && data.items.length > 0 && (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {data.items.map((recipe) => (
-              <RecipeCard key={recipe.id} recipe={recipe} />
+              <RecipeCard
+                key={recipe.id}
+                recipe={recipe}
+                showPublishToggle={!isCommunity}
+              />
             ))}
           </div>
         )}

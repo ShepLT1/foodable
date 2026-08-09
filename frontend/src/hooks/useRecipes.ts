@@ -8,6 +8,7 @@ import {
   getRecipesByUser,
   searchRecipes,
   unfavoriteRecipe,
+  updateRecipe,
 } from '../api/recipes'
 import type {
   MyFavoriteRecipesParams,
@@ -16,6 +17,7 @@ import type {
   PaginatedRecipes,
   Recipe,
   RecipeSearchParams,
+  RecipeUpdate,
 } from '../api/recipes'
 
 export function useGenerateRecipe() {
@@ -70,22 +72,22 @@ export function useMyFavoriteRecipes(
   })
 }
 
-// flip is_favorited wherever this recipe sits in the cache (single or paginated)
-function applyFavorited(
+// patch this recipe wherever it sits in the cache (single or paginated)
+function applyRecipePatch(
   data: Recipe | PaginatedRecipes | undefined,
   recipeId: string,
-  isFavorited: boolean,
+  patch: Partial<Recipe>,
 ) {
   if (!data) return data
   if ('items' in data) {
     return {
       ...data,
       items: data.items.map((r) =>
-        r.id === recipeId ? { ...r, is_favorited: isFavorited } : r,
+        r.id === recipeId ? { ...r, ...patch } : r,
       ),
     }
   }
-  return data.id === recipeId ? { ...data, is_favorited: isFavorited } : data
+  return data.id === recipeId ? { ...data, ...patch } : data
 }
 
 export function useToggleFavorite() {
@@ -105,7 +107,8 @@ export function useToggleFavorite() {
       const previous = queryClient.getQueriesData({ queryKey: ['recipes'] })
       queryClient.setQueriesData<Recipe | PaginatedRecipes>(
         { queryKey: ['recipes'] },
-        (data) => applyFavorited(data, recipeId, isFavorited),
+        (data) =>
+          applyRecipePatch(data, recipeId, { is_favorited: isFavorited }),
       )
       return { previous }
     },
@@ -113,6 +116,40 @@ export function useToggleFavorite() {
     onError: (_err, _vars, context) => {
       context?.previous.forEach(([key, data]) => {
         queryClient.setQueryData(key, data)
+      })
+    },
+
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['recipes'] })
+    },
+  })
+}
+
+export function useUpdateRecipe() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      recipeId,
+      data,
+    }: {
+      recipeId: string
+      data: RecipeUpdate
+    }) => updateRecipe(recipeId, data),
+
+    onMutate: async ({ recipeId, data }) => {
+      await queryClient.cancelQueries({ queryKey: ['recipes'] })
+      const previous = queryClient.getQueriesData({ queryKey: ['recipes'] })
+      queryClient.setQueriesData<Recipe | PaginatedRecipes>(
+        { queryKey: ['recipes'] },
+        (cached) => applyRecipePatch(cached, recipeId, data),
+      )
+      return { previous }
+    },
+
+    onError: (_err, _vars, context) => {
+      context?.previous.forEach(([key, cached]) => {
+        queryClient.setQueryData(key, cached)
       })
     },
 

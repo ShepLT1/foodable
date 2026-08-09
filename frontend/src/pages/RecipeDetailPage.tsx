@@ -1,19 +1,50 @@
 import { useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams, Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { useRecipe } from '../hooks/useRecipes'
+import { useSession } from '../hooks/useSession'
+import {
+  useFollowStats,
+  useFollowUser,
+  useUnfollowUser,
+} from '../hooks/useFollow'
 import { RecipeMealPlanMenu } from '../components/RecipeMealPlanMenu'
 import { FavoriteButton } from '../components/FavoriteButton'
+import { RecipePublishToggle } from '../components/RecipePublishToggle'
+import { UserAvatar } from '../components/UserAvatar'
+import { Banner } from '../components/Banner'
 
 export function RecipeDetailPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { id } = useParams()
+  const { session } = useSession()
   const { data: recipe, isLoading, error } = useRecipe(id ?? '')
   const [showNutritionDetails, setShowNutritionDetails] = useState(false)
 
+  const safeSubstitute = Boolean(
+    (location.state as { safeSubstitute?: boolean } | null)?.safeSubstitute,
+  )
+  const creatorId = recipe?.creator?.id ?? ''
+  const isOwner = session?.user.id === creatorId
+
+  const { data: stats } = useFollowStats(creatorId)
+  const followMutation = useFollowUser()
+  const unfollowMutation = useUnfollowUser()
+
+  const isPending = followMutation.isPending || unfollowMutation.isPending
+
+  function toggleFollow() {
+    if (stats?.is_following) {
+      unfollowMutation.mutate(creatorId)
+    } else {
+      followMutation.mutate(creatorId)
+    }
+  }
+
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-3xl rounded-xl bg-white p-8 shadow-sm border border-gray-100">
+      <div className="mx-auto max-w-3xl rounded-xl border border-gray-100 bg-white p-8 shadow-sm">
         <p className="text-gray-600">Loading recipe...</p>
       </div>
     )
@@ -21,7 +52,7 @@ export function RecipeDetailPage() {
 
   if (error || !recipe) {
     return (
-      <div className="mx-auto max-w-3xl rounded-xl bg-white p-8 shadow-sm border border-gray-100">
+      <div className="mx-auto max-w-3xl rounded-xl border border-gray-100 bg-white p-8 shadow-sm">
         <p className="text-gray-600">Recipe not found.</p>
       </div>
     )
@@ -38,13 +69,21 @@ export function RecipeDetailPage() {
         Back
       </button>
 
-      <div className="rounded-lg bg-white p-8 shadow-sm border border-gray-100">
+      <Banner
+        show={safeSubstitute}
+        message="Heads up — we swapped one of your ingredients for something we could actually cook with!"
+      />
+
+      <div className="rounded-lg border border-gray-100 bg-white p-8 shadow-sm">
         <div className="flex items-start justify-between gap-4">
           <h2 className="text-3xl font-bold text-gray-900">{recipe.title}</h2>
-          <FavoriteButton
-            recipeId={recipe.id}
-            isFavorited={recipe.is_favorited}
-          />
+          <div className="flex shrink-0 items-center gap-4">
+            {isOwner && <RecipePublishToggle recipe={recipe} />}
+            <FavoriteButton
+              recipeId={recipe.id}
+              isFavorited={recipe.is_favorited}
+            />
+          </div>
         </div>
 
         <div className="mt-3 flex flex-wrap gap-2">
@@ -64,6 +103,39 @@ export function RecipeDetailPage() {
 
         {recipe.description && (
           <p className="mt-3 text-gray-600">{recipe.description}</p>
+        )}
+
+        {/* Creator & Follow Section */}
+        {recipe.creator && (
+          <div className="mt-6 flex items-center justify-between border-y border-slate-100 py-3">
+            <Link
+              to={`/users/${recipe.creator.id}`}
+              className="group flex items-center gap-3"
+            >
+              <UserAvatar name={recipe.creator.display_name ?? ''} size="sm" />
+              <div>
+                <span className="block text-xs text-slate-400">Recipe by</span>
+                <span className="text-sm font-semibold text-slate-800 transition group-hover:text-blue-600">
+                  {isOwner ? 'You' : recipe.creator.display_name}
+                </span>
+              </div>
+            </Link>
+
+            {!isOwner && (
+              <button
+                type="button"
+                disabled={isPending}
+                onClick={toggleFollow}
+                className={`cursor-pointer rounded-lg px-3.5 py-1.5 text-xs font-semibold transition ${
+                  stats?.is_following
+                    ? 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+                    : 'bg-purple-600 text-white hover:bg-purple-700'
+                }`}
+              >
+                {stats?.is_following ? 'Following' : 'Follow'}
+              </button>
+            )}
+          </div>
         )}
 
         <div className="mt-6">
@@ -95,6 +167,7 @@ export function RecipeDetailPage() {
             </p>
           )}
         </div>
+
         {recipe.tools_needed.length > 0 && (
           <div className="mt-8 border-t border-gray-200 pt-8">
             <h3 className="text-xl font-semibold text-gray-900">
@@ -112,6 +185,7 @@ export function RecipeDetailPage() {
             </div>
           </div>
         )}
+
         <div className="mt-8 grid gap-8 border-t border-gray-200 pt-8 sm:grid-cols-3">
           <div>
             <h3 className="text-xl font-semibold text-gray-900">Ingredients</h3>
