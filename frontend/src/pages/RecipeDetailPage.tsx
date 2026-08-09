@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { useRecipe } from '../hooks/useRecipes'
-import { useCurrentUser } from '../hooks/useCurrentUser'
 import { useSession } from '../hooks/useSession'
 import {
   useFollowStats,
@@ -19,12 +18,10 @@ export function RecipeDetailPage() {
   const { id } = useParams()
   const { session } = useSession()
   const { data: recipe, isLoading, error } = useRecipe(id ?? '')
-  const { data: currentUser } = useCurrentUser()
   const [showNutritionDetails, setShowNutritionDetails] = useState(false)
 
   const creatorId = recipe?.creator?.id ?? ''
-  const isOwner = !!currentUser && creatorId === currentUser.id
-  const isSelf = session?.user.id === creatorId
+  const isOwner = session?.user.id === creatorId
 
   const { data: stats } = useFollowStats(creatorId)
   const followMutation = useFollowUser()
@@ -109,12 +106,12 @@ export function RecipeDetailPage() {
               <div>
                 <span className="block text-xs text-slate-400">Recipe by</span>
                 <span className="text-sm font-semibold text-slate-800 transition group-hover:text-blue-600">
-                  {isSelf ? 'You' : recipe.creator.display_name}
+                  {isOwner ? 'You' : recipe.creator.display_name}
                 </span>
               </div>
             </Link>
 
-            {!isSelf && (
+            {!isOwner && (
               <button
                 type="button"
                 disabled={isPending}
