@@ -18,24 +18,12 @@ function formatDate(date: Date) {
   return date.toISOString().split('T')[0]
 }
 
-function getDefaultStartDate(mealPlan: MealPlan): string {
-  const firstScheduledMeal = mealPlan.meals.find(
-    (meal) => meal.scheduled_date !== null,
-  )
-
-  if (!firstScheduledMeal || firstScheduledMeal.scheduled_date === null) {
-    return formatDate(new Date())
-  }
-
-  return firstScheduledMeal.scheduled_date
-}
-
 export function CompleteMealPlanDialog({
   mealPlan,
   onClose,
 }: CompleteMealPlanDialogProps) {
   const [startDate, setStartDate] = useState<string>(() =>
-    getDefaultStartDate(mealPlan),
+    formatDate(new Date()),
   )
 
   const [days, setDays] = useState(7)
@@ -134,6 +122,7 @@ export function CompleteMealPlanDialog({
                 id="start-date"
                 type="date"
                 value={startDate}
+                min={formatDate(new Date())}
                 onChange={(e) => setStartDate(e.target.value)}
                 disabled={generateMealPlan.isPending}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-50"
