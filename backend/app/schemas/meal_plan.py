@@ -38,7 +38,7 @@ class MealPlanMeal(BaseModel):
     meal_type: MealType | None
 
     created_at: datetime
-    
+
     # 2. Add the recipe_nutrition field
     recipe_nutrition: NutritionInfo
 
