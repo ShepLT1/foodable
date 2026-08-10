@@ -16,6 +16,8 @@ export function RecipeCard({
 }: RecipeCardProps) {
   const { session } = useSession()
 
+  const isOwner = recipe.creator?.id === session?.user.id
+
   return (
     <Link
       to={`/recipes/${recipe.id}`}
@@ -64,7 +66,7 @@ export function RecipeCard({
         ) : (
           <span />
         )}
-        {showPublishToggle ? (
+        {showPublishToggle && isOwner ? (
           <RecipePublishToggle recipe={recipe} />
         ) : (
           recipe.creator?.display_name && (
