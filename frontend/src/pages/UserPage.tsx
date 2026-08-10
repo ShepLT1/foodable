@@ -15,7 +15,7 @@ import {
 
 import { useCurrentUser } from '../hooks/useCurrentUser'
 import { useGroceryLists } from '../hooks/useGroceryLists'
-import { useFollowers, useFollowing, useFollowStats } from '../hooks/useFollow'
+import { useFollowers, useFollowing, useFollowStats } from '../hooks/useFollows'
 import { useMealPlans } from '../hooks/useMealPlans'
 import { UserAvatar } from '../components/UserAvatar'
 import { FollowListDialog } from '../components/FollowListDialog'

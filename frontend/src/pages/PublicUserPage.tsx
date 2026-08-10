@@ -9,7 +9,7 @@ import {
   useFollowStats,
   useFollowUser,
   useUnfollowUser,
-} from '../hooks/useFollow'
+} from '../hooks/useFollows'
 import { useSession } from '../hooks/useSession'
 import { UserAvatar } from '../components/UserAvatar'
 import { RecipeCard } from '../components/RecipeCard'
