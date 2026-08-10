@@ -180,7 +180,7 @@ export function RecipeSearchPage() {
               <RecipeCard
                 key={recipe.id}
                 recipe={recipe}
-                showPublishToggle={!isCommunity}
+                showPublishToggle={tab === 'me'}
               />
             ))}
           </div>
