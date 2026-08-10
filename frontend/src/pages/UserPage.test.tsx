@@ -32,9 +32,9 @@ describe('UserPage Component', () => {
     })
   })
 
-  it('renders live profile data, grocery lists, and coming soon previews', async () => {
+  it('renders live profile data, grocery lists, and todays meals', async () => {
     vi.mocked(api).mockImplementation((endpoint: string) => {
-      // 1. Check for lists/groceries FIRST
+      // 1. Check for lists/groceries
       if (endpoint.includes('list') || endpoint.includes('grocer')) {
         return Promise.resolve([
           {
@@ -53,7 +53,24 @@ describe('UserPage Component', () => {
         ])
       }
 
-      // 2. Check for user profile second
+      // 2. Check for meal plans
+      if (endpoint.includes('meal-plan')) {
+        return Promise.resolve([])
+      }
+
+      // 3. Catch social endpoints BEFORE the generic 'user' check
+      if (endpoint.includes('stats')) {
+        return Promise.resolve({
+          follower_count: 0,
+          following_count: 0,
+          is_following: false,
+        })
+      }
+      if (endpoint.includes('followers') || endpoint.includes('following')) {
+        return Promise.resolve([]) // Return array for lists
+      }
+
+      // 4. Check for user profile
       if (endpoint === '/users/me' || endpoint.includes('user')) {
         return Promise.resolve({
           id: '11111111-1111-1111-1111-111111111111',
@@ -92,14 +109,13 @@ describe('UserPage Component', () => {
     expect(await screen.findByText('Weekly Groceries')).toBeInTheDocument()
     expect(screen.getByText('0/1 items')).toBeInTheDocument()
 
-    // 3. Verify "Coming Soon" / Preview Cards
+    // 3. Verify Today's Meals and Community sections
     expect(
-      screen.getByRole('heading', { name: /Recent AI Recipes/i }),
+      screen.getByRole('heading', { name: /Today's Meals/i }),
     ).toBeInTheDocument()
     expect(
       screen.getByRole('heading', { name: /Community/i }),
     ).toBeInTheDocument()
-    expect(screen.getAllByText(/Coming Soon/i).length).toBeGreaterThanOrEqual(1)
   })
 
   it('handles API fetch errors gracefully without crashing', async () => {

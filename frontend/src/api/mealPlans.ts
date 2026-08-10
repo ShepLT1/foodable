@@ -1,5 +1,5 @@
 import { api } from './client'
-
+import type { NutritionInfo } from './recipes'
 export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'dessert' | 'snack'
 
 export interface MealPlanMeal {
@@ -10,6 +10,7 @@ export interface MealPlanMeal {
   scheduled_date: string | null
   meal_type: MealType | null
   created_at: string
+  recipe_nutrition: NutritionInfo
 }
 
 export interface MealPlan {

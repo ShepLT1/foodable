@@ -7,7 +7,7 @@ import {
   useFollowStats,
   useFollowUser,
   useUnfollowUser,
-} from '../hooks/useFollow'
+} from '../hooks/useFollows'
 import { RecipeMealPlanMenu } from '../components/RecipeMealPlanMenu'
 import { FavoriteButton } from '../components/FavoriteButton'
 import { RecipePublishToggle } from '../components/RecipePublishToggle'
