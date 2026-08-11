@@ -27,12 +27,10 @@ class MealPlanRepository:
         self,
         db: AsyncSession,
         recipe_id: UUID,
-        user_id: UUID,
     ) -> Recipe | None:
         result = await db.execute(
             select(Recipe).where(
                 Recipe.id == recipe_id,
-                Recipe.user_id == user_id,
             )
         )
 
@@ -42,19 +40,15 @@ class MealPlanRepository:
         self,
         db: AsyncSession,
         meal_plan_id: UUID,
-        user_id: UUID,
         data: MealPlanMealCreate,
     ) -> MealPlanMeal:
         recipe = await self._get_recipe(
             db,
             data.recipe_id,
-            user_id,
         )
 
         if recipe is None:
-            raise RecipeNotFoundError(
-                f"No recipe found with id={data.recipe_id} for user_id={user_id}"
-            )
+            raise RecipeNotFoundError(f"No recipe found with id={data.recipe_id}")
 
         return MealPlanMeal(
             meal_plan_id=meal_plan_id,
@@ -84,7 +78,6 @@ class MealPlanRepository:
             meal = await self._build_meal(
                 db=db,
                 meal_plan_id=meal_plan.id,
-                user_id=user_id,
                 data=MealPlanMealCreate(
                     recipe_id=data.initial_recipe_id,
                 ),
@@ -223,7 +216,6 @@ class MealPlanRepository:
         meal = await self._build_meal(
             db,
             meal_plan_id,
-            user_id,
             data,
         )
 
