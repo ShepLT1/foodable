@@ -48,9 +48,7 @@ class MealPlanRepository:
         )
 
         if recipe is None:
-            raise RecipeNotFoundError(
-                f"No recipe found with id={data.recipe_id}"
-            )
+            raise RecipeNotFoundError(f"No recipe found with id={data.recipe_id}")
 
         return MealPlanMeal(
             meal_plan_id=meal_plan_id,
@@ -80,7 +78,6 @@ class MealPlanRepository:
             meal = await self._build_meal(
                 db=db,
                 meal_plan_id=meal_plan.id,
-                user_id=user_id,
                 data=MealPlanMealCreate(
                     recipe_id=data.initial_recipe_id,
                 ),
